@@ -3,6 +3,7 @@
 Created on 12 Apr 2020
 author: Dylan Jones
 """
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
@@ -164,13 +165,6 @@ class LatticePlot:
         datalim = scat.get_datalim(self.ax.transData)
         self.ax.update_datalim(datalim)
 
-        # limits = np.array([np.min(points, axis=0), np.max(points, axis=0)])
-        # if self.limits is None:
-        #     self.limits = limits
-        # else:
-        #     self.limits[0, self.limits[0] > limits[0]] = limits[0, self.limits[0] > limits[0]]
-        #     self.limits[1, self.limits[1] < limits[1]] = limits[1, self.limits[1] < limits[1]]
-
     # =========================================================================
 
     def colorbar(self, im, *args, orientation="vertical", **kwargs):
@@ -215,3 +209,11 @@ class LatticePlot:
             self.tight()
         if enabled:
             plt.show()
+
+    def save(self, *relpaths, dpi=600, rasterized=True):
+        if rasterized:
+            for ax in self.fig.get_axes():
+                ax.set_rasterized(True)
+        file = os.path.join(*relpaths)
+        self.fig.savefig(file, dpi=dpi)
+        print(f"Figure {file} saved")

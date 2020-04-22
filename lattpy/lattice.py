@@ -405,7 +405,9 @@ class Lattice(BravaisLattice):
                             segments.append([positions[i], positions[j]])
 
         plot = plot or LatticePlot(dim3=self.dim == 3)
-        plot.set_equal_aspect()
+        if self.dim != 3:
+            plot.set_equal_aspect()
+
         for atom, positions in atom_pos.items():
             plot.draw_sites(atom, positions)
         plot.draw_linecollection(segments, color="k", lw=lw)

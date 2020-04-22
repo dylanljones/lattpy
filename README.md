@@ -92,10 +92,10 @@ latt = simple_square()
 positions = latt.get_position(n=[0, 0], alpha=0)
 
 # Get lattice-indices of the nearest neighbours of atom alpha=0 in the translated unit-cell
-neighbour_indices = latt.get_neighbours(n=[0, 0], alpha=0, dist_idx=0)
+neighbour_indices = latt.get_neighbours(n=[0, 0], alpha=0, distidx=0)
 
 # Get vectors to the nearest neighbours of atom alpha=0 in the translated unit-cell  
-neighbour_vectors = latt.get_neighbour_vectors(alpha=0, dist_idx=0)
+neighbour_vectors = latt.get_neighbour_vectors(alpha=0, distidx=0)
 ````
 
 Also, the reciprocal lattice vectors can be computed
@@ -132,6 +132,10 @@ positions = latt.position(idx)
 
 # Get the atom indices of the nearest neighbours of the atom with index i=2
 neighbour_indices = latt.neighbours(idx, distidx=0)
+
+# the nearest neighbours can also be found by calling (equivalent to dist_idx=0)
+neighbour_indices = latt.nearest_neighbours(idx)
+
 ````
 
 

@@ -75,6 +75,17 @@ latt.set_periodic(axis=0)
 latt.set_periodic(axis=[0, 1])
 ````
 
+To view the buildt lattice the `plot`-method can be used:
+````python
+from lattpy import simple_square
+
+latt = simple_square(a=1.0, neighbours=1)
+latt.build((5, 3))
+latt.plot(legend=False)
+````
+
+<img src="example.png" width="600">
+
 General lattice attributes
 --------------------------
 

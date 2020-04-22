@@ -84,7 +84,7 @@ latt.build((5, 3))
 latt.plot(legend=False)
 ````
 
-<img src="example.png" width="600">
+<img src="example.png" width="400">
 
 General lattice attributes
 --------------------------

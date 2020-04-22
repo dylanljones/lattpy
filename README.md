@@ -2,7 +2,6 @@
 
 `lattpy` is a python package for modeling bravais lattices and constructing (finite) lattice structures.
 
-
 Installation
 ------------
 
@@ -14,6 +13,7 @@ or the setup.py script
 ````commandline
 python setup.py --install
 ````
+
 
 Usage
 =====
@@ -61,4 +61,59 @@ from lattpy import simple_square
 
 latt = simple_square(a=1.0)  # Initializes a square lattice with one atom in the unit-cell
 latt.build(shape=(5, 2), inbound=False)
+````
+
+After building the lattice periodic boundary conditions can be set along one or multiple axes:
+````python
+from lattpy import simple_square
+
+latt = simple_square(a=1.0)  # Initializes a square lattice with one atom in the unit-cell
+latt.build(shape=(5, 2), inbound=False)
+
+latt.set_periodic(axis=0)
+# or
+latt.set_periodic(axis=[0, 1])
+````
+
+
+
+Examples
+========
+
+Using the (buildt) lattice model it is easy to construct the (kinetic) Hamiltonian of the model:
+
+````python
+import numpy as np
+from lattpy import simple_chain
+
+# Initializes a 1D lattice chain with a length of 5 atoms.
+latt = simple_chain(a=1.0)
+latt.build(shape=5, inbound=False)
+n = latt.n_sites
+
+# Construct the non-interacting (kinetic) Hamiltonian-matrix
+eps, t = 0, 1
+ham = np.zeros((n, n))
+for i in range(n):
+    ham[i, i] = eps
+    for j in latt.nearest_neighbours(i, unique=True):
+        ham[i, j] = t
+        ham[j, i] = t
+````
+This will create the Hamiltonian-matrix:
+````
+[[0. 1. 0. 0. 0.]
+ [1. 0. 1. 0. 0.]
+ [0. 1. 0. 1. 0.]
+ [0. 0. 1. 0. 1.]
+ [0. 0. 0. 1. 0.]]
+````
+
+If periodic boundary conditions are set (along axis 0) the matrix will be:
+````
+[[0. 1. 0. 0. 1.]
+ [1. 0. 1. 0. 0.]
+ [0. 1. 0. 1. 0.]
+ [0. 0. 1. 0. 1.]
+ [1. 0. 0. 1. 0.]]
 ````

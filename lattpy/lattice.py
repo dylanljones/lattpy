@@ -95,7 +95,7 @@ class Lattice(BravaisLattice):
     def position(self, i):
         return self.get_position(*self.data.get_index(i))
 
-    def neighbours(self, i, distidx=0, unique=True):
+    def neighbours(self, i, distidx=0, unique=False):
         if not hasattr(distidx, '__len__'):
             distidx = [distidx]
         neighbours = list()
@@ -105,10 +105,10 @@ class Lattice(BravaisLattice):
             neighbours = [idx for idx in neighbours if idx > i]
         return neighbours
 
-    def nearest_neighbours(self, i, unique=True):
+    def nearest_neighbours(self, i, unique=False):
         return self.neighbours(i, 0, unique)
 
-    def iter_neighbours(self, i, unique=True):
+    def iter_neighbours(self, i, unique=False):
         for distidx in range(self.n_dist):
             for j in self.neighbours(i, distidx, unique):
                 yield distidx, j

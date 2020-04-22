@@ -58,3 +58,4 @@ def simple_cubic(a=1.0, atom=None, neighbours=1):
     latt.add_atom(atom=atom)
     latt.calculate_distances(neighbours)
     return latt
+

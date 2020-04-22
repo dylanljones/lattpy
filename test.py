@@ -5,16 +5,9 @@ author: Dylan Jones
 """
 import numpy as np
 import lattpy as lp
+from lattpy import Atom
 import matplotlib.pyplot as plt
 from lattpy.geometrie import Plane, get_center
-
-
-
-def get_center_perp_vector(r1, r2):
-    vec = r2 - r1
-    center = r1 + vec/2
-    pvec = perpendicular_vector(vec)
-    return center, pvec
 
 
 def compute_plains(latt, idx=12):
@@ -36,10 +29,8 @@ def compute_plains(latt, idx=12):
         for j, p2 in enumerate(planes[:i]):
             inter = p1.intersection(p2)
             print(inter)
-            continue
             if not np.any(inter == np.nan):
                 print(inter)
-    return
     for p in planes:
         print(p.x, p.v)
         plot.draw_line(p.x-p.v, p.x+p.v, color='r', lw=2)
@@ -48,13 +39,13 @@ def compute_plains(latt, idx=12):
 
 
 def main():
-    shape = (5, 5)
-    latt = lp.Lattice.rectangular(1.0, 1.0)
-    latt.add_atom(neighbours=1)
-    latt.build(shape, pos=(-2.5, -2.5))
-    compute_plains(latt, 12)
+    shape = (10, 6)
+    atom = Atom('C', color='k', size=7)
 
+    latt = lp.graphene()
+    latt.build(shape)
 
+    latt.plot()
 
 
 if __name__ == "__main__":

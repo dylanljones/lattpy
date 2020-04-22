@@ -44,10 +44,12 @@ class Atom:
 class BravaisLattice:
 
     DIST_DECIMALS = 5
+    MIN_DISTS = 3
 
     def __init__(self, vectors):
         vectors = np.atleast_2d(vectors).T
         dim = len(vectors)
+
         # Lattice data
         self.dim = dim
         self.vectors = vectors
@@ -308,7 +310,7 @@ class BravaisLattice:
                 indices.append(idx1)
         return indices
 
-    def calculate_distances(self, n=1):
+    def calculate_distances(self, num_dist=1):
         """ Calculates the ´n´ lowest distances between sites in the lattice and the neighbours of the cell.
 
         Checks distances between all sites of the bravais lattice and saves n lowest values.
@@ -323,17 +325,17 @@ class BravaisLattice:
 
         Parameters
         ----------
-        n: int, optional
+        num_dist: int, optional
             Number of distances of lattice structure to calculate. If 'None' the number of atoms is used.
             The default is 1 (nearest neighbours).
         """
         if len(self.atoms) == 0:
             raise ConfigurationError("No atoms found in the lattice!", "Use 'add_atom' to add an 'Atom'-object")
-        if n is None:
-            n = len(self.atoms)
+        if num_dist is None:
+            num_dist = len(self.atoms)
         # Calculate n lowest distances of lattice structure
-        _overdist = 3
-        n += 1 + _overdist
+        n = num_dist + 1
+        n = max(n, self.MIN_DISTS)
         n_vecs = vrange(self.dim * [np.arange(-n, n)])
         r_vecs = list()
         for nvec in n_vecs:
@@ -344,7 +346,7 @@ class BravaisLattice:
         distances.sort()
         distances.remove(0.0)
         self.distances = distances[0:n - 1]
-        self.n_dist = len(self.distances) - _overdist
+        self.n_dist = num_dist
 
         # Calculate cell-neighbors.
         neighbours = list()

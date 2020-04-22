@@ -75,12 +75,72 @@ latt.set_periodic(axis=0)
 latt.set_periodic(axis=[0, 1])
 ````
 
+General lattice attributes
+--------------------------
+
+After configuring the lattice the attributes are available. 
+Even without building a (finite) lattice structure all attributes can be computed on the fly for a given lattice vector, consiting of the translation vector `n` and
+the atom index `alpha`. For computing the (translated) atom positions the `get_position` method
+is used. Also, the neighbours and the vectors to these neighbours can be calculated. The `dist_idx`-parameter specifies
+the distance of the neighbours (0 for nearest neighbours, 1 for next nearest neighbours, ...):
+````python
+from lattpy import simple_square
+
+latt = simple_square() 
+
+# Get position of atom alpha=0 in the translated unit-cell
+positions = latt.get_position(n=[0, 0], alpha=0)
+
+# Get lattice-indices of the nearest neighbours of atom alpha=0 in the translated unit-cell
+neighbour_indices = latt.get_neighbours(n=[0, 0], alpha=0, dist_idx=0)
+
+# Get vectors to the nearest neighbours of atom alpha=0 in the translated unit-cell  
+neighbour_vectors = latt.get_neighbour_vectors(alpha=0, dist_idx=0)
+````
+
+Also, the reciprocal lattice vectors can be computed
+````python
+from lattpy import simple_square
+
+latt = simple_square() 
+rvecs = latt.reciprocal_vectors()
+````
+
+or used to construct the reciprocal lattice:
+````python
+from lattpy import simple_square
+
+latt = simple_square() 
+rlatt = latt.reciprocal_lattice()
+````
+
+
+Cached lattice data
+-------------------
+
+If the lattice has been buildt the needed data is cached. The lattice sites of the structure then can be 
+accessed by a simple index `i`. The synthax is the same as before, just without the `get_` prefix:
+````python
+from lattpy import simple_square
+
+latt = simple_square()
+latt.build((5, 2))
+idx = 2
+
+# Get position of the atom with index i=2
+positions = latt.position(idx)
+
+# Get the atom indices of the nearest neighbours of the atom with index i=2
+neighbour_indices = latt.neighbours(idx, distidx=0)
+````
+
+
 
 
 Examples
 ========
 
-Using the (buildt) lattice model it is easy to construct the (kinetic) Hamiltonian of the model:
+Using the (buildt) lattice model it is easy to construct the (kinetic) Hamiltonian of a non-interacting model:
 
 ````python
 import numpy as np
@@ -92,7 +152,7 @@ latt.build(shape=5, inbound=False)
 n = latt.n_sites
 
 # Construct the non-interacting (kinetic) Hamiltonian-matrix
-eps, t = 0, 1
+eps, t = 0., 1.
 ham = np.zeros((n, n))
 for i in range(n):
     ham[i, i] = eps

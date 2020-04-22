@@ -95,7 +95,7 @@ class Lattice(BravaisLattice):
     def position(self, i):
         return self.get_position(*self.data.get_index(i))
 
-    def neighbours(self, i, distidx=0, unique=True):
+    def neighbours(self, i, distidx=0, unique=False):
         if not hasattr(distidx, '__len__'):
             distidx = [distidx]
         neighbours = list()
@@ -105,10 +105,10 @@ class Lattice(BravaisLattice):
             neighbours = [idx for idx in neighbours if idx > i]
         return neighbours
 
-    def nearest_neighbours(self, i, unique=True):
+    def nearest_neighbours(self, i, unique=False):
         return self.neighbours(i, 0, unique)
 
-    def iter_neighbours(self, i, unique=True):
+    def iter_neighbours(self, i, unique=False):
         for distidx in range(self.n_dist):
             for j in self.neighbours(i, distidx, unique):
                 yield distidx, j
@@ -212,6 +212,7 @@ class Lattice(BravaisLattice):
 
         for i in site_indices:
             site_idx = new_indices[i]
+            n, alpha = np.array(site_idx[:-1]), site_idx[-1]
             i_site = i + offset
 
             # Get relevant index range to only look for neighbours
@@ -225,7 +226,7 @@ class Lattice(BravaisLattice):
             # Get neighbour indices of site in proximity
             for i_dist in range(n_dist):
                 # Get neighbour indices of site for distance level
-                for idx in self.get_neighbours(site_idx, i_dist):
+                for idx in self.get_neighbours(n, alpha, i_dist):
                     # Find site of neighbour and store if in cache
                     hop_idx = np.where(np.all(site_window == idx, axis=1))[0]
                     if len(hop_idx):

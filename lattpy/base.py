@@ -211,7 +211,7 @@ class BravaisLattice:
 
         Parameters
         ----------
-        n: (N) array_like
+        n: (N) array_like or int
             translation vector.
         alpha: int, optional
             site index, default is 0.
@@ -222,6 +222,7 @@ class BravaisLattice:
         r = self.atom_positions[alpha]
         if n is None:
             return r
+        n = np.atleast_1d(n)
         return r + (self.vectors @ n)  # self.translate(n, r)
 
     def translate_cell(self, n):
@@ -237,6 +238,7 @@ class BravaisLattice:
         pos: np.ndarray
             positions of the sites in the translated unit cell
         """
+        n = np.atleast_1d(n)
         for alpha in range(self.n_base):
             yield self.get_position(n, alpha)
 
@@ -391,7 +393,7 @@ class BravaisLattice:
             self.calculate_distances(neighbours)
         return atom
 
-    def get_neighbours(self, idx, dist_idx=0):
+    def get_neighbours(self, n, alpha, dist_idx=0):
         """ Returns the neighours of a given site by transforming stored neighbour indices.
 
         Raises
@@ -401,15 +403,17 @@ class BravaisLattice:
 
         Parameters
         ----------
-        idx: tuple
-            lattice vector (n, alpha) of first site
+        n: array_like, optional
+            translation vector of site, the default is the origin.
+        alpha: int, optional
+            site index, default is 0.
         dist_idx: int, default
             index of distance to neighbours, defauzlt is 0 (nearest neighbours).
         """
         if not self._base_neighbors:
             hint = "Use the 'neighbours' keyword of 'add_atom' or call 'calculate_distances' after adding the atoms!"
             raise ConfigurationError("Base neighbours not configured.", hint)
-        n, alpha = np.array(idx[:-1]), idx[-1]
+        n = np.atleast_1d(n)
         transformed = list()
         for idx in self._base_neighbors[alpha][dist_idx]:
             idx_t = idx.copy()

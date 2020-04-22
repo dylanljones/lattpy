@@ -1,5 +1,11 @@
 # lattpy 0.1
 
++---------+----------------------+-----------------+
+| master  ||build-status-master| ||codecov-master| |
++---------+----------------------+-----------------+
+| develop ||build-status-develop|||codecov-develop||
++---------+----------------------+-----------------+
+
 `lattpy` is a python package for modeling bravais lattices and constructing (finite) lattice structures.
 
 Installation

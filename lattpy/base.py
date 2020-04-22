@@ -281,7 +281,7 @@ class BravaisLattice:
             for alpha in range(self.n_base):
                 yield (n, alpha)
 
-    def calculate_neighbours(self, n=None, alpha=0, dist_idx=0, array=False):
+    def calculate_neighbours(self, n=None, alpha=0, distidx=0, array=False):
         """ Find all neighbours of given site and return the lattice indices.
 
         Parameters
@@ -290,7 +290,7 @@ class BravaisLattice:
             translation vector of site, the default is the origin.
         alpha: int, optional
             site index, default is 0.
-        dist_idx: int, default
+        distidx: int, default
             index of distance to neighbours, defauzlt is 0 (nearest neighbours).
         array: bool, optional
             if true, return lattice index (n, alpha) as single array.
@@ -302,9 +302,9 @@ class BravaisLattice:
         """
         n = np.zeros(self.dim) if n is None else n
         idx = n, alpha
-        dist = self.distances[dist_idx]
+        dist = self.distances[distidx]
         indices = list()
-        for idx1 in self._neighbour_range(n, dist_idx):
+        for idx1 in self._neighbour_range(n, distidx):
             # if np.isclose(self.distance(idx, idx1), dist, atol=1e-5):
             if np.round(abs(self.distance(idx, idx1) - dist), decimals=self.DIST_DECIMALS) == 0.0:
                 if array:
@@ -356,7 +356,7 @@ class BravaisLattice:
             site_neighbours = list()
             for i_dist in range(len(self.distances)):
                 # Get neighbour indices of site for distance level
-                site_neighbours.append(self.calculate_neighbours(alpha=alpha, dist_idx=i_dist, array=True))
+                site_neighbours.append(self.calculate_neighbours(alpha=alpha, distidx=i_dist, array=True))
             neighbours.append(site_neighbours)
         self._base_neighbors = neighbours
 
@@ -393,7 +393,7 @@ class BravaisLattice:
             self.calculate_distances(neighbours)
         return atom
 
-    def get_neighbours(self, n, alpha, dist_idx=0):
+    def get_neighbours(self, n, alpha, distidx=0):
         """ Returns the neighours of a given site by transforming stored neighbour indices.
 
         Raises
@@ -407,7 +407,7 @@ class BravaisLattice:
             translation vector of site, the default is the origin.
         alpha: int, optional
             site index, default is 0.
-        dist_idx: int, default
+        distidx: int, default
             index of distance to neighbours, defauzlt is 0 (nearest neighbours).
         """
         if not self._base_neighbors:
@@ -415,13 +415,13 @@ class BravaisLattice:
             raise ConfigurationError("Base neighbours not configured.", hint)
         n = np.atleast_1d(n)
         transformed = list()
-        for idx in self._base_neighbors[alpha][dist_idx]:
+        for idx in self._base_neighbors[alpha][distidx]:
             idx_t = idx.copy()
             idx_t[:-1] += n
             transformed.append(idx_t)
         return transformed
 
-    def get_neighbour_vectors(self, alpha=0, dist_idx=0, include_zero=False):
+    def get_neighbour_vectors(self, alpha=0, distidx=0, include_zero=False):
         """ Returns the neighours of a given site by transforming stored neighbour indices.
 
         Raises
@@ -433,7 +433,7 @@ class BravaisLattice:
         ----------
         alpha: int, optional
             Index of the base atom. The default is the first atom in the unit cell.
-        dist_idx: int, default
+        distidx: int, default
             Index of distance to neighbours, defauzlt is 0 (nearest neighbours).
         include_zero: bool, optional
             Flag if zero-vector is included in result. The default is False.
@@ -445,7 +445,7 @@ class BravaisLattice:
         vectors = list()
         if include_zero:
             vectors.append(np.zeros(self.dim))
-        for idx in self._base_neighbors[alpha][dist_idx]:
+        for idx in self._base_neighbors[alpha][distidx]:
             pos1 = self.get_position(idx[:-1], idx[-1])
             vectors.append(pos1 - pos0)
         return vectors

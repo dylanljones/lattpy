@@ -11,7 +11,7 @@ pip install -e <folder path>
 ````
 or the setup.py script
 ````commandline
-python setup.py --install
+python setup.py install
 ````
 
 

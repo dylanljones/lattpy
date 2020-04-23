@@ -134,10 +134,10 @@ class BravaisLattice:
         a1, a2, a3 = vecs
         # Compute reziprocal vectors
         factor = 2 * np.pi / self.cell_volume
-        b1 = factor * np.cross(a2, a3)
-        b2 = factor * np.cross(a3, a1)
-        b3 = factor * np.cross(a1, a2)
-        rvecs = np.asarray([b1, b2, b3])
+        b1 = np.cross(a2, a3)
+        b2 = np.cross(a3, a1)
+        b3 = np.cross(a1, a2)
+        rvecs = factor * np.asarray([b1, b2, b3])
         # Return the needed vectors for the input dimension
         return rvecs[:self.dim, :self.dim]
 
@@ -336,8 +336,7 @@ class BravaisLattice:
         if num_dist is None:
             num_dist = len(self.atoms)
         # Calculate n lowest distances of lattice structure
-        n = num_dist + 1
-        n = max(n, self.MIN_DISTS)
+        n = max(num_dist, self.MIN_DISTS) + 1
         n_vecs = vrange(self.dim * [np.arange(-n, n)])
         r_vecs = list()
         for nvec in n_vecs:

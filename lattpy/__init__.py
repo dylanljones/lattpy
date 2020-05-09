@@ -59,3 +59,10 @@ def simple_cubic(a=1.0, atom=None, neighbours=1):
     latt.calculate_distances(neighbours)
     return latt
 
+
+def nacl_structure(a=1.0, atom1="Na", atom2="Cl", neighbours=1):
+    latt = Lattice.fcc(a)
+    latt.add_atom(pos=[0, 0, 0], atom=atom1)
+    latt.add_atom(pos=[a/2, a/2, a/2], atom=atom2)
+    latt.calculate_distances(neighbours)
+    return latt

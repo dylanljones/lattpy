@@ -122,7 +122,7 @@ class Lattice(BravaisLattice):
         max_values = np.abs(self.estimate_index(pos + shape))
         max_values[max_values == 0] = 1
 
-        offset = 2 * shape
+        offset = 5 * shape
         offset[offset == 0] = 1
         ranges = list()
         for d in range(self.dim):
@@ -328,7 +328,7 @@ class Lattice(BravaisLattice):
             offset[ax] = self.shape[ax] + 0.1 * self.cell_size[ax]
             pos = offset
 
-            nvec = pos @ np.linalg.inv(self.vectors.T)
+            nvec = pos @ np.linalg.inv(self._vectors.T)
             nvec[ax] = np.ceil(nvec[ax])
             nvec = np.round(nvec, decimals=0).astype("int")
 

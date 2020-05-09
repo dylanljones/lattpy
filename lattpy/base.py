@@ -60,9 +60,9 @@ class BravaisLattice:
         dim = len(vectors)
 
         # Lattice data
+        self._vectors = vectors
+        self._vectors_inv = np.linalg.inv(self._vectors)
         self.dim = dim
-        self.vectors = vectors
-        self._vectors_inv = np.linalg.inv(self.vectors)
         self.cell_size = cell_size(vectors)
         self.cell_volume = cell_volume(vectors)
         self.origin = np.zeros(self.dim)
@@ -108,7 +108,7 @@ class BravaisLattice:
 
     def copy(self):
         """ Creates a (deep) copy of the lattice instance"""
-        latt = self.__class__(self.vectors.copy().T)
+        latt = self.__class__(self._vectors.copy().T)
         if self.n_base:
             latt.n_base = self.n_base
             latt.atoms = self.atoms.copy()
@@ -131,12 +131,12 @@ class BravaisLattice:
 
     def get_vectors(self):
         """ (N, N) np.ndarray: Basis vectors Bravais Lattice"""
-        return self.vectors.T
+        return self._vectors.T
 
     def get_3d_vectors(self):
         """ (3, 3) np.ndarray: Expanded basis vectors of the Bravais Lattice"""
         vectors = np.eye(3)
-        vectors[:self.dim, :self.dim] = self.vectors
+        vectors[:self.dim, :self.dim] = self._vectors
         return vectors.T
 
     def is_reciprocal(self, vecs, tol=REC_TOLERANCE):
@@ -247,7 +247,7 @@ class BravaisLattice:
         -------
         r_trans: (N) array_like
         """
-        return r + (self.vectors @ nvec)
+        return r + (self._vectors @ nvec)
 
     def itranslate(self, v):
         """ Returns the lattice index and cell position leading to the given position in real space.
@@ -289,8 +289,6 @@ class BravaisLattice:
     def get_position(self, n=None, alpha=0):
         """ Returns the position for a given translation vector and site index
 
-        The position is defined by
-
         Parameters
         ----------
         n: (N) array_like or int
@@ -305,7 +303,7 @@ class BravaisLattice:
         if n is None:
             return r
         n = np.atleast_1d(n)
-        return r + (self.vectors @ n)  # self.translate(n, r)
+        return r + (self._vectors @ n)  # self.translate(n, r)
 
     def translate_cell(self, n):
         """ Translates all sites of the unit cell
@@ -458,7 +456,7 @@ class BravaisLattice:
             Keyword arguments for ´Atom´ constructor. Only used if a new Atom instance is created.
         """
         if pos is None:
-            pos = np.zeros(self.vectors.shape[0])
+            pos = np.zeros(self._vectors.shape[0])
         else:
             pos = np.asarray(pos)
         if any(np.all(pos == x) for x in self.atom_positions):
@@ -546,7 +544,7 @@ class BravaisLattice:
             s = r'2 \pi \cdot '
             labels = f'${s}k_x$', f'${s}k_y$', f'${s}k_z$' if self.dim == 3 else None
         else:
-            vecs = self.vectors
+            vecs = self._vectors
             labels = 'x', 'y', 'z' if self.dim == 3 else None
         plot.draw_vectors(vecs, color=color, lw=lw)
         if outlines:

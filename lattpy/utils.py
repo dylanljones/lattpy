@@ -104,7 +104,7 @@ def cell_volume(vectors):
     """
     dim = len(vectors)
     if dim == 1:
-        v = int(vectors)
+        v = float(vectors)
     elif dim == 2:
         v = np.cross(vectors[0], vectors[1])
     elif dim == 3:

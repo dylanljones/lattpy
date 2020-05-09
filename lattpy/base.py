@@ -42,11 +42,20 @@ class Atom:
 
 
 class BravaisLattice:
+    """
+
+    Attributes
+    ----------
+
+    """
 
     DIST_DECIMALS = 5
+    REC_TOLERANCE = 1e-5
     MIN_DISTS = 3
 
     def __init__(self, vectors):
+        # The vectors need to be transformed, since the vectors
+        # need to be a column of the basis-matrix.
         vectors = np.atleast_2d(vectors).T
         dim = len(vectors)
 
@@ -80,7 +89,6 @@ class BravaisLattice:
 
     @classmethod
     def hexagonal(cls, a=1.0):
-        # vectors = a * np.array([[np.sqrt(3), np.sqrt(3) / 2], [0, 3 / 2]])
         vectors = a/2 * np.array([[3, np.sqrt(3)], [3, -np.sqrt(3)]])
         return cls(vectors)
 
@@ -95,7 +103,7 @@ class BravaisLattice:
 
     @classmethod
     def bcc(cls, a=1.0):
-        vectors = a/2 * np.array([[1, 1, 1], [1, -1, 1], [-1, 1, 1]]).T
+        vectors = a/2 * np.array([[1, 1, 1], [1, -1, 1], [-1, 1, 1]])
         return cls(vectors)
 
     def copy(self):
@@ -121,35 +129,109 @@ class BravaisLattice:
 
     # =========================================================================
 
-    def reciprocal_vectors(self):
-        """ Computes the reciprocal basis vectors of the bravais lattice.
+    def get_vectors(self):
+        """ (N, N) np.ndarray: Basis vectors Bravais Lattice"""
+        return self.vectors.T
 
+    def get_3d_vectors(self):
+        """ (3, 3) np.ndarray: Expanded basis vectors of the Bravais Lattice"""
+        vectors = np.eye(3)
+        vectors[:self.dim, :self.dim] = self.vectors
+        return vectors.T
+
+    def is_reciprocal(self, vecs, tol=REC_TOLERANCE):
+        r""" Checks if the given vectors are reciprocal to the lattice vectors.
+
+        The lattice- and reciprocal vectors .math'a_i' and .math'b_i' must satisfy the relation
+        ..math::
+            a_i \cdot b_i = 2 \pi \delta_{ij}
+
+        To check the given vectors, the difference of each dot-product is compared to
+        .math:'2\pi' with the given tolerance.
+
+        Parameters
+        ----------
+        vecs: array_like or float
+            The vectors to check. Must have the same dimension as the lattice.
+        tol: float, optional
+            The tolerance used for checking the result of the dot-products.
+
+        Returns
+        -------
+        is_reciprocal: bool
+        """
+        vecs = np.atleast_2d(vecs)
+        two_pi = 2 * np.pi
+        for a, b in zip(self.get_vectors(), vecs):
+            if abs(np.dot(a, b) - two_pi) > tol:
+                return False
+        return True
+
+    def reciprocal_vectors(self, tol=REC_TOLERANCE, check=False):
+        r""" Computes the reciprocal basis vectors of the bravais lattice.
+
+        The lattice- and reciprocal vectors .math'a_i' and .math'b_i' must satisfy the relation
+        ..math::
+            a_i \cdot b_i = 2 \pi \delta_{ij}
+
+        Parameters
+        ----------
+        tol: float, optional
+            The tolerance used for checking the result of the dot-products.
+        check: bool, optional
+            Check the result and raise an exception if it doesn't satisfy the definition.
         Returns
         -------
         v_rec: np.ndarray
         """
-        # Convert basis vectors of the bravais lattice to 3D
-        vecs = np.eye(3)
-        vecs[:self.dim, :self.dim] = self.vectors
-        a1, a2, a3 = vecs
-        # Compute reziprocal vectors
+        two_pi = 2 * np.pi
+
+        # Convert basis vectors of the bravais lattice to 3D, compute
+        # reciprocal vectors and convert back to actual dimension.
+        a1, a2, a3 = self.get_3d_vectors()
         factor = 2 * np.pi / self.cell_volume
         b1 = np.cross(a2, a3)
         b2 = np.cross(a3, a1)
         b3 = np.cross(a1, a2)
         rvecs = factor * np.asarray([b1, b2, b3])
-        # Return the needed vectors for the input dimension
-        return rvecs[:self.dim, :self.dim]
+        rvecs = rvecs[:self.dim, :self.dim]
 
-    def reciprocal_lattice(self):
-        """ Creates the lattice in reciprocal space """
-        latt = self.__class__(self.reciprocal_vectors().T)
+        # Fix the sign so that the dot-products are all positive
+        # and raise an exception if anything went wrong
+        vecs = self.get_vectors()
+        for i in range(self.dim):
+            dot = np.dot(vecs[i], rvecs[i])
+            # Check if dot product is - 2 pi
+            if abs(dot + two_pi) <= tol:
+                rvecs[i] *= -1
+            # Raise an exception if checks are enabled and
+            # dot product results in anything other than +2 pi
+            elif check and abs(dot - two_pi) > tol:
+                raise ValueError(f"{rvecs[i]} not a reciprocal vector to {vecs[i]}")
+
+        return rvecs
+
+    def reciprocal_lattice(self, min_negative=False):
+        """ Creates the lattice in reciprocal space
+
+        Parameters
+        ----------
+        min_negative: bool, optional
+            If 'True' the reciprocal vectors are scales such that the
+            there are fewer negative elements than positive ones.
+
+        Returns
+        -------
+        rlatt: object
+        """
+        rvecs = self.reciprocal_vectors(min_negative)
+        rlatt = self.__class__(rvecs)
         if self.n_base:
-            latt.n_base = self.n_base
-            latt.atoms = self.atoms.copy()
-            latt.atom_positions = self.atom_positions.copy()
-            latt.calculate_distances(self.n_dist)
-        return latt
+            rlatt.n_base = self.n_base
+            rlatt.atoms = self.atoms.copy()
+            rlatt.atom_positions = self.atom_positions.copy()
+            rlatt.calculate_distances(self.n_dist)
+        return rlatt
 
     def translate(self, nvec, r=0):
         """ Translates the given postion vector r by the translation vector n.
@@ -452,10 +534,11 @@ class BravaisLattice:
     # =========================================================================
 
     def plot_cell(self, show=True, reziprocal=False, color='k', lw=2, legend=True, margins=0.25,
-                  show_atoms=True, plot=None):
+                  show_atoms=True, outlines=True, grid=True, plot=None):
 
         plot = plot or LatticePlot(dim3=self.dim == 3)
-        plot.set_equal_aspect()
+        if self.dim != 3:
+            plot.set_equal_aspect()
 
         # Plot vectors
         if reziprocal:
@@ -466,10 +549,10 @@ class BravaisLattice:
             vecs = self.vectors
             labels = 'x', 'y', 'z' if self.dim == 3 else None
         plot.draw_vectors(vecs, color=color, lw=lw)
-        if self.dim == 2:
-            v1, v2 = vecs
-            plot.draw_vector(v1, pos=v2, color=color, ls='--', lw=1)
-            plot.draw_vector(v2, pos=v1, color=color, ls='--', lw=1)
+        if outlines:
+            for v1, v2 in itertools.permutations(vecs.T, r=2):
+                plot.draw_vector(v1, pos=v2, color=color, ls='--', lw=1)
+            # plot.draw_vector(v2, pos=v1, color=color, ls='--', lw=1)
 
         # Plot atoms in the unit cell
         if show_atoms and self.n_base:
@@ -483,10 +566,13 @@ class BravaisLattice:
             for atom, positions in atom_pos.items():
                 plot.draw_sites(atom, positions)
 
+        if grid:
+            plot.grid()
+
         plot.set_margins(margins)
-        if legend:
+        if legend and self.n_base:
             plot.legend()
-        plot.setup()
         plot.set_labels(*labels)
+
         plot.show(show)
         return plot

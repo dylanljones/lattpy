@@ -10,20 +10,51 @@ from lattpy.base import Atom, BravaisLattice
 chain = BravaisLattice.chain(a=1.0)
 square = BravaisLattice.square(a=1.0)
 rect = BravaisLattice.rectangular(a1=2.0, a2=1.0)
+hexagonal = BravaisLattice.hexagonal(a=1)
 
 
 def test_reciprocal_vectors():
-    latt = BravaisLattice(1)
+    # Chain
     expected = np.array([[2 * np.pi]])
-    actual = latt.reciprocal_vectors()
+    actual = chain.reciprocal_vectors()
     assert_array_equal(expected, actual)
 
+    # Square
     expected = 2 * np.pi * np.eye(2)
     actual = square.reciprocal_vectors()
     assert_array_equal(expected, actual)
 
+    # Rectangular
     expected = np.pi * np.array([[1, 0], [0, 2]])
     actual = rect.reciprocal_vectors()
+    assert_array_equal(expected, actual)
+
+    # Hexagonal
+    expected = np.array([[-2.0943951, -2.0943951],
+                         [-3.62759873, 3.62759873]])
+    actual = hexagonal.reciprocal_vectors()
+    assert_array_almost_equal(expected, actual)
+
+
+def test_reciprocal_vectors_double():
+    # Chain
+    expected = chain.get_vectors()
+    actual = chain.reciprocal_lattice().reciprocal_vectors()
+    assert_array_equal(expected, actual)
+
+    # Square
+    expected = square.get_vectors()
+    actual = square.reciprocal_lattice().reciprocal_vectors()
+    assert_array_equal(expected, actual)
+
+    # Rectangular
+    expected = rect.get_vectors()
+    actual = rect.reciprocal_lattice().reciprocal_vectors()
+    assert_array_equal(expected, actual)
+
+    # Hexagonal
+    expected = hexagonal.get_vectors()
+    actual = hexagonal.reciprocal_lattice().reciprocal_vectors()
     assert_array_equal(expected, actual)
 
 

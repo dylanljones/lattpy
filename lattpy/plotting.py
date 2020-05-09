@@ -196,7 +196,7 @@ class LatticePlot:
             self.set_view(30, 30)
         else:
             self.set_equal_aspect()
-            self.ax.grid()
+            # self.ax.grid()
         # self.legend()
 
     @staticmethod

@@ -347,15 +347,15 @@ class Lattice(BravaisLattice):
     # =========================================================================
 
     def plot(self, show=True, plot=None, legend=True, margins=0.1, padding=None, lw=1.,
-             show_hop=True, show_indices=False, show_cell=False):
+             show_hop=True, show_indices=False, show_cell=False, grid=True):
         """ Plot the cached lattice
 
         Parameters
         ----------
-        plot: LatticePlot, optional
-            Parent plot. If None, a new plot is initialized.
         show: bool, default: True
             parameter for pyplot
+        plot: LatticePlot, optional
+            Parent plot. If None, a new plot is initialized.
         legend: bool, optional
             Flag if legend is shown
         margins: float, default: None
@@ -370,7 +370,8 @@ class Lattice(BravaisLattice):
             If 'True' the index of the sites will be shown.
         show_cell: bool, optional
             If 'True' the first unit-cell is drawn.
-
+        grid: bool, optional
+            If 'True', draw a grid in the plot.
         Returns
         -------
         plot: LatticePlot
@@ -405,6 +406,9 @@ class Lattice(BravaisLattice):
                             segments.append([positions[i], positions[j]])
 
         plot = plot or LatticePlot(dim3=self.dim == 3)
+        if grid:
+            plot.grid(b=True, which='major')
+
         if self.dim != 3:
             plot.set_equal_aspect()
 
@@ -416,7 +420,8 @@ class Lattice(BravaisLattice):
             plot.print_indices(positions)
 
         if show_cell:
-            self.plot_cell(plot=plot, show_atoms=False)
+            self.plot_cell(plot=plot, show_atoms=False, legend=False, grid=False)
+
         if self.dim != 3:
             if padding is not None:
                 plot.set_padding(padding)
@@ -426,8 +431,7 @@ class Lattice(BravaisLattice):
         if self.dim == 1 or self.shape[1] == 0:
             plot.set_limits(y=(-1, +1))
 
-        plot.setup()
-        if self.n_base > 1 or legend:
+        if legend and self.n_base > 1:
             plot.legend()
 
         plot.show(show)

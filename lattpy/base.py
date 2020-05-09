@@ -47,6 +47,8 @@ class BravaisLattice:
     MIN_DISTS = 3
 
     def __init__(self, vectors):
+        # The vectors need to be transformed, since the vectors
+        # need to be a column of the basis-matrix.
         vectors = np.atleast_2d(vectors).T
         dim = len(vectors)
 
@@ -121,6 +123,16 @@ class BravaisLattice:
 
     # =========================================================================
 
+    def get_vectors(self):
+        """ (N, N) np.ndarray: Basis vectors Bravais Lattice"""
+        return self.vectors.T
+
+    def get_3d_vectors(self):
+        """ (3, 3) np.ndarray: Expanded basis vectors of the Bravais Lattice"""
+        vectors = np.eye(3)
+        vectors[:self.dim, :self.dim] = self.vectors
+        return vectors.T
+
     def reciprocal_vectors(self):
         """ Computes the reciprocal basis vectors of the bravais lattice.
 
@@ -129,9 +141,7 @@ class BravaisLattice:
         v_rec: np.ndarray
         """
         # Convert basis vectors of the bravais lattice to 3D
-        vecs = np.eye(3)
-        vecs[:self.dim, :self.dim] = self.vectors
-        a1, a2, a3 = vecs
+        a1, a2, a3 = self.get_3d_vectors()
         # Compute reziprocal vectors
         factor = 2 * np.pi / self.cell_volume
         b1 = np.cross(a2, a3)
@@ -143,7 +153,7 @@ class BravaisLattice:
 
     def reciprocal_lattice(self):
         """ Creates the lattice in reciprocal space """
-        latt = self.__class__(self.reciprocal_vectors().T)
+        latt = self.__class__(self.reciprocal_vectors())
         if self.n_base:
             latt.n_base = self.n_base
             latt.atoms = self.atoms.copy()
@@ -452,10 +462,12 @@ class BravaisLattice:
     # =========================================================================
 
     def plot_cell(self, show=True, reziprocal=False, color='k', lw=2, legend=True, margins=0.25,
-                  show_atoms=True, plot=None):
+                  show_atoms=True, outlines=True, grid=True, plot=None):
 
+        new_plot = plot is None
         plot = plot or LatticePlot(dim3=self.dim == 3)
-        plot.set_equal_aspect()
+        if self.dim != 3:
+            plot.set_equal_aspect()
 
         # Plot vectors
         if reziprocal:
@@ -466,10 +478,10 @@ class BravaisLattice:
             vecs = self.vectors
             labels = 'x', 'y', 'z' if self.dim == 3 else None
         plot.draw_vectors(vecs, color=color, lw=lw)
-        if self.dim == 2:
-            v1, v2 = vecs
-            plot.draw_vector(v1, pos=v2, color=color, ls='--', lw=1)
-            plot.draw_vector(v2, pos=v1, color=color, ls='--', lw=1)
+        if outlines:
+            for v1, v2 in itertools.permutations(vecs.T, r=2):
+                plot.draw_vector(v1, pos=v2, color=color, ls='--', lw=1)
+            # plot.draw_vector(v2, pos=v1, color=color, ls='--', lw=1)
 
         # Plot atoms in the unit cell
         if show_atoms and self.n_base:
@@ -483,10 +495,13 @@ class BravaisLattice:
             for atom, positions in atom_pos.items():
                 plot.draw_sites(atom, positions)
 
+        if grid:
+            plot.grid()
+
         plot.set_margins(margins)
-        if legend:
+        if legend and self.n_base:
             plot.legend()
-        plot.setup()
         plot.set_labels(*labels)
+
         plot.show(show)
         return plot

@@ -7,33 +7,128 @@ import numpy as np
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 from lattpy.base import Atom, BravaisLattice
 
+PI = np.pi
+TWOPI = 2 * np.pi
+
 chain = BravaisLattice.chain(a=1.0)
+rchain = BravaisLattice(TWOPI)
+
 square = BravaisLattice.square(a=1.0)
+rsquare = BravaisLattice(TWOPI * np.eye(2))
+
 rect = BravaisLattice.rectangular(a1=2.0, a2=1.0)
+rrect = BravaisLattice(PI * np.array([[1, 0], [0, 2]]))
+
+
 hexagonal = BravaisLattice.hexagonal(a=1)
+rhexagonal = BravaisLattice(np.array([[+2.0943951, +3.62759873],
+                                      [+2.0943951, -3.62759873]]))
+sc = BravaisLattice.sc(a=1.0)
+rsc = BravaisLattice(TWOPI * np.eye(3))
+
+fcc = BravaisLattice.fcc(a=1.0)
+rfcc = BravaisLattice(TWOPI * np.array([[+1, +1, -1],
+                                        [+1, -1, +1],
+                                        [-1, +1, +1]]))
+bcc = BravaisLattice.bcc(a=1.0)
+rbcc = BravaisLattice(TWOPI * np.array([[+1, +1, 0],
+                                        [0, -1, +1],
+                                        [-1, 0, +1]]))
+
+
+def test_is_reciprocal():
+    # Chain
+    rvecs = rchain.get_vectors()
+    assert chain.is_reciprocal(rvecs)
+    assert not chain.is_reciprocal(-1 * rvecs)
+    assert not chain.is_reciprocal(+2 * rvecs)
+    assert not chain.is_reciprocal(0.5 * rvecs)
+    assert not chain.is_reciprocal(0.0 * rvecs)
+
+    # Square
+    rvecs = rsquare.get_vectors()
+    assert square.is_reciprocal(rvecs)
+    assert not square.is_reciprocal(-1 * rvecs)
+    assert not square.is_reciprocal(+2 * rvecs)
+    assert not square.is_reciprocal(0.5 * rvecs)
+    assert not square.is_reciprocal(0.0 * rvecs)
+
+    # Rectangular
+    rvecs = rrect.get_vectors()
+    assert rect.is_reciprocal(rvecs)
+    assert not rect.is_reciprocal(-1 * rvecs)
+    assert not rect.is_reciprocal(+2 * rvecs)
+    assert not rect.is_reciprocal(0.5 * rvecs)
+    assert not rect.is_reciprocal(0.0 * rvecs)
+
+    # Hexagonal
+    rvecs = rhexagonal.get_vectors()
+    assert hexagonal.is_reciprocal(rvecs)
+    assert not hexagonal.is_reciprocal(-1 * rvecs)
+    assert not hexagonal.is_reciprocal(+2 * rvecs)
+    assert not hexagonal.is_reciprocal(0.5 * rvecs)
+    assert not hexagonal.is_reciprocal(0.0 * rvecs)
+
+    # Cubic
+    rvecs = rsc.get_vectors()
+    assert sc.is_reciprocal(rvecs)
+    assert not sc.is_reciprocal(-1 * rvecs)
+    assert not sc.is_reciprocal(+2 * rvecs)
+    assert not sc.is_reciprocal(0.5 * rvecs)
+    assert not sc.is_reciprocal(0.0 * rvecs)
+
+    # Face-centerec-cudic (fcc)
+    rvecs = rfcc.get_vectors()
+    assert fcc.is_reciprocal(rvecs)
+    assert not fcc.is_reciprocal(-1 * rvecs)
+    assert not fcc.is_reciprocal(+2 * rvecs)
+    assert not fcc.is_reciprocal(0.5 * rvecs)
+    assert not fcc.is_reciprocal(0.0 * rvecs)
+
+    # Body-centerec-cudic (bcc)
+    rvecs = rbcc.get_vectors()
+    assert bcc.is_reciprocal(rvecs)
+    assert not bcc.is_reciprocal(-1 * rvecs)
+    assert not bcc.is_reciprocal(+2 * rvecs)
+    assert not bcc.is_reciprocal(0.5 * rvecs)
+    assert not bcc.is_reciprocal(0.0 * rvecs)
 
 
 def test_reciprocal_vectors():
     # Chain
-    expected = np.array([[2 * np.pi]])
+    expected = rchain.get_vectors()
     actual = chain.reciprocal_vectors()
     assert_array_equal(expected, actual)
 
     # Square
-    expected = 2 * np.pi * np.eye(2)
+    expected = rsquare.get_vectors()
     actual = square.reciprocal_vectors()
     assert_array_equal(expected, actual)
 
     # Rectangular
-    expected = np.pi * np.array([[1, 0], [0, 2]])
+    expected = rrect.get_vectors()
     actual = rect.reciprocal_vectors()
     assert_array_equal(expected, actual)
 
     # Hexagonal
-    expected = np.array([[-2.0943951, -2.0943951],
-                         [-3.62759873, 3.62759873]])
+    expected = rhexagonal.get_vectors()
     actual = hexagonal.reciprocal_vectors()
     assert_array_almost_equal(expected, actual)
+
+    # Cubic
+    expected = rsc.get_vectors()
+    actual = sc.reciprocal_vectors()
+    assert_array_equal(expected, actual)
+
+    # Face-centerec-cudic (fcc)
+    expected = rfcc.get_vectors()
+    actual = fcc.reciprocal_vectors()
+    assert_array_equal(expected, actual)
+
+    # Body-centerec-cudic (bcc)
+    expected = rbcc.get_vectors()
+    actual = bcc.reciprocal_vectors()
+    assert_array_equal(expected, actual)
 
 
 def test_reciprocal_vectors_double():
@@ -55,6 +150,21 @@ def test_reciprocal_vectors_double():
     # Hexagonal
     expected = hexagonal.get_vectors()
     actual = hexagonal.reciprocal_lattice().reciprocal_vectors()
+    assert_array_equal(expected, actual)
+
+    # Cubic
+    expected = sc.get_vectors()
+    actual = sc.reciprocal_lattice().reciprocal_vectors()
+    assert_array_equal(expected, actual)
+
+    # Face-centerec-cudic (fcc)
+    expected = fcc.get_vectors()
+    actual = fcc.reciprocal_lattice().reciprocal_vectors()
+    assert_array_equal(expected, actual)
+
+    # Body-centerec-cudic (bcc)
+    expected = bcc.get_vectors()
+    actual = bcc.reciprocal_lattice().reciprocal_vectors()
     assert_array_equal(expected, actual)
 
 

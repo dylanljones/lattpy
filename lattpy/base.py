@@ -42,12 +42,6 @@ class Atom:
 
 
 class BravaisLattice:
-    """
-
-    Attributes
-    ----------
-
-    """
 
     DIST_DECIMALS = 5
     REC_TOLERANCE = 1e-5

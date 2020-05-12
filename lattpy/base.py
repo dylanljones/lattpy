@@ -129,6 +129,10 @@ class BravaisLattice:
 
     # =========================================================================
 
+    @property
+    def vectors(self):
+        return self._vectors.T
+
     def get_vectors(self):
         """ (N, N) np.ndarray: Basis vectors Bravais Lattice"""
         return self._vectors.T
@@ -286,6 +290,23 @@ class BravaisLattice:
         n = np.asarray(np.round(self._vectors_inv @ pos, decimals=0), dtype="int")
         return n
 
+    def get_index(self, n=None, alpha=0):
+        """ Returns lattice index in form of [n_1, ..., n_d, alpha]
+
+        Parameters
+        ----------
+        n: (N) array_like or int
+            translation vector.
+        alpha: int, optional
+            site index, default is 0.
+        Returns
+        -------
+        index: (N) np.ndarray
+        """
+        if n is None:
+            n = np.zeros(self.dim)
+        return np.append(n, alpha)
+
     def get_position(self, n=None, alpha=0):
         """ Returns the position for a given translation vector and site index
 
@@ -349,6 +370,7 @@ class BravaisLattice:
             translation vector of unit cell, the default is the origin.
         cell_range: int, optional
             Range of neighbours, the default is 1.
+
         Returns
         -------
         trans_vectors: list
@@ -454,6 +476,10 @@ class BravaisLattice:
             to be calculated manually after configuring the lattice basis.
         **kwargs
             Keyword arguments for ´Atom´ constructor. Only used if a new Atom instance is created.
+
+        Returns
+        -------
+        atom: Atom
         """
         if pos is None:
             pos = np.zeros(self._vectors.shape[0])
@@ -472,7 +498,7 @@ class BravaisLattice:
             self.calculate_distances(neighbours)
         return atom
 
-    def get_neighbours(self, n, alpha, distidx=0):
+    def get_neighbours(self, n=None, alpha=0, distidx=0):
         """ Returns the neighours of a given site by transforming stored neighbour indices.
 
         Raises
@@ -488,7 +514,13 @@ class BravaisLattice:
             site index, default is 0.
         distidx: int, default
             index of distance to neighbours, defauzlt is 0 (nearest neighbours).
+
+        Returns
+        -------
+        indices: np.ndarray
         """
+        if n is None:
+            n = np.zeros(self.dim)
         if not self._base_neighbors:
             hint = "Use the 'neighbours' keyword of 'add_atom' or call 'calculate_distances' after adding the atoms!"
             raise ConfigurationError("Base neighbours not configured.", hint)
@@ -516,6 +548,10 @@ class BravaisLattice:
             Index of distance to neighbours, defauzlt is 0 (nearest neighbours).
         include_zero: bool, optional
             Flag if zero-vector is included in result. The default is False.
+
+        Returns
+        -------
+        vectors: np.ndarray
         """
         if not self._base_neighbors:
             hint = "Use the 'neighbours' keyword of 'add_atom' or call 'calculate_distances' after adding the atoms!"

@@ -6,6 +6,7 @@ author: Dylan Jones
 from .base import Atom, BravaisLattice
 from .lattice import Lattice
 from .utils import *
+from .disptools import DispersionPath, DynamicMatrix
 
 
 def simple_chain(a=1.0, atom=None, neighbours=1):

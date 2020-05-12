@@ -122,7 +122,7 @@ class Lattice(BravaisLattice):
         max_values = np.abs(self.estimate_index(pos + shape))
         max_values[max_values == 0] = 1
 
-        offset = 5 * shape
+        offset = 2 * shape
         offset[offset == 0] = 1
         ranges = list()
         for d in range(self.dim):
@@ -176,7 +176,7 @@ class Lattice(BravaisLattice):
             Optional indices to calculate neighbours. This can be used for computing only
             neighbours in the region of a connection.
         window: int, optional
-            Window for looking for neighbours. This can speed up the computation significally.
+            Window for looking up neighbours. This can speed up the computation significally.
             Generally at least a few layers of the lattice should be searched. By default the whole
             range of the lattice sites is used.
 
@@ -253,6 +253,9 @@ class Lattice(BravaisLattice):
         """
         self.data.reset()
         shape = np.atleast_1d(shape)
+        if len(shape) != self.dim:
+            raise ValueError(f"Dimension of shape {len(shape)} doesn't match the dimension of the lattice {self.dim}")
+
         # Compute indices and initialize neighbour array
         if inbound:
             indices = self._build_indices_inbound(shape, pos=pos)
@@ -271,6 +274,17 @@ class Lattice(BravaisLattice):
         points = [self.position(i) for i in range(self.data.n)]
         limits = np.array([np.min(points, axis=0), np.max(points, axis=0)])
         self.shape = limits[1] - limits[0]
+
+    def build_centered(self, shape):
+        """ Builds a centered lattice in the given (real world) coordinates.
+
+        Parameters
+        ----------
+        shape: array_like
+            shape of finite size lattice to build.
+        """
+        center = np.asarray(shape) / 2
+        self.build(shape, inbound=True, pos=-center)
 
     def add_x(self, latt, shift=True):
         n_new = latt.n_sites
@@ -434,5 +448,5 @@ class Lattice(BravaisLattice):
         if legend and self.n_base > 1:
             plot.legend()
 
-        plot.show(show)
+        plot.show(enabled=show)
         return plot

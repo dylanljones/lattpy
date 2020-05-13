@@ -3,7 +3,8 @@
 Created on 05 Apr 2020
 author: Dylan Jones
 """
-from .base import Atom, BravaisLattice
+from .atom import Atom
+from .base import BravaisLattice
 from .lattice import Lattice
 from .utils import *
 from .disptools import DispersionPath, DynamicMatrix

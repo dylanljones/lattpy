@@ -6,39 +6,10 @@ author: Dylan Jones
 import pickle
 import itertools
 import numpy as np
+import matplotlib.pyplot as plt
+from .atom import Atom
 from .utils import vrange, distance, cell_size, cell_volume, ConfigurationError
-from .plotting import LatticePlot
-
-
-class Atom:
-
-    COUNTER = itertools.count()
-
-    def __init__(self, name=None, color=None, size=10, **kwargs):
-        idx = next(self.COUNTER)
-        name = name or str(idx)
-        self.name = name
-        self.col = color
-        self.size = size
-        self.kwargs = kwargs
-
-    def __getitem__(self, item):
-        return self.kwargs[item]
-
-    def label(self):
-        return self.name
-
-    def __hash__(self):
-        return hash(self.name)
-
-    def __eq__(self, other):
-        if isinstance(other, Atom):
-            return self.name == other.name
-        else:
-            return self.name == other
-
-    def __repr__(self):
-        return f"Atom({self.name}, {self.col}, {self.size})"
+from .plotting import draw_sites, draw_cell
 
 
 class BravaisLattice:
@@ -559,48 +530,60 @@ class BravaisLattice:
             vectors.append(pos1 - pos0)
         return vectors
 
+    def get_base_atom_dict(self):
+        """ Returns a dictionary containing the positions for eatch type of the base atoms.
+
+        Returns
+        -------
+        atom_pos: dict
+        """
+        atom_pos = dict()
+        for atom, pos in zip(self.atoms, self.atom_positions):
+            if atom.name in atom_pos.keys():
+                atom_pos[atom].append(pos)
+            else:
+                atom_pos[atom] = [pos]
+        return atom_pos
+
     # =========================================================================
 
-    def plot_cell(self, show=True, reziprocal=False, color='k', lw=2, legend=True, margins=0.25,
-                  show_atoms=True, outlines=True, grid=True, plot=None):
-
-        plot = plot or LatticePlot(dim3=self.dim == 3)
-        if self.dim != 3:
-            plot.set_equal_aspect()
-
-        # Plot vectors
-        if reziprocal:
-            vecs = self.reciprocal_vectors() / (2 * np.pi)
-            s = r'2 \pi \cdot '
-            labels = f'${s}k_x$', f'${s}k_y$', f'${s}k_z$' if self.dim == 3 else None
+    def plot_cell(self, show=True, ax=None, color='k', lw=2, legend=True, margins=0.25,
+                  show_atoms=True, outlines=True, grid=True):
+        if ax is None:
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection="3d" if self.dim == 3 else None)
         else:
-            vecs = self._vectors
-            labels = 'x', 'y', 'z' if self.dim == 3 else None
-        plot.draw_vectors(vecs, color=color, lw=lw)
-        if outlines:
-            for v1, v2 in itertools.permutations(vecs.T, r=2):
-                plot.draw_vector(v1, pos=v2, color=color, ls='--', lw=1)
-            # plot.draw_vector(v2, pos=v1, color=color, ls='--', lw=1)
+            fig = ax.get_figure()
 
         # Plot atoms in the unit cell
         if show_atoms and self.n_base:
-            atom_pos = dict()
-            for atom, pos in zip(self.atoms, self.atom_positions):
-                if atom.name in atom_pos.keys():
-                    atom_pos[atom].append(pos)
-                else:
-                    atom_pos[atom] = [pos]
-
+            atom_pos = self.get_base_atom_dict()
             for atom, positions in atom_pos.items():
-                plot.draw_sites(atom, positions)
+                draw_sites(ax, positions, size=atom.size, color=atom.col, label=atom.label())
+
+        # Draw unit vectors and the cell they spawn.
+        vectors = self.vectors
+        draw_cell(ax, vectors, color, lw, outlines=outlines)
+
+        # Format plot
+        if self.dim == 1:
+            ax.set_ylim(-1, +1)
+        elif self.dim == 3:
+            ax.margins(margins, margins, margins)
+        else:
+            ax.margins(margins, margins)
+
+        # Set equal aspect ratio
+        if self.dim != 3:
+            ax.set_aspect("equal", "box")
 
         if grid:
-            plot.grid()
-
-        plot.set_margins(margins)
+            ax.set_axisbelow(True)
+            ax.grid()
         if legend and self.n_base:
-            plot.legend()
-        plot.set_labels(*labels)
+            ax.legend()
 
-        plot.show(show)
-        return plot
+        fig.tight_layout()
+        if show:
+            plt.show()
+        return ax

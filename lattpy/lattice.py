@@ -3,10 +3,11 @@
 Created on 08 Apr 2020
 author: Dylan Jones
 """
-import numpy as np
 import copy
+import numpy as np
+import matplotlib.pyplot as plt
 from .utils import vrange, distance, ConfigurationError
-from .plotting import LatticePlot
+from .plotting import draw_cell, draw_sites, draw_lines, draw_indices, set_padding
 from .base import BravaisLattice
 
 
@@ -77,6 +78,7 @@ class Lattice(BravaisLattice):
         # Lattice Cache
         self.data = LatticeData()
         self.shape = None
+        self.periodic_axes = list()
 
     def copy(self):
         latt = super().copy()
@@ -237,6 +239,22 @@ class Lattice(BravaisLattice):
 
         return all_indices, all_neighbours
 
+    def set_data(self, indices, neighbours):
+        """ Sets cached data and recomputes real-space shape of lattice
+
+        Parameters
+        ----------
+        indices: array_like
+            Lattice indices that will be saved.
+        neighbours: array_like
+            Lattice site neighbours that will be saved.
+        """
+        # Set data and recompute real-space shape of lattice
+        self.data.set(indices, neighbours)
+        points = [self.position(i) for i in range(self.data.n)]
+        limits = np.array([np.min(points, axis=0), np.max(points, axis=0)])
+        self.shape = limits[1] - limits[0]
+
     def build(self, shape, inbound=True, pos=None):
         """ Constructs the indices and neighbours of a new finite size lattice and stores the data
 
@@ -268,12 +286,7 @@ class Lattice(BravaisLattice):
         else:
             window = None
         indices, neighbours = self._construct(indices, window=window)
-
-        # Set data and recompute real-space shape of lattice
-        self.data.set(indices, neighbours)
-        points = [self.position(i) for i in range(self.data.n)]
-        limits = np.array([np.min(points, axis=0), np.max(points, axis=0)])
-        self.shape = limits[1] - limits[0]
+        self.set_data(indices, neighbours)
 
     def build_centered(self, shape):
         """ Builds a centered lattice in the given (real world) coordinates.
@@ -335,6 +348,7 @@ class Lattice(BravaisLattice):
             self.data.set_periodic_neighbours(None)
             return
         axis = np.atleast_1d(axis)
+        self.periodic_axes = axis
         n = self.n_sites
         neighbours = [[set() for _ in range(self.n_dist)] for _ in range(self.n_sites)]
         for ax in axis:
@@ -358,95 +372,197 @@ class Lattice(BravaisLattice):
                             neighbours[j][i_dist].add(i)
         self.data.set_periodic_neighbours(neighbours)
 
-    # =========================================================================
-
-    def plot(self, show=True, plot=None, legend=True, margins=0.1, padding=None, lw=1.,
-             show_hop=True, show_indices=False, show_cell=False, grid=True):
-        """ Plot the cached lattice
+    def transform_periodic(self, pos, ax, cell_offset=0.0):
+        """ Transforms the given position along the given axis by the shape of the lattice.
 
         Parameters
         ----------
-        show: bool, default: True
-            parameter for pyplot
-        plot: LatticePlot, optional
-            Parent plot. If None, a new plot is initialized.
-        legend: bool, optional
-            Flag if legend is shown
-        margins: float, default: None
-            Relative padding used in the lattice plot. The default is '0.1'.
-        padding: float, default: None
-            Absolute padding used in the lattice plot. The default is 'None'.
-        lw: float, default: 1
-            Line width of the hopping connections
-        show_hop: bool, default: True
-            Draw hopping connections if True
-        show_indices: bool, optional
-            If 'True' the index of the sites will be shown.
-        show_cell: bool, optional
-            If 'True' the first unit-cell is drawn.
-        grid: bool, optional
-            If 'True', draw a grid in the plot.
+        pos: array_like
+            Position coordinates to tranform.
+        ax: int:
+            The axis that the position will be transformed along.
+        cell_offset: float, optional
+            Optional offset in units of the cell size.
+
         Returns
         -------
-        plot: LatticePlot
+        transformed: np.ndarray
         """
-        indices = self.data.indices
-        neighbours = self.data.neighbours
+        delta = np.zeros(self.dim, dtype="float")
+        # Get cell offset along axis
+        delta[ax] = self.cell_size[ax] * cell_offset
+        # Get translation along axis
+        delta[ax] += self.shape[ax]
+        # Get transformation direction (to nearest periodic cell)
+        sign = -1 if pos[ax] > self.shape[ax] / 2 else +1
+        return pos + sign * delta
 
-        # Prepare site positions and hopping segments
-        n_sites = len(indices)
+    def atom_positions_dict(self, indices=None):
+        """ Returns a dictionary containing the positions for each type of the atoms.
+
+        Parameters
+        ----------
+        indices: array_like, optional
+            Optional indices to use. If 'None' the stored indices are used.
+
+        Returns
+        -------
+        atom_pos: dict
+        """
+        indices = self.data.indices if indices is None else indices
         atom_pos = dict()
-        positions = list()
         for idx in indices:
             n, alpha = idx[:-1], idx[-1]
             atom = self.atoms[alpha]
             pos = self.get_position(n, alpha)
             if self.dim == 1:
                 pos = [pos, 0.0]
-
             if atom.name in atom_pos.keys():
                 atom_pos[atom].append(pos)
             else:
                 atom_pos[atom] = [pos]
-            positions.append(pos)
+        return atom_pos
 
-        segments = list()
-        if show_hop:
-            for i in range(n_sites):
-                neighbor_list = neighbours[i]
-                for i_hop in range(self.n_dist):
-                    for j in neighbor_list[i_hop]:
-                        if j > i:
-                            segments.append([positions[i], positions[j]])
+    def all_positions(self):
+        """ Returns all positions, independent of the atom type, for the lattice.
 
-        plot = plot or LatticePlot(dim3=self.dim == 3)
-        if grid:
-            plot.grid(b=True, which='major')
+        Returns
+        -------
+        positions: array_like
+        """
+        return np.asarray([self.position(i) for i in range(self.n_sites)])
 
-        if self.dim != 3:
-            plot.set_equal_aspect()
+    def get_connections(self, atleast2d=True):
+        """ Returns all pairs of neighbours in the lattice
+
+        Parameters
+        ----------
+        atleast2d: bool, optional
+            If 'True', one-dimensional coordinates will be casted to 2D vectors.
+
+        Returns
+        -------
+        connections: array_like
+        """
+        conns = list()
+        for i in range(self.n_sites):
+            neighbor_list = self.data.neighbours[i]
+            for distidx in range(self.n_dist):
+                for j in neighbor_list[distidx]:
+                    if j > i:
+                        p1 = self.position(i)
+                        p2 = self.position(j)
+                        if atleast2d and self.dim == 1:
+                            p1 = np.array([p1, 0])
+                            p2 = np.array([p2, 0])
+                        conns.append([p1, p2])
+        return np.asarray(conns)
+
+    def get_periodic_segments(self, scale=1.0, atleast2d=True):
+        """ Returns all pairs of peridoic neighbours in the lattice
+
+        Parameters
+        ----------
+        scale: float, optional
+        atleast2d: bool, optional
+            If 'True', one-dimensional coordinates will be casted to 2D vectors.
+
+        Returns
+        -------
+        connections: array_like
+        """
+        conns = list()
+        for i in range(int(self.n_sites)):
+            p1 = self.position(i)
+            for distidx in range(self.n_dist):
+                neighbours = self.data.periodic_neighbours[i][distidx]
+                if neighbours:
+                    for j in neighbours:
+                        p2_raw = self.position(j)
+                        # Find cycling axis
+                        ax = np.argmax(np.abs(p2_raw - p1))
+                        # Transform back
+                        p2 = self.transform_periodic(p2_raw, ax, cell_offset=1.0)
+                        # Scale vector and add to connections
+                        if atleast2d and self.dim == 1:
+                            p1 = np.array([p1, 0])
+                            p2 = np.array([p2, 0])
+                        v = p2 - p1
+                        p2 = p1 + scale * v
+                        conns.append([p1, p2])
+        return conns
+
+    # =========================================================================
+
+    def plot(self, show=True, ax=None, lw=1., legend=True, grid=False,
+             show_periodic=True, show_indices=False, show_cell=False):
+        """ Plot the cached lattice
+
+        Parameters
+        ----------
+        show: bool, default: True
+            parameter for pyplot
+        ax: plt.Axes or plt.Axes3D or None, optional
+            Parent plot. If None, a new plot is initialized.
+        lw: float, default: 1
+            Line width of the hopping connections
+        legend: bool, optional
+            Flag if legend is shown
+        grid: bool, optional
+            If 'True', draw a grid in the plot.
+        show_periodic: bool, optional
+            If 'True' the periodic connections will be shown.
+        show_indices: bool, optional
+            If 'True' the index of the sites will be shown.
+        show_cell: bool, optional
+            If 'True' the first unit-cell is drawn.
+        """
+        # Prepare site positions and hopping segments
+        atom_pos = self.atom_positions_dict()
+        segments = self.get_connections()
+
+        # Reuse or initialize new Plot
+        if ax is None:
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection="3d" if self.dim == 3 else None)
+        else:
+            fig = ax.get_figure()
+
+        # Draw unit vectors and the cell they spawn.
+        if show_cell:
+            vectors = self.vectors
+            draw_cell(ax, vectors, color='k', lw=2, outlines=True)
+
+        # Draw atoms, neighbour connections and optionally site indices.
+        draw_lines(ax, segments, color="k", lw=lw)
+        if show_periodic and len(self.periodic_axes):
+            periodic_segments = self.get_periodic_segments(scale=0.5)
+            draw_lines(ax, periodic_segments, color="0.5", lw=lw)
 
         for atom, positions in atom_pos.items():
-            plot.draw_sites(atom, positions)
-        plot.draw_linecollection(segments, color="k", lw=lw)
+            draw_sites(ax, positions, size=atom.size, color=atom.col, label=atom.label())
         if show_indices:
             positions = [self.position(i) for i in range(self.n_sites)]
-            plot.print_indices(positions)
+            draw_indices(ax, positions)
 
-        if show_cell:
-            self.plot_cell(plot=plot, show_atoms=False, legend=False, grid=False)
+        if self.dim == 1:
+            w = self.cell_size[0]
+            ax.set_ylim(-w, +w)
+        elif self.dim == 2:
+            set_padding(ax, self.cell_size[0]/2, self.cell_size[1]/2)
+        else:
+            ax.margins(0.1, 0.1, 0.1)
 
         if self.dim != 3:
-            if padding is not None:
-                plot.set_padding(padding)
-            else:
-                plot.set_margins(margins)
+            ax.set_aspect("equal", "box")
 
-        if self.dim == 1 or self.shape[1] == 0:
-            plot.set_limits(y=(-1, +1))
-
+        if grid:
+            ax.set_axisbelow(True)
+            ax.grid(b=True, which='major')
         if legend and self.n_base > 1:
-            plot.legend()
+            ax.legend()
 
-        plot.show(enabled=show)
-        return plot
+        fig.tight_layout()
+        if show:
+            plt.show()
+        return ax

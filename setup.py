@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='lattpy',
-    version='0.2.2',
+    version='0.2.3',
     packages=['lattpy'],
     url='',
     license='MIT',

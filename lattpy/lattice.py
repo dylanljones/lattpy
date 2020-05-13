@@ -352,25 +352,31 @@ class Lattice(BravaisLattice):
         self.periodic_axes = axis
         n = self.n_sites
         neighbours = [[set() for _ in range(self.n_dist)] for _ in range(self.n_sites)]
-        for ax in axis:
-            offset = np.zeros(self.dim, dtype="float")
-            offset[ax] = self.shape[ax] + 0.1 * self.cell_size[ax]
-            pos = offset
+        if self.dim == 1:
+            for distidx in range(self.n_dist):
+                i = distidx
+                j = n - distidx - 1
+                neighbours[i][distidx].add(j)
+                neighbours[j][distidx].add(i)
+        else:
+            for ax in axis:
+                offset = np.zeros(self.dim, dtype="float")
+                offset[ax] = self.shape[ax] + 0.1 * self.cell_size[ax]
+                pos = offset
 
-            nvec = pos @ np.linalg.inv(self._vectors.T)
-            nvec[ax] = np.ceil(nvec[ax])
-            nvec = np.round(nvec, decimals=0).astype("int")
-
-            for i in range(n):
-                pos1 = self.position(i)
-                for j in range(0, n):
-                    pos2 = self.translate(nvec, self.position(j))
-                    dist = distance(pos1, pos2, self.DIST_DECIMALS)
-                    if dist in self.distances:
-                        i_dist = self.distances.index(dist)
-                        if i_dist < self.n_dist:
-                            neighbours[i][i_dist].add(j)
-                            neighbours[j][i_dist].add(i)
+                nvec = pos @ np.linalg.inv(self._vectors.T)
+                nvec[ax] = np.ceil(nvec[ax])
+                nvec = np.round(nvec, decimals=0).astype("int")
+                for i in range(n):
+                    pos1 = self.position(i)
+                    for j in range(0, n):
+                        pos2 = self.translate(nvec, self.position(j))
+                        dist = distance(pos1, pos2, self.DIST_DECIMALS)
+                        if dist in self.distances:
+                            i_dist = self.distances.index(dist)
+                            if i_dist < self.n_dist:
+                                neighbours[i][i_dist].add(j)
+                                neighbours[j][i_dist].add(i)
         self.data.set_periodic_neighbours(neighbours)
 
     def transform_periodic(self, pos, ax, cell_offset=0.0):
@@ -398,14 +404,15 @@ class Lattice(BravaisLattice):
         sign = -1 if pos[ax] > self.shape[ax] / 2 else +1
         return pos + sign * delta
 
-    def atom_positions_dict(self, indices=None):
+    def atom_positions_dict(self, indices=None, atleast2d=True):
         """ Returns a dictionary containing the positions for each type of the atoms.
 
         Parameters
         ----------
         indices: array_like, optional
             Optional indices to use. If 'None' the stored indices are used.
-
+        atleast2d: bool, optional
+            If 'True', one-dimensional coordinates will be casted to 2D vectors.
         Returns
         -------
         atom_pos: dict
@@ -416,8 +423,9 @@ class Lattice(BravaisLattice):
             n, alpha = idx[:-1], idx[-1]
             atom = self.atoms[alpha]
             pos = self.get_position(n, alpha)
-            if self.dim == 1:
-                pos = [pos, 0.0]
+            if atleast2d and self.dim == 1:
+                pos = np.array([pos, 0])
+
             if atom.name in atom_pos.keys():
                 atom_pos[atom].append(pos)
             else:

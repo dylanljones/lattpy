@@ -459,7 +459,7 @@ class BravaisLattice(VectorBasis):
         atom: Atom
         """
         if pos is None:
-            pos = np.zeros(self._vectors.shape[0])
+            pos = np.zeros(self.dim)
         else:
             pos = np.asarray(pos)
         if any(np.all(pos == x) for x in self.atom_positions):
@@ -551,8 +551,13 @@ class BravaisLattice(VectorBasis):
                 delta = pos1 - pos0
                 yield delta, alpha1, alpha2
 
-    def get_base_atom_dict(self):
+    def get_base_atom_dict(self, atleast2d=True):
         """ Returns a dictionary containing the positions for eatch type of the base atoms.
+
+        Parameters
+        ----------
+        atleast2d: bool, optional
+            If 'True', one-dimensional coordinates will be casted to 2D vectors.
 
         Returns
         -------
@@ -560,6 +565,9 @@ class BravaisLattice(VectorBasis):
         """
         atom_pos = dict()
         for atom, pos in zip(self.atoms, self.atom_positions):
+            if atleast2d and self.dim == 1:
+                pos = np.array([pos, 0])
+
             if atom.name in atom_pos.keys():
                 atom_pos[atom].append(pos)
             else:
@@ -588,7 +596,9 @@ class BravaisLattice(VectorBasis):
 
         # Format plot
         if self.dim == 1:
-            ax.set_ylim(-1, +1)
+            w = self.cell_size[0]
+            ax.set_xlim(-0.1*w, 1.1 * w)
+            ax.set_ylim(-w/2, +w/2)
         elif self.dim == 3:
             ax.margins(margins, margins, margins)
         else:

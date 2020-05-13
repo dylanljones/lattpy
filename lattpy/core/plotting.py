@@ -109,9 +109,14 @@ def draw_indices(ax, positions, offset=0.1):
 
 
 def draw_cell(ax, vectors, color="k", lw=2, outlines=True):
+    dim = len(vectors)
+    if dim == 1:
+        draw_arrows(ax, [vectors[0, 0], 0], color=color, lw=lw)
+        return
+
+
     draw_arrows(ax, vectors, color=color, lw=lw)
     if outlines:
-        dim = len(vectors)
         for v, pos in itertools.permutations(vectors, r=2):
             data = np.asarray([pos, pos + v]).T
             ax.plot(*data, color=color, ls='--', lw=1)

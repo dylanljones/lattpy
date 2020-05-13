@@ -3,12 +3,9 @@
 Created on 05 Apr 2020
 author: Dylan Jones
 """
-from .core import Atom, ConfigurationError
-from .core.vector import *
-from .core import plotting
+from .core import *
 from .bravais import BravaisLattice
 from .lattice import Lattice
-from .disptools import DispersionPath, DynamicMatrix
 
 
 def simple_chain(a=1.0, atom=None, neighbours=1):

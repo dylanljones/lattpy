@@ -8,7 +8,7 @@ import itertools
 import numpy as np
 import matplotlib.pyplot as plt
 from .core.vector import VectorBasis, vrange, distance
-from .core.atom import Atom
+from .core.atoms import Atom
 from .core.errors import ConfigurationError
 from .core.plotting import draw_sites, draw_cell
 
@@ -268,6 +268,39 @@ class BravaisLattice(VectorBasis):
         n = np.atleast_1d(n)
         return r + (self._vectors @ n)  # self.translate(n, r)
 
+    def get_atom(self, alpha):
+        """ Returns the Atom object of the given atom in the unit cell
+
+        Parameters
+        ----------
+        alpha: int
+            Index of the atom in the unit cell.
+
+        Returns
+        -------
+        atom: Atom
+        """
+        return self.atoms[alpha]
+
+    def get_atom_attrib(self, alpha, attrib, default=None):
+        """ Returns an attribute of a specific atom in the unit cell.
+
+        Parameters
+        ----------
+        alpha: int
+            Index of the atom in the unit cell.
+        attrib: str
+            Name of the atom attribute.
+        default: str or int or float or object, optional
+            Default value used if the attribute couln't be found in the Atom dictionary.
+
+        Returns
+        -------
+        attrib: str or int or float or object
+        """
+        atom = self.atoms[alpha]
+        return atom.attrib(attrib, default)
+
     def translate_cell(self, n):
         """ Translates all sites of the unit cell
 
@@ -508,6 +541,15 @@ class BravaisLattice(VectorBasis):
             pos1 = self.get_position(idx[:-1], idx[-1])
             vectors.append(pos1 - pos0)
         return vectors
+
+    def get_neighbour_pairs(self, distidx=0):
+        for alpha1 in range(self.n_base):
+            pos0 = self.get_position(alpha=alpha1)
+            for idx in self.get_neighbours(alpha=alpha1, distidx=distidx):
+                n, alpha2 = idx[:-1], idx[-1]
+                pos1 = self.get_position(n, alpha2)
+                delta = pos1 - pos0
+                yield delta, alpha1, alpha2
 
     def get_base_atom_dict(self):
         """ Returns a dictionary containing the positions for eatch type of the base atoms.

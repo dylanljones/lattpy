@@ -22,6 +22,9 @@ class Atom:
     def __getitem__(self, item):
         return self.kwargs[item]
 
+    def attrib(self, key, default=None):
+        return self.kwargs.get(key, default)
+
     def label(self):
         return self.name
 

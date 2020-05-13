@@ -6,9 +6,10 @@ author: Dylan Jones
 import copy
 import numpy as np
 import matplotlib.pyplot as plt
-from .utils import vrange, distance, ConfigurationError
-from .plotting import draw_cell, draw_sites, draw_lines, draw_indices, set_padding
-from .base import BravaisLattice
+from .core.vector import vrange, distance
+from .core.errors import ConfigurationError
+from .core.plotting import draw_cell, draw_sites, draw_lines, draw_indices, set_padding
+from .bravais import BravaisLattice
 
 
 class LatticeData:
@@ -364,7 +365,7 @@ class Lattice(BravaisLattice):
                 pos1 = self.position(i)
                 for j in range(0, n):
                     pos2 = self.translate(nvec, self.position(j))
-                    dist = np.round(distance(pos1, pos2), decimals=self.DIST_DECIMALS)
+                    dist = distance(pos1, pos2, self.DIST_DECIMALS)
                     if dist in self.distances:
                         i_dist = self.distances.index(dist)
                         if i_dist < self.n_dist:

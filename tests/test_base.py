@@ -5,7 +5,7 @@ author: Dylan Jones
 """
 import numpy as np
 from numpy.testing import assert_array_equal, assert_array_almost_equal
-from lattpy.base import Atom, BravaisLattice
+from lattpy.bravais import BravaisLattice
 
 PI = np.pi
 TWOPI = 2 * np.pi

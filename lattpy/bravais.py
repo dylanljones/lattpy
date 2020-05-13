@@ -7,29 +7,20 @@ import pickle
 import itertools
 import numpy as np
 import matplotlib.pyplot as plt
-from .atom import Atom
-from .utils import vrange, distance, cell_size, cell_volume, ConfigurationError
-from .plotting import draw_sites, draw_cell
+from .core.vector import VectorBasis, vrange, distance
+from .core.atom import Atom
+from .core.errors import ConfigurationError
+from .core.plotting import draw_sites, draw_cell
 
 
-class BravaisLattice:
+class BravaisLattice(VectorBasis):
 
     DIST_DECIMALS = 5
     REC_TOLERANCE = 1e-5
     MIN_DISTS = 3
 
     def __init__(self, vectors):
-        # The vectors need to be transformed, since the vectors
-        # need to be a column of the basis-matrix.
-        vectors = np.atleast_2d(vectors).T
-        dim = len(vectors)
-
-        # Lattice data
-        self._vectors = vectors
-        self._vectors_inv = np.linalg.inv(self._vectors)
-        self.dim = dim
-        self.cell_size = cell_size(vectors)
-        self.cell_volume = cell_volume(vectors)
+        super().__init__(vectors)
         self.origin = np.zeros(self.dim)
 
         # Atom data
@@ -94,20 +85,6 @@ class BravaisLattice:
 
     # =========================================================================
 
-    @property
-    def vectors(self):
-        return self._vectors.T
-
-    def get_vectors(self):
-        """ (N, N) np.ndarray: Basis vectors Bravais Lattice"""
-        return self._vectors.T
-
-    def get_3d_vectors(self):
-        """ (3, 3) np.ndarray: Expanded basis vectors of the Bravais Lattice"""
-        vectors = np.eye(3)
-        vectors[:self.dim, :self.dim] = self._vectors
-        return vectors.T
-
     def is_reciprocal(self, vecs, tol=REC_TOLERANCE):
         r""" Checks if the given vectors are reciprocal to the lattice vectors.
 
@@ -131,7 +108,7 @@ class BravaisLattice:
         """
         vecs = np.atleast_2d(vecs)
         two_pi = 2 * np.pi
-        for a, b in zip(self.get_vectors(), vecs):
+        for a, b in zip(self.vectors, vecs):
             if abs(np.dot(a, b) - two_pi) > tol:
                 return False
         return True
@@ -157,7 +134,7 @@ class BravaisLattice:
 
         # Convert basis vectors of the bravais lattice to 3D, compute
         # reciprocal vectors and convert back to actual dimension.
-        a1, a2, a3 = self.get_3d_vectors()
+        a1, a2, a3 = self.vectors3d
         factor = 2 * np.pi / self.cell_volume
         b1 = np.cross(a2, a3)
         b2 = np.cross(a3, a1)
@@ -167,7 +144,7 @@ class BravaisLattice:
 
         # Fix the sign so that the dot-products are all positive
         # and raise an exception if anything went wrong
-        vecs = self.get_vectors()
+        vecs = self.vectors
         for i in range(self.dim):
             dot = np.dot(vecs[i], rvecs[i])
             # Check if dot product is - 2 pi
@@ -308,7 +285,7 @@ class BravaisLattice:
         for alpha in range(self.n_base):
             yield self.get_position(n, alpha)
 
-    def distance(self, idx0, idx1):
+    def distance(self, idx0, idx1, decimals=DIST_DECIMALS):
         """ Calculate distance between two sites
 
         Parameters
@@ -317,6 +294,8 @@ class BravaisLattice:
             lattice vector (n, alpha) of first site
         idx1: tuple
             lattice index (n, alpha) of second site
+        decimals: int, optional
+            Optional decimals to round distance to.
 
         Returns
         -------
@@ -324,7 +303,7 @@ class BravaisLattice:
         """
         r1 = self.get_position(*idx0)
         r2 = self.get_position(*idx1)
-        return distance(r1, r2)
+        return distance(r1, r2, decimals)
 
     def _neighbour_range(self, n=None, cell_range=1):
         """ Get all neighbouring translation vectors of a given cell position
@@ -410,7 +389,7 @@ class BravaisLattice:
             for alpha in range(self.n_base):
                 r_vecs.append(self.get_position(nvec, alpha))
         pairs = list(itertools.product(r_vecs, self.atom_positions))
-        distances = list(set(np.round([distance(r1, r2) for r1, r2 in pairs], decimals=self.DIST_DECIMALS)))
+        distances = list(set([distance(r1, r2, self.DIST_DECIMALS) for r1, r2 in pairs]))
         distances.sort()
         distances.remove(0.0)
         self.distances = distances[0:n - 1]

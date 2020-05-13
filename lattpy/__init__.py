@@ -3,10 +3,11 @@
 Created on 05 Apr 2020
 author: Dylan Jones
 """
-from .atom import Atom
-from .base import BravaisLattice
+from .core import Atom, ConfigurationError
+from .core.vector import *
+from .core import plotting
+from .bravais import BravaisLattice
 from .lattice import Lattice
-from .utils import *
 from .disptools import DispersionPath, DynamicMatrix
 
 

@@ -5,7 +5,7 @@ author: Dylan Jones
 """
 import numpy as np
 import matplotlib.pyplot as plt
-from .utils import vlinspace, chain
+from .core.vector import vlinspace, chain
 
 
 class DispersionPath:

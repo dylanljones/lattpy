@@ -5,7 +5,6 @@ author: Dylan Jones
 """
 import numpy as np
 from .core.disptools import DispersionPath
-import itertools
 
 
 class DynamicMatrix:

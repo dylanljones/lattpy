@@ -7,9 +7,17 @@ import pickle
 import itertools
 import numpy as np
 import matplotlib.pyplot as plt
-from .core import Atom, ConfigurationError, LatticeCache
+from .core import Atom, LatticeCache
 from .core.vector import VectorBasis, vrange, distance
 from .core.plotting import draw_cell, draw_sites, draw_lines, draw_indices, set_padding
+
+
+class ConfigurationError(Exception):
+
+    def __init__(self, msg='', hint=''):
+        if hint:
+            msg += f'({hint})'
+        super().__init__(msg)
 
 
 class Lattice(VectorBasis):

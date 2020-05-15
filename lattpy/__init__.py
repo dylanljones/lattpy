@@ -4,7 +4,7 @@ Created on 05 Apr 2020
 author: Dylan Jones
 """
 from .core import *
-from .bravais import Lattice
+from .lattice import Lattice, ConfigurationError
 
 
 # =========================================================================

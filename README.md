@@ -61,10 +61,6 @@ After building the lattice periodic boundary conditions can be set along one or 
 ````python
 latt.set_periodic(axis=0)
 ````
-or
-````python
-latt.set_periodic(axis=[0, 1])
-````
 
 To view the buildt lattice the `plot`-method can be used:
 ````python

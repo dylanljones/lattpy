@@ -1,17 +1,10 @@
 # coding: utf-8
 """
-Created on 05 Apr 2020
+Created on 13 May 2020
 author: Dylan Jones
 """
 import numpy as np
-
-
-class ConfigurationError(Exception):
-
-    def __init__(self, msg='', hint=''):
-        if hint:
-            msg += f'({hint})'
-        super().__init__(msg)
+import math
 
 
 def vrange(axis_ranges):
@@ -57,7 +50,7 @@ def vlinspace(start, stop, n=1000):
     return np.asarray(axes).T
 
 
-def distance(r1, r2):
+def distance(r1, r2, decimals=None):
     """ Calculates the euclidian distance bewteen two points.
 
     Parameters
@@ -66,12 +59,17 @@ def distance(r1, r2):
         First input point.
     r2: (N) ndarray
         Second input point of matching size.
+    decimals: int, optional
+        Optional decimals to round distance to.
 
     Returns
     -------
     distance: float
     """
-    return np.sqrt(np.sum((r1 - r2)**2))
+    dist = math.sqrt(np.sum(np.square(r1 - r2)))
+    if decimals is not None:
+        dist = round(dist, decimals)
+    return dist
 
 
 def cell_size(vectors):
@@ -144,3 +142,67 @@ def chain(items, cycle=False):
     if cycle:
         result.append([items[-1], items[0]])
     return result
+
+
+class VectorBasis:
+
+    def __init__(self, vectors):
+        # Transpose vectors so they are a column of the basis matrix
+        vectors = np.atleast_2d(vectors).T
+
+        self.dim = len(vectors)
+        self._vectors = vectors
+        self._vectors_inv = np.linalg.inv(self._vectors)
+        self.cell_size = cell_size(vectors)
+        self.cell_volume = cell_volume(vectors)
+
+    @property
+    def vectors(self):
+        """ (N, N) np.ndarray: Array with basis vectors as rows"""
+        return self._vectors.T
+
+    @property
+    def vectors3d(self):
+        """ (3, 3) np.ndarray: Basis vectors expanded to three dimensions """
+        vectors = np.eye(3)
+        vectors[:self.dim, :self.dim] = self._vectors
+        return vectors.T
+
+    def transform(self, world_coords):
+        """ Transform the world-coordinates (x, y, ...) into the basis coordinates (n, m, ...)
+
+        Parameters
+        ----------
+        world_coords: (N) array_like
+
+        Returns
+        -------
+        basis_coords: (N) np.ndarray
+        """
+        return self._vectors_inv @ np.asarray(world_coords)
+
+    def itransform(self, basis_coords):
+        """ Transform the basis-coordinates (n, m, ...) into the world coordinates (x, y, ...)
+
+        Parameters
+        ----------
+        basis_coords: (N) array_like
+
+        Returns
+        -------
+        world_coords: (N) np.ndarray
+        """
+        return self._vectors @ np.asarray(basis_coords)
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.dim}D)"
+
+    def __str__(self):
+        sep = "  "
+        lines = [self.__repr__()]
+        for i in range(self.dim):
+            parts = list()
+            for j in range(self.dim):
+                parts.append(f"[{self.vectors[i, j]:.1f}]")
+            lines.append(sep.join(parts))
+        return "\n".join(lines)

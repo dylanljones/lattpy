@@ -3,14 +3,26 @@
 Created on 05 Apr 2020
 author: Dylan Jones
 """
-from .base import Atom, BravaisLattice
-from .lattice import Lattice
-from .utils import *
+from .core import *
+from .lattice import Lattice, ConfigurationError
+
+
+# =========================================================================
+#                             1D Prefabs
+# =========================================================================
 
 
 def simple_chain(a=1.0, atom=None, neighbours=1):
     latt = Lattice.chain(a)
     latt.add_atom(atom=atom)
+    latt.calculate_distances(neighbours)
+    return latt
+
+
+def alternating_chain(a=1.0, atom1=None, atom2=None, x0=0.0, neighbours=1):
+    latt = Lattice.chain(a)
+    latt.add_atom(pos=(0.0 + x0) * a, atom=atom1)
+    latt.add_atom(pos=(0.5 + x0) * a, atom=atom2)
     latt.calculate_distances(neighbours)
     return latt
 
@@ -59,3 +71,10 @@ def simple_cubic(a=1.0, atom=None, neighbours=1):
     latt.calculate_distances(neighbours)
     return latt
 
+
+def nacl_structure(a=1.0, atom1="Na", atom2="Cl", neighbours=1):
+    latt = Lattice.fcc(a)
+    latt.add_atom(pos=[0, 0, 0], atom=atom1)
+    latt.add_atom(pos=[a/2, a/2, a/2], atom=atom2)
+    latt.calculate_distances(neighbours)
+    return latt

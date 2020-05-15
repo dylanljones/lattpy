@@ -1,4 +1,4 @@
-# lattpy 0.1
+# lattpy 0.2
 
 `lattpy` is a python package for modeling bravais lattices and constructing (finite) lattice structures.
 
@@ -48,31 +48,18 @@ latt = simple_square(a=1.0, neighbours=1)  # Initializes a square lattice with o
 So far only the lattice structure has been configured. To actually construct a (finite) model of the lattice
 the model has to be buildt:
 ````python
-from lattpy import simple_square
-
-latt = simple_square(a=1.0)  # Initializes a square lattice with one atom in the unit-cell
 latt.build(shape=(5, 2))
 ````
 This will compute the indices and neighbours of all sites in the given shape and store the data.
 By default the lattice is buildt in real-space, meaning the shape parameter passed to the `build`-method is
 interpreted as a rectangle in real space. Alternatively the lattice can be buildt in the unit-vector-space:
 ````python
-from lattpy import simple_square
-
-latt = simple_square(a=1.0)  # Initializes a square lattice with one atom in the unit-cell
 latt.build(shape=(5, 2), inbound=False)
 ````
 
 After building the lattice periodic boundary conditions can be set along one or multiple axes:
 ````python
-from lattpy import simple_square
-
-latt = simple_square(a=1.0)  # Initializes a square lattice with one atom in the unit-cell
-latt.build(shape=(5, 2), inbound=False)
-
 latt.set_periodic(axis=0)
-# or
-latt.set_periodic(axis=[0, 1])
 ````
 
 To view the buildt lattice the `plot`-method can be used:
@@ -81,7 +68,7 @@ from lattpy import simple_square
 
 latt = simple_square(a=1.0, neighbours=1)
 latt.build((5, 3))
-latt.plot(legend=False)
+latt.plot()
 ````
 
 <img src="example.png" width="400">
@@ -111,17 +98,11 @@ neighbour_vectors = latt.get_neighbour_vectors(alpha=0, distidx=0)
 
 Also, the reciprocal lattice vectors can be computed
 ````python
-from lattpy import simple_square
-
-latt = simple_square() 
 rvecs = latt.reciprocal_vectors()
 ````
 
 or used to construct the reciprocal lattice:
 ````python
-from lattpy import simple_square
-
-latt = simple_square() 
 rlatt = latt.reciprocal_lattice()
 ````
 

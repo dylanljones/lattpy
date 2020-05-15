@@ -53,20 +53,6 @@ class DynamicMatrix:
 
     # =========================================================================
 
-    def construct_phi(self, delta, alpha1, alpha2, const=1.0, mass1=1.0, mass2=1.0):
-        v_delta = np.atleast_2d(delta)
-        values = np.dot(v_delta.T, v_delta) / np.sum(np.square(v_delta))
-        values *= const / np.sqrt(mass1 * mass2)
-
-        phi0 = np.zeros((self.size, self.size))
-        phi = np.zeros_like(phi0)
-        for ax1, ax2 in itertools.product(range(self.dim), repeat=2):
-            i, j = self.index(alpha1, ax1), self.index(alpha2, ax2)
-            phi[i, j] = -values[ax1, ax2]
-            if ax1 == ax2:
-                phi0[i, j] = values[ax1, ax2]
-        return phi, phi0
-
     def dispersion(self, q):
         q = np.atleast_1d(q) if self.dim == 1 else np.atleast_2d(q)
         omegas = np.zeros((len(q), self.dim * self.n_base))

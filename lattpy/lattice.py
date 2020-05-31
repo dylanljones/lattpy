@@ -373,7 +373,7 @@ class Lattice(VectorBasis):
         n_vecs = vrange(ranges)
         for n in n_vecs:
             for alpha in range(self.n_base):
-                yield (n, alpha)
+                yield n, alpha
 
     def calculate_neighbours(self, n=None, alpha=0, distidx=0, array=False):
         """ Find all neighbours of given site and return the lattice indices.
@@ -906,6 +906,10 @@ class Lattice(VectorBasis):
         The lattice has to be built before applying the periodic boundarie conditions.
         Also the lattice has to be at least three atoms big in the specified directions.
 
+        ToDo
+        -----
+        Improve performance!
+
         Parameters
         ----------
         axis: int or (N) array_like, optional
@@ -918,7 +922,7 @@ class Lattice(VectorBasis):
             return
         axis = np.atleast_1d(axis)
         self.periodic_axes = axis
-        n = self.n_sites
+        n = int(self.n_sites)
         neighbours = [[set() for _ in range(self.n_dist)] for _ in range(self.n_sites)]
         if self.dim == 1:
             for distidx in range(self.n_dist):
@@ -948,7 +952,7 @@ class Lattice(VectorBasis):
         self.data.set_periodic_neighbours(neighbours)
 
     def transform_periodic(self, pos, ax, cell_offset=0.0):
-        """ Transforms the given position along the given axis by the shape of the lattice.
+        """ Transforms the position along the given axis by the shape of the lattice.
 
         Parameters
         ----------

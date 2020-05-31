@@ -1,9 +1,9 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='lattpy',
     version='0.2.3',
-    packages=['lattpy'],
+    packages=find_packages(),
     url='',
     license='MIT',
     author='Dylan Jones',

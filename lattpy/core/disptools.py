@@ -147,6 +147,7 @@ class DispersionPath:
         Returns
         -------
         ticks: (N) np.ndarray
+        labels: (N) list
         """
         return np.arange(self.num_points) * self.n_sect, self.names
 

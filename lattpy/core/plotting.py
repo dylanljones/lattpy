@@ -114,7 +114,6 @@ def draw_cell(ax, vectors, color="k", lw=2, outlines=True):
         draw_arrows(ax, [vectors[0, 0], 0], color=color, lw=lw)
         return
 
-
     draw_arrows(ax, vectors, color=color, lw=lw)
     if outlines:
         for v, pos in itertools.permutations(vectors, r=2):

@@ -39,7 +39,7 @@ class Lattice(VectorBasis):
         self._base_neighbors = list()
 
         # Lattice Cache
-        self.data = LatticeCache()
+        self.data = LatticeCache(self.dim)
         self.shape = None
         self.periodic_axes = list()
 
@@ -590,6 +590,8 @@ class Lattice(VectorBasis):
         return atom_pos
 
     # =========================================================================
+    # Cached lattice
+    # =========================================================================
 
     @property
     def n_sites(self):
@@ -622,7 +624,8 @@ class Lattice(VectorBasis):
         -------
         pos: (N) np.ndarray
         """
-        return self.get_position(*self.data.get_index(i))
+        return self.data.positions[i]
+        # return self.get_position(*self.data.get_index(i))
 
     def neighbours(self, i, distidx=0, unique=False):
         """ Returns the neighours of a given site in the cached lattice data.
@@ -733,7 +736,7 @@ class Lattice(VectorBasis):
         return indices
 
     def _construct(self, new_indices, new_neighbours=None, site_indices=None, window=None):
-        """ Constructs the index array and computes the neighbour indices.
+        """ Constructs the index- and position-array and computes the neighbour indices.
 
         Parameters
         ----------
@@ -744,8 +747,8 @@ class Lattice(VectorBasis):
             Optional array of new neighbours to add. by default a new array is created.
             This is used for adding new connections to an extisting lattice block.
         site_indices: array_like, optional
-            Optional indices to calculate neighbours. This can be used for computing only
-            neighbours in the region of a connection.
+            Optional indices to calculate neighbours. This can be used for only computing neighbours
+            in a certain region.
         window: int, optional
             Window for looking up neighbours. This can speed up the computation significally.
             Generally at least a few layers of the lattice should be searched. By default the whole
@@ -753,14 +756,18 @@ class Lattice(VectorBasis):
 
         Returns
         -------
-        indices: array_like
-        neighbours: array_like
+        indices: (N) np.ndarray
+        positions: (N) np.ndarray
+        neighbours: (N) array_like
         """
         num_sites = len(new_indices)
         n_dist = self.n_dist
         if not n_dist:
             hint = "Use the 'neighbours' keyword of 'add_atom' or call 'calculate_distances' after adding the atoms!"
             raise ConfigurationError("Base neighbours not configured.", hint)
+
+        # Construct indices and positions
+        # -------------------------------
 
         # Initialize new indices and the empty neighbour array
         new_indices = np.array(new_indices)
@@ -775,12 +782,19 @@ class Lattice(VectorBasis):
             all_indices = new_indices
             all_neighbours = new_neighbours
 
-        # Find neighbours of each site in the "new_indices" list and store the neighbours
+        # Compute position-vectors of the indices
+        all_positions = np.zeros((len(all_indices), self.dim))
+        for i, idx in enumerate(all_indices):
+            all_positions[i] = self.get_position(idx[:-1], idx[-1])
+
+        # Find neighbours
+        # ---------------
         if window is None:
             window = len(all_indices)
         offset = self.data.n
         site_indices = site_indices if site_indices is not None else range(num_sites)
 
+        # Find neighbours of each site in the "new_indices" list and store the neighbours
         for i in site_indices:
             site_idx = new_indices[i]
             n, alpha = np.array(site_idx[:-1]), site_idx[-1]
@@ -806,22 +820,23 @@ class Lattice(VectorBasis):
                         all_neighbours[j_site][i_dist].add(i_site)
             # all_neighbours = self._set_neighbours(site, idx, all_indices, all_neighbours, window)
 
-        return all_indices, all_neighbours
+        return all_indices, all_positions, all_neighbours
 
-    def set_data(self, indices, neighbours):
-        """ Sets cached data and recomputes real-space shape of lattice
+    def set_data(self, indices, positions, neighbours):
+        """ Sets cached data and re-computes real-space shape of lattice
 
         Parameters
         ----------
         indices: array_like
             Lattice indices that will be saved.
+        positions: array_like
+            Corresponding positions of the lattice indices.
         neighbours: array_like
-            Lattice site neighbours that will be saved.
+            Neighbour indices of the lattice indices.
         """
         # Set data and recompute real-space shape of lattice
-        self.data.set(indices, neighbours)
-        points = [self.position(i) for i in range(self.data.n)]
-        limits = np.array([np.min(points, axis=0), np.max(points, axis=0)])
+        self.data.set(indices, positions, neighbours)
+        limits = self.data.get_limits()
         self.shape = limits[1] - limits[0]
 
     def build(self, shape, inbound=True, pos=None):
@@ -854,8 +869,8 @@ class Lattice(VectorBasis):
             window = int(len(indices) * 0.5)
         else:
             window = None
-        indices, neighbours = self._construct(indices, window=window)
-        self.set_data(indices, neighbours)
+        indices, positions, neighbours = self._construct(indices, window=window)
+        self.set_data(indices, positions, neighbours)
 
     def build_centered(self, shape):
         """ Builds a centered lattice in the given (real world) coordinates.
@@ -880,16 +895,11 @@ class Lattice(VectorBasis):
             for dist_neighbours in site_neighbours:
                 shifted.append(set([x + self.n_sites for x in dist_neighbours]))
             new_neighbours.append(shifted)
-
-        # Find neighbours of connecting section
+        # Find neighbours of connecting sections
         window = range(0, int(n_new / 2))
-        indices, neighbours = self._construct(new_indices, new_neighbours, site_indices=window)
-
-        # Set data and recompute real-space shape of lattice
-        self.data.set(indices, neighbours)
-        points = [self.position(i) for i in range(self.data.n)]
-        limits = np.array([np.min(points, axis=0), np.max(points, axis=0)])
-        self.shape = limits[1] - limits[0]
+        indices, positions, neighbours = self._construct(new_indices, new_neighbours, site_indices=window)
+        # Set data
+        self.set_data(indices, positions, neighbours)
 
     def __add__(self, other):
         new = self.copy()
@@ -905,10 +915,6 @@ class Lattice(VectorBasis):
         -----
         The lattice has to be built before applying the periodic boundarie conditions.
         Also the lattice has to be at least three atoms big in the specified directions.
-
-        ToDo
-        -----
-        Improve performance!
 
         Parameters
         ----------
@@ -932,16 +938,22 @@ class Lattice(VectorBasis):
                 neighbours[j][distidx].add(i)
         else:
             for ax in axis:
-                offset = np.zeros(self.dim, dtype="float")
-                offset[ax] = self.shape[ax] + 0.1 * self.cell_size[ax]
-                pos = offset
-
-                nvec = pos @ np.linalg.inv(self._vectors.T)
+                # Get periodic translation vector
+                vec = np.zeros(self.dim, dtype="float")
+                vec[ax] = self.shape[ax] + 0.1 * self.cell_size[ax]
+                nvec = vec @ np.linalg.inv(self._vectors.T)
                 nvec[ax] = np.ceil(nvec[ax])
                 nvec = np.round(nvec, decimals=0).astype("int")
-                for i in range(n):
+
+                # Get window of outer sites along axis
+                offset = 2 * self.n_dist * self.cell_size[ax]
+                window = self.data.find_outer_sites(ax, offset)
+                # window = np.arange(n)
+
+                # Check if periodic neighbours
+                for i in window:
                     pos1 = self.position(i)
-                    for j in range(0, n):
+                    for j in window:
                         pos2 = self.translate(nvec, self.position(j))
                         dist = distance(pos1, pos2, self.DIST_DECIMALS)
                         if dist in self.distances:

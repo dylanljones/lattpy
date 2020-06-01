@@ -9,8 +9,10 @@ import copy
 
 class LatticeCache:
 
-    def __init__(self):
+    def __init__(self, dim):
+        self.dim = dim
         self.indices = None
+        self.positions = None
         self.neighbours = None
         self.periodic_neighbours = None
 
@@ -19,11 +21,12 @@ class LatticeCache:
         return len(self.indices) if self.indices is not None else 0
 
     def copy(self):
-        data = LatticeCache()
+        data = LatticeCache(self.dim)
         if self.indices is not None:
             indices = self.indices.copy()
+            positions = self.positions.copy()
             neighbours = copy.deepcopy(self.neighbours)
-            data.set(indices, neighbours)
+            data.set(indices, positions, neighbours)
         if self.periodic_neighbours is not None:
             data.set_periodic_neighbours(copy.deepcopy(self.periodic_neighbours))
         return data
@@ -33,14 +36,9 @@ class LatticeCache:
         self.neighbours = None
         self.periodic_neighbours = None
 
-    def set(self, indices, neighbours):
+    def set(self, indices, positions, neighbours):
         self.indices = np.asarray(indices)
-        self.neighbours = neighbours
-
-    def set_indices(self, indices):
-        self.indices = np.asarray(indices)
-
-    def set_neighbours(self, neighbours):
+        self.positions = np.asarray(positions)
         self.neighbours = neighbours
 
     def set_periodic_neighbours(self, neighbours):
@@ -61,6 +59,38 @@ class LatticeCache:
         if self.periodic_neighbours is not None:
             neighbours += list(self.periodic_neighbours[i][dist])
         return neighbours
+
+    def get_limits(self):
+        return np.array([np.min(self.positions, axis=0), np.max(self.positions, axis=0)])
+
+    def site_mask(self, mins=(), maxs=(), invert=False):
+        if len(mins) != self.dim:
+            mins = list(mins) + [None] * (self.dim - len(mins))
+        if len(maxs) != self.dim:
+            maxs = list(maxs) + [None] * (self.dim - len(maxs))
+        mins = [(x if x is not None else -np.inf) for x in mins]
+        maxs = [(x if x is not None else +np.inf) for x in maxs]
+        limits = np.array([mins, maxs])
+        mask = 1
+        for ax in range(self.dim):
+            ax_data = self.positions[:, ax]
+            mask &= (limits[0, ax] <= ax_data) & (ax_data <= limits[1, ax])
+
+        return 1 - mask if invert else mask
+
+    def find_sites(self, mins=(), maxs=(), invert=False):
+        mask = self.site_mask(mins, maxs, invert)
+        return np.where(mask)[0]
+
+    def find_outer_sites(self, ax, offset):
+        limits = self.get_limits()
+
+        mins = [None for _ in range(self.dim)]
+        maxs = [None for _ in range(self.dim)]
+        mins[ax] = limits[0, ax] + offset
+        maxs[ax] = limits[1, ax] - offset
+        mask = self.site_mask(mins, maxs, invert=True)
+        return np.where(mask)[0]
 
     def __bool__(self):
         return self.indices is not None

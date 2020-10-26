@@ -107,7 +107,7 @@ rlatt = latt.reciprocal_lattice()
 ````
 
 
-Cached lattice data
+Finite lattice data
 -------------------
 
 If the lattice has been buildt the needed data is cached. The lattice sites of the structure then can be 

@@ -1,11 +1,16 @@
 # coding: utf-8
-"""
-Created on 21 Apr 2020
-author: Dylan Jones
-"""
+#
+# This code is part of lattpy.
+#
+# Copyright (c) 2020, Dylan Jones
+#
+# This code is licensed under the MIT License. The copyright notice in the
+# LICENSE file in the root directory and this permission notice shall
+# be included in all copies or substantial portions of the Software.
+
 import numpy as np
 from numpy.testing import assert_array_equal
-from lattpy.core.vector import vrange, vlinspace, distance, cell_size, cell_volume, chain
+from lattpy.vector import vrange, vlinspace, distance, cell_size, cell_volume, chain
 
 
 def test_vrange():

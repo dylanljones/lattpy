@@ -1,14 +1,18 @@
 # coding: utf-8
-"""
-Created on 12 Apr 2020
-author: Dylan Jones
-"""
+#
+# This code is part of lattpy.
+#
+# Copyright (c) 2020, Dylan Jones
+#
+# This code is licensed under the MIT License. The copyright notice in the
+# LICENSE file in the root directory and this permission notice shall
+# be included in all copies or substantial portions of the Software.
+
 import itertools
 import numpy as np
-import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
 from mpl_toolkits.mplot3d.art3d import Line3DCollection
-from mpl_toolkits.axes_grid1 import make_axes_locatable
+
 # Golden ratio as standard ratio for plot-figures
 GOLDEN_RATIO = (np.sqrt(5) - 1.0) / 2.0
 

@@ -1,8 +1,13 @@
 # coding: utf-8
-"""
-Created on 13 May 2020
-author: Dylan Jones
-"""
+#
+# This code is part of lattpy.
+#
+# Copyright (c) 2020, Dylan Jones
+#
+# This code is licensed under the MIT License. The copyright notice in the
+# LICENSE file in the root directory and this permission notice shall
+# be included in all copies or substantial portions of the Software.
+
 import numpy as np
 import lattpy as lp
 from numpy.testing import assert_array_equal, assert_array_almost_equal
@@ -266,7 +271,7 @@ def test_simple_chain():
     latt.build(3, inbound=True)
 
     # Check correct building
-    assert latt.n_sites == 4
+    assert latt.num_sites == 4
 
     expected = np.atleast_2d([0.0, 1.0, 2.0, 3.0]).T
     actual = latt.all_positions()
@@ -305,7 +310,7 @@ def test_simple_square():
     latt.build((2, 2), inbound=True)
 
     # Check correct building
-    assert latt.n_sites == 9
+    assert latt.num_sites == 9
 
     # Check nearest neighbours
     expected = [1, 3, 5, 7]
@@ -323,7 +328,7 @@ def test_simple_square():
     assert_array_equal(expected, actual)
 
     latt.set_periodic(1)
-    expected = [1, 3, 2]
+    expected = [1, 2, 3]
     actual = latt.nearest_neighbours(0)
     assert_array_equal(expected, actual)
 
@@ -331,7 +336,7 @@ def test_simple_square():
     latt = lp.simple_square(a=1, neighbours=2)
     latt.build((2, 2), inbound=True)
 
-    expected = [0, 8, 2, 6]
+    expected = [0, 2, 6, 8]
     actual = latt.neighbours(4, distidx=1)
     assert_array_equal(expected, actual)
 
@@ -341,7 +346,7 @@ def test_simple_cubic():
     latt.build((2, 2, 2), inbound=True)
 
     # Check correct building
-    assert latt.n_sites == 27
+    assert latt.num_sites == 27
 
     # Check nearest neighbours
     expected = [4, 10, 12, 14, 16, 22]
@@ -359,17 +364,17 @@ def test_simple_cubic():
     assert_array_equal(expected, actual)
 
     latt.set_periodic(1)
-    expected = [1, 3, 9, 2]
+    expected = [1, 2, 3, 9]
     actual = latt.nearest_neighbours(0)
     assert_array_equal(expected, actual)
 
     latt.set_periodic(2)
-    expected = [1, 3, 9, 6]
+    expected = [1, 3, 6, 9]
     actual = latt.nearest_neighbours(0)
     assert_array_equal(expected, actual)
 
     latt.set_periodic([0, 1])
-    expected = [1, 3, 9, 18, 2]
+    expected = [1, 2, 3, 9, 18]
     actual = latt.nearest_neighbours(0)
     assert_array_equal(expected, actual)
 

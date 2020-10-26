@@ -145,7 +145,7 @@ from lattpy import simple_chain
 # Initializes a 1D lattice chain with a length of 5 atoms.
 latt = simple_chain(a=1.0)
 latt.build(shape=5, inbound=False)
-n = latt.n_sites
+n = latt.num_sites
 
 # Construct the non-interacting (kinetic) Hamiltonian-matrix
 eps, t = 0., 1.

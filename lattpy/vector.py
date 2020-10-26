@@ -1,13 +1,19 @@
 # coding: utf-8
-"""
-Created on 13 May 2020
-author: Dylan Jones
-"""
-import numpy as np
+#
+# This code is part of lattpy.
+#
+# Copyright (c) 2020, Dylan Jones
+#
+# This code is licensed under the MIT License. The copyright notice in the
+# LICENSE file in the root directory and this permission notice shall
+# be included in all copies or substantial portions of the Software.
+
 import math
+import numpy as np
+from typing import Iterable, List, Sequence, Optional, Union
 
 
-def vrange(axis_ranges):
+def vrange(axis_ranges: Iterable) -> List:
     """ Return evenly spaced vectors within a given interval.
 
     Parameters
@@ -17,7 +23,7 @@ def vrange(axis_ranges):
 
     Returns
     -------
-    vectors: np.ndarray
+    vectors: list
     """
     axis = np.meshgrid(*axis_ranges)
     grid = np.asarray([np.asarray(a).flatten("F") for a in axis]).T
@@ -26,14 +32,16 @@ def vrange(axis_ranges):
     return n_vecs
 
 
-def vlinspace(start, stop, n=1000):
+def vlinspace(start: Union[float, Sequence[float]],
+              stop: Union[float, Sequence[float]],
+              n: Optional[int] = 1000) -> np.ndarray:
     """ Vector linspace
 
     Parameters
     ----------
-    start: array_like
+    start: array_like or float
         d-dimensional start-point
-    stop: array_like
+    stop: array_like or float
         d-dimensional stop-point
     n: int, optional
         number of points, default=1000
@@ -50,7 +58,7 @@ def vlinspace(start, stop, n=1000):
     return np.asarray(axes).T
 
 
-def distance(r1, r2, decimals=None):
+def distance(r1: np.ndarray, r2: np.ndarray, decimals: Optional[int] = None) -> float:
     """ Calculates the euclidian distance bewteen two points.
 
     Parameters
@@ -72,7 +80,7 @@ def distance(r1, r2, decimals=None):
     return dist
 
 
-def cell_size(vectors):
+def cell_size(vectors: np.ndarray) -> np.ndarray:
     """ Computes the shape of the box spawned by the given vectors.
 
     Parameters
@@ -89,7 +97,7 @@ def cell_size(vectors):
     return max_values - min_values
 
 
-def cell_volume(vectors):
+def cell_volume(vectors: np.ndarray) -> float:
     r""" Computes the volume of the unit cell defined by the primitive vectors.
 
     The volume of the unit-cell in two and three dimensions is defined by
@@ -113,7 +121,7 @@ def cell_volume(vectors):
     return abs(v)
 
 
-def chain(items, cycle=False):
+def chain(items: Sequence, cycle: bool = False) -> List:
     """ Create chain between items
 
     Parameters
@@ -146,29 +154,29 @@ def chain(items, cycle=False):
 
 class VectorBasis:
 
-    def __init__(self, vectors):
+    def __init__(self, vectors: Union[int, float, Sequence[Sequence[float]]]):
         # Transpose vectors so they are a column of the basis matrix
         vectors = np.atleast_2d(vectors).T
 
-        self.dim = len(vectors)
-        self._vectors = vectors
-        self._vectors_inv = np.linalg.inv(self._vectors)
-        self.cell_size = cell_size(vectors)
-        self.cell_volume = cell_volume(vectors)
+        self.dim: int = len(vectors)
+        self._vectors: np.ndarray = vectors
+        self._vectors_inv: np.ndarray = np.linalg.inv(self._vectors)
+        self.cell_size: np.ndarray = cell_size(vectors)
+        self.cell_volume: float = cell_volume(vectors)
 
     @property
-    def vectors(self):
+    def vectors(self) -> np.ndarray:
         """ (N, N) np.ndarray: Array with basis vectors as rows"""
         return self._vectors.T
 
     @property
-    def vectors3d(self):
+    def vectors3d(self) -> np.ndarray:
         """ (3, 3) np.ndarray: Basis vectors expanded to three dimensions """
         vectors = np.eye(3)
         vectors[:self.dim, :self.dim] = self._vectors
         return vectors.T
 
-    def transform(self, world_coords):
+    def transform(self, world_coords) -> np.ndarray:
         """ Transform the world-coordinates (x, y, ...) into the basis coordinates (n, m, ...)
 
         Parameters
@@ -181,7 +189,7 @@ class VectorBasis:
         """
         return self._vectors_inv @ np.asarray(world_coords)
 
-    def itransform(self, basis_coords):
+    def itransform(self, basis_coords: Sequence) -> np.ndarray:
         """ Transform the basis-coordinates (n, m, ...) into the world coordinates (x, y, ...)
 
         Parameters
@@ -194,10 +202,10 @@ class VectorBasis:
         """
         return self._vectors @ np.asarray(basis_coords)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.dim}D)"
 
-    def __str__(self):
+    def __str__(self) -> str:
         sep = "  "
         lines = [self.__repr__()]
         for i in range(self.dim):

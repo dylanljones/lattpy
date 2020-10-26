@@ -1,10 +1,30 @@
 # coding: utf-8
-"""
-Created on 05 Apr 2020
-author: Dylan Jones
-"""
-from .core import *
-from .lattice import Lattice, ConfigurationError
+#
+# This code is part of lattpy.
+#
+# Copyright (c) 2020, Dylan Jones
+#
+# This code is licensed under the MIT License. The copyright notice in the
+# LICENSE file in the root directory and this permission notice shall
+# be included in all copies or substantial portions of the Software.
+
+from .atoms import (
+    Atom
+)
+
+from .data import (
+    NeighbourMap,
+    LatticeData
+)
+
+from lattpy.disptools import (
+    DispersionPath
+)
+
+from .lattice import (
+    Lattice,
+    ConfigurationError
+)
 
 
 # =========================================================================

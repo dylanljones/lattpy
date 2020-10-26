@@ -1,5 +1,7 @@
 # lattpy 0.2
 
+NOTE: This project is still under development!
+
 `lattpy` is a python package for modeling bravais lattices and constructing (finite) lattice structures.
 
 Installation
@@ -107,7 +109,7 @@ rlatt = latt.reciprocal_lattice()
 ````
 
 
-Cached lattice data
+Finite lattice data
 -------------------
 
 If the lattice has been buildt the needed data is cached. The lattice sites of the structure then can be 
@@ -145,7 +147,7 @@ from lattpy import simple_chain
 # Initializes a 1D lattice chain with a length of 5 atoms.
 latt = simple_chain(a=1.0)
 latt.build(shape=5, inbound=False)
-n = latt.n_sites
+n = latt.num_sites
 
 # Construct the non-interacting (kinetic) Hamiltonian-matrix
 eps, t = 0., 1.

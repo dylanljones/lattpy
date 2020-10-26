@@ -1,11 +1,16 @@
 # coding: utf-8
-"""
-Created on 10 May 2020
-author: Dylan Jones
-"""
+#
+# This code is part of lattpy.
+#
+# Copyright (c) 2020, Dylan Jones
+#
+# This code is licensed under the MIT License. The copyright notice in the
+# LICENSE file in the root directory and this permission notice shall
+# be included in all copies or substantial portions of the Software.
+
 import numpy as np
 import matplotlib.pyplot as plt
-from lattpy.core.vector import vlinspace, chain
+from .vector import vlinspace, chain
 
 
 class DispersionPath:
@@ -147,6 +152,7 @@ class DispersionPath:
         Returns
         -------
         ticks: (N) np.ndarray
+        labels: (N) list
         """
         return np.arange(self.num_points) * self.n_sect, self.names
 

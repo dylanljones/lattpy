@@ -10,7 +10,7 @@
 
 import itertools
 import numpy as np
-from typing import Union, Optional, Tuple, List, Sequence, Iterator, Iterable, Set
+from typing import Union, Optional, Tuple, List, Sequence, Iterable, Set
 
 
 class NeighbourMap:

@@ -10,15 +10,10 @@
 
 import math
 import numpy as np
-from typing import Iterable, List, Sequence, Optional, Union, Tuple
+from typing import Iterable, List, Sequence, Optional, Union
 import logging
 
 logging.captureWarnings(True)
-
-
-Nvec = Union[int, Sequence[int]]        # Type of lattice index
-Rvec = Union[float, Sequence[float]]    # Type of lattice vector
-IndexTuple = Tuple[Sequence[int], int]  # Type of tuple of lattice index and atom index
 
 
 class LatticeError(Exception):
@@ -27,22 +22,50 @@ class LatticeError(Exception):
 
 class ConfigurationError(LatticeError):
 
-    def __init__(self, msg='', hint=''):
+    def __init__(self, msg="", hint=""):
+        super().__init__(msg, hint)
+
+    @property
+    def msg(self):
+        return self.args[0]
+
+    @property
+    def hint(self):
+        return self.args[1]
+
+    def __str__(self):
+        msg, hint = self.args
         if hint:
-            msg += f'({hint})'
-        super().__init__(msg)
+            msg += f" ({hint})"
+        return msg
 
 
-class NoAtomError(LatticeError):
+class SiteOccupiedError(ConfigurationError):
+
+    def __init__(self, atom, pos):
+        super().__init__(f"Can't add {atom} to lattice, position {pos} already occupied!")
+
+
+class NoAtomsError(ConfigurationError):
 
     def __init__(self):
-        super().__init__("Lattice doesn't contain any atoms!")
+        super().__init__("lattice doesn't contain any atoms", "use 'add_atom' to add an 'Atom'-object")
 
 
-class NotBuildtError(LatticeError):
+class NoBaseNeighboursError(ConfigurationError):
 
     def __init__(self):
-        super().__init__("Lattice has no finite size! (Use the 'build'-method to construct a finite lattice)")
+        msg = "base neighbours not configured"
+        hint = "call 'calculate_distances' after adding atoms or use the 'neighbours' keyword of 'add_atom'"
+        super().__init__(msg, hint)
+
+
+class NotBuiltError(ConfigurationError):
+
+    def __init__(self):
+        msg = "lattice has not been built"
+        hint = "use the 'build' method to construct a finite size lattice model"
+        super().__init__(msg, hint)
 
 
 def vrange(axis_ranges: Iterable) -> List:

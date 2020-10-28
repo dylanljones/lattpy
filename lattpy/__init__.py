@@ -25,15 +25,8 @@ from .data import (
     LatticeData
 )
 
-from .disptools import (
-    DispersionPath
-)
-
-from .lattice import (
-    Lattice,
-    ConfigurationError
-)
-
+from .disptools import DispersionPath
+from .lattice import Lattice
 
 # =========================================================================
 #                             1D Prefabs

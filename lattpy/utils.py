@@ -10,7 +10,39 @@
 
 import math
 import numpy as np
-from typing import Iterable, List, Sequence, Optional, Union
+from typing import Iterable, List, Sequence, Optional, Union, Tuple
+import logging
+
+logging.captureWarnings(True)
+
+
+Nvec = Union[int, Sequence[int]]        # Type of lattice index
+Rvec = Union[float, Sequence[float]]    # Type of lattice vector
+IndexTuple = Tuple[Sequence[int], int]  # Type of tuple of lattice index and atom index
+
+
+class LatticeError(Exception):
+    pass
+
+
+class ConfigurationError(LatticeError):
+
+    def __init__(self, msg='', hint=''):
+        if hint:
+            msg += f'({hint})'
+        super().__init__(msg)
+
+
+class NoAtomError(LatticeError):
+
+    def __init__(self):
+        super().__init__("Lattice doesn't contain any atoms!")
+
+
+class NotBuildtError(LatticeError):
+
+    def __init__(self):
+        super().__init__("Lattice has no finite size! (Use the 'build'-method to construct a finite lattice)")
 
 
 def vrange(axis_ranges: Iterable) -> List:
@@ -155,14 +187,31 @@ def chain(items: Sequence, cycle: bool = False) -> List:
 class VectorBasis:
 
     def __init__(self, vectors: Union[int, float, Sequence[Sequence[float]]]):
-        # Transpose vectors so they are a column of the basis matrix
-        vectors = np.atleast_2d(vectors).T
+        logging.warning("DeprecationWarning: the ``VectorBasis`` object is deprecated and "
+                        "is now integrated to the ``Lattice``-object.")
 
-        self.dim: int = len(vectors)
-        self._vectors: np.ndarray = vectors
-        self._vectors_inv: np.ndarray = np.linalg.inv(self._vectors)
-        self.cell_size: np.ndarray = cell_size(vectors)
-        self.cell_volume: float = cell_volume(vectors)
+        # Transpose vectors so they are a column of the basis matrix
+        self._vectors = np.atleast_2d(vectors).T
+        self._vectors_inv = np.linalg.inv(self._vectors)
+
+        self._dim = len(self._vectors)
+        self._cell_size = cell_size(self._vectors)
+        self._cell_volume = cell_volume(self._vectors)
+
+    @property
+    def dim(self) -> int:
+        """The dimension of the vector basis."""
+        return self._dim
+
+    @property
+    def cell_size(self):
+        """The shape of the box spawned by the given vectors."""
+        return self._cell_size
+
+    @property
+    def cell_volume(self):
+        """The volume of the unit cell defined by the primitive vectors."""
+        return self._cell_volume
 
     @property
     def vectors(self) -> np.ndarray:

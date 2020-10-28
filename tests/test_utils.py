@@ -10,7 +10,7 @@
 
 import numpy as np
 from numpy.testing import assert_array_equal
-from lattpy.vector import vrange, vlinspace, distance, cell_size, cell_volume, chain
+from lattpy.utils import vrange, vlinspace, distance, cell_size, cell_volume, chain
 
 
 def test_vrange():

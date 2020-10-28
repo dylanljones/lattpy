@@ -37,7 +37,7 @@ class NeighbourMap:
 
     def copy(self) -> 'NeighbourMap':
         new = self.__class__()
-        new.set(self.data.copy())
+        new.data = self.data.copy()
         new.periodic = self.periodic.copy()
         return new
 
@@ -105,7 +105,8 @@ class NeighbourMap:
         neighbours = self.get(site, distidx)
         if site in self.periodic:
             for periodic in self.periodic[site][distidx]:
-                neighbours.remove(periodic)
+                if periodic in neighbours:
+                    neighbours.remove(periodic)
         return neighbours
 
     def get_all_periodic(self, site: int) -> List[int]:
@@ -179,7 +180,7 @@ class LatticeData:
         return data
 
     def __bool__(self) -> bool:
-        return bool(self.indices)
+        return bool(len(self.indices))
 
     def __str__(self) -> str:
         widths = 9, 15, 10

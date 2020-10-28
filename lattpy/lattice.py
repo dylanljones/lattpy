@@ -770,6 +770,20 @@ class Lattice:
         """
         return self.data.indices[idx][-1]
 
+    def atom(self, idx: int) -> Atom:
+        """ Returns the atom of a given site in the cached lattice data.
+
+        Parameters
+        ----------
+        idx: int
+            Site index in the cached lattice data.
+
+        Returns
+        -------
+        atom: Atom
+        """
+        return self._atoms[self.data.indices[idx][-1]]
+
     def position(self, idx: int) -> np.ndarray:
         """ Returns the position for a given site in the cached lattice data.
 

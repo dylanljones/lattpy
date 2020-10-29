@@ -95,7 +95,14 @@ class Lattice:
 
     @classmethod
     def hexagonal(cls, a: Optional[float] = 1.0, **kwargs) -> 'Lattice':
-        vectors = a/2 * np.array([[3, np.sqrt(3)], [3, -np.sqrt(3)]], **kwargs)
+        # vectors = a / 2 * np.array([[3, np.sqrt(3)], [3, -np.sqrt(3)]], **kwargs)
+        vectors = a / 2 * np.array([[1, +np.sqrt(3)], [1, -np.sqrt(3)]], **kwargs)
+        return cls(vectors)
+
+    @classmethod
+    def hexagonal3D(cls, a: Optional[float] = 1.0, az: Optional[float] = 1.0, **kwargs) -> 'Lattice':  # noqa
+        # vectors = a / 2 * np.array([[3, np.sqrt(3)], [3, -np.sqrt(3)]], **kwargs)
+        vectors = a / 2 * np.array([[1, +np.sqrt(3), 0], [1, -np.sqrt(3), 0], [0, 0, az]], **kwargs)
         return cls(vectors)
 
     @classmethod

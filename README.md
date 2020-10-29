@@ -1,4 +1,4 @@
-# lattpy 0.2
+# lattpy 0.3.0
 
 NOTE: This project is still under development!
 

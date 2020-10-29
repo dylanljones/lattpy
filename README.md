@@ -48,13 +48,13 @@ latt = simple_square(a=1.0, neighbours=1)  # Initializes a square lattice with o
 ````
 
 So far only the lattice structure has been configured. To actually construct a (finite) model of the lattice
-the model has to be buildt:
+the model has to be built:
 ````python
 latt.build(shape=(5, 3))
 ````
 This will compute the indices and neighbours of all sites in the given shape and store the data.
-By default the lattice is buildt in real-space, meaning the shape parameter passed to the `build`-method is
-interpreted as a rectangle in real space. Alternatively the lattice can be buildt in the unit-vector-space:
+By default the lattice is built in real-space, meaning the shape parameter passed to the `build`-method is
+interpreted as a rectangle in real space. Alternatively the lattice can be built in the unit-vector-space:
 ````python
 latt.build(shape=(5, 3), inbound=False)
 ````
@@ -64,7 +64,7 @@ After building the lattice periodic boundary conditions can be set along one or 
 latt.set_periodic(axis=0)
 ````
 
-To view the buildt lattice the `plot`-method can be used:
+To view the built lattice the `plot`-method can be used:
 ````python
 from lattpy import simple_square
 
@@ -79,10 +79,10 @@ General lattice attributes
 --------------------------
 
 After configuring the lattice the attributes are available. 
-Even without building a (finite) lattice structure all attributes can be computed on the fly for a given lattice vector, consiting of the translation vector `n` and
-the atom index `alpha`. For computing the (translated) atom positions the `get_position` method
-is used. Also, the neighbours and the vectors to these neighbours can be calculated. The `dist_idx`-parameter specifies
-the distance of the neighbours (0 for nearest neighbours, 1 for next nearest neighbours, ...):
+Even without building a (finite) lattice structure all attributes can be computed on the fly for a given lattice vector, 
+consisting of the translation vector `n` and the atom index `alpha`. For computing the (translated) atom positions 
+the `get_position` method is used. Also, the neighbours and the vectors to these neighbours can be calculated. 
+The `dist_idx`-parameter specifies the distance of the neighbours (0 for nearest neighbours, 1 for next nearest neighbours, ...):
 ````python
 from lattpy import simple_square
 
@@ -112,8 +112,8 @@ rlatt = latt.reciprocal_lattice()
 Finite lattice data
 -------------------
 
-If the lattice has been buildt the needed data is cached. The lattice sites of the structure then can be 
-accessed by a simple index `i`. The synthax is the same as before, just without the `get_` prefix:
+If the lattice has been built the needed data is cached. The lattice sites of the structure then can be 
+accessed by a simple index `i`. The syntax is the same as before, just without the `get_` prefix:
 ````python
 from lattpy import simple_square
 
@@ -138,7 +138,7 @@ neighbour_indices = latt.nearest_neighbours(idx)
 Examples
 ========
 
-Using the (buildt) lattice model it is easy to construct the (kinetic) Hamiltonian of a non-interacting model:
+Using the (built) lattice model it is easy to construct the (kinetic) Hamiltonian of a non-interacting model:
 
 ````python
 import numpy as np
@@ -154,9 +154,8 @@ eps, t = 0., 1.
 ham = np.zeros((n, n))
 for i in range(n):
     ham[i, i] = eps
-    for j in latt.nearest_neighbours(i, unique=True):
+    for j in latt.nearest_neighbours(i):
         ham[i, j] = t
-        ham[j, i] = t
 ````
 This will create the Hamiltonian-matrix:
 ````

@@ -50,13 +50,13 @@ latt = simple_square(a=1.0, neighbours=1)  # Initializes a square lattice with o
 So far only the lattice structure has been configured. To actually construct a (finite) model of the lattice
 the model has to be buildt:
 ````python
-latt.build(shape=(5, 2))
+latt.build(shape=(5, 3))
 ````
 This will compute the indices and neighbours of all sites in the given shape and store the data.
 By default the lattice is buildt in real-space, meaning the shape parameter passed to the `build`-method is
 interpreted as a rectangle in real space. Alternatively the lattice can be buildt in the unit-vector-space:
 ````python
-latt.build(shape=(5, 2), inbound=False)
+latt.build(shape=(5, 3), inbound=False)
 ````
 
 After building the lattice periodic boundary conditions can be set along one or multiple axes:

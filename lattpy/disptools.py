@@ -10,7 +10,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from .vector import vlinspace, chain
+from .utils import vlinspace, chain
 
 
 class DispersionPath:

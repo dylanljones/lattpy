@@ -8,8 +8,16 @@
 # LICENSE file in the root directory and this permission notice shall
 # be included in all copies or substantial portions of the Software.
 
-from .atoms import (
-    Atom
+from .utils import (
+    LatticeError,
+    ConfigurationError,
+    vrange,
+    vlinspace
+)
+
+from .unitcell import (
+    Atom,
+    UnitCell
 )
 
 from .data import (
@@ -17,15 +25,8 @@ from .data import (
     LatticeData
 )
 
-from lattpy.disptools import (
-    DispersionPath
-)
-
-from .lattice import (
-    Lattice,
-    ConfigurationError
-)
-
+from .disptools import DispersionPath
+from .lattice import Lattice
 
 # =========================================================================
 #                             1D Prefabs

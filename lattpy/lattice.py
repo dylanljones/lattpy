@@ -73,7 +73,7 @@ class Lattice:
         self._base_neighbors = list()
 
         # Lattice Cache
-        self.data = LatticeData(self.dim)
+        self.data = LatticeData()
         self.shape = None
         self.periodic_axes = list()
 
@@ -95,14 +95,12 @@ class Lattice:
 
     @classmethod
     def hexagonal(cls, a: Optional[float] = 1.0, **kwargs) -> 'Lattice':
-        # vectors = a / 2 * np.array([[3, np.sqrt(3)], [3, -np.sqrt(3)]], **kwargs)
-        vectors = a / 2 * np.array([[1, +np.sqrt(3)], [1, -np.sqrt(3)]], **kwargs)
+        vectors = a / 2 * np.array([[3, np.sqrt(3)], [3, -np.sqrt(3)]], **kwargs)
         return cls(vectors)
 
     @classmethod
     def hexagonal3D(cls, a: Optional[float] = 1.0, az: Optional[float] = 1.0, **kwargs) -> 'Lattice':  # noqa
-        # vectors = a / 2 * np.array([[3, np.sqrt(3)], [3, -np.sqrt(3)]], **kwargs)
-        vectors = a / 2 * np.array([[1, +np.sqrt(3), 0], [1, -np.sqrt(3), 0], [0, 0, az]], **kwargs)
+        vectors = a / 2 * np.array([[3, np.sqrt(3), 0], [3, -np.sqrt(3), 0], [0, 0, az]], **kwargs)
         return cls(vectors)
 
     @classmethod
@@ -991,7 +989,7 @@ class Lattice:
         # get all sites and neighbours (cached and new)
         if self.data:
             all_indices = np.append(self.data.indices, new_indices, axis=0)
-            all_neighbours = self.data.neighbours + new_neighbours
+            all_neighbours = self.data.neighbours[:] + new_neighbours
         else:
             all_indices = new_indices
             all_neighbours = new_neighbours

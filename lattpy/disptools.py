@@ -180,4 +180,3 @@ class DispersionPath:
         if grid:
             ax.grid()
         return fig, ax
-

@@ -1104,6 +1104,7 @@ class Lattice:
 
     def build(self, shape: Union[int, Sequence[int]],
               inbound: Optional[bool] = True,
+              cells: Optional[bool] = False,
               periodic: Optional[bool] = None,
               pos: Optional[Union[float, Sequence[float]]] = None,
               window: Optional[int] = None) -> None:
@@ -1125,6 +1126,9 @@ class Lattice:
             will be added to the data. This ensures nicer shapes of the lattice.
             Otherwise the shape is constructed in the basis if the unit-vectors.
             The default is 'True'
+        cells: bool, optional
+            If 'True' the shape will be multiplied by the cell size of the model.
+            Only used if ``inbound==True``. The default is ``False``.
         periodic: int or array_like, optional
             Optional periodic axes to set. See 'set_periodic' for mor details.
         pos: array_like, optional
@@ -1145,6 +1149,8 @@ class Lattice:
 
         # Compute indices and initialize neighbour array
         if inbound:
+            if cells:
+                shape = np.array(shape) * np.max(self.vectors, axis=0) - 0.1
             indices = self._build_indices_inbound(shape, pos=pos)
         else:
             indices = self._build_indices(shape.astype('int'), pos=pos)

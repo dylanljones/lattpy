@@ -1579,6 +1579,9 @@ class Lattice:
             draw_lines(ax, periodic_segments, color="0.5", lw=lw)
 
         for atom, positions in atom_pos.items():
+            positions = np.array(positions)
+            positions = positions[~np.isnan(positions).any(axis=1)]
+            print(positions)
             draw_sites(ax, positions, size=atom.size, color=atom.color, label=atom.name)
         if show_indices:
             positions = [self.position(i) for i in range(self.num_sites)]

@@ -177,6 +177,25 @@ class NeighbourMap(Mapping):
         if symmetric:
             self._neighbours[neighbour, distidx].remove(site)
 
+    def remove_site_neighbours(self, site, symmetric=True):
+        """Removes all neighbours from a site.
+
+        Parameters
+        ----------
+        site: int
+            The index of the site where the neighbours are removed.
+        symmetric: bool, optional
+            Optional flag if the neighbours should be removed symmetric.
+            If `True` the `site` index will be removed as neighbour from
+            the site with the `neighbour` index. The default is `True`.
+        """
+        # shift indices to [0, ..., n], so that negative indices are valid.
+        site = self._neighbours.shape[0] + site if site < 0 else site
+        for distidx in range(self.num_dist):
+            neighbours = self._neighbours[site, distidx].copy()
+            for j in neighbours:
+                self.remove(site, j, distidx, symmetric)
+
     def remove_periodic(self, site: int, neighbour: int, distidx: Optional[int] = 0,
                         symmetric: Optional[bool] = False) -> None:
         """Removes a periodic neighbour from a site.
@@ -680,6 +699,13 @@ class LatticeData:
         maxs[ax] = limits[1, ax] - offset
         mask = self.site_mask(mins, maxs, invert=True)
         return np.where(mask)[0]
+
+    def invalidtate(self, sites):
+        sites = np.atleast_1d(sites).astype(np.int)
+        for i in sites:
+            self.neighbours.remove_site_neighbours(i, symmetric=True)
+            self.indices[i, :] = np.nan
+            self.positions[i, :] = np.nan
 
     def __bool__(self) -> bool:
         return bool(len(self.indices))

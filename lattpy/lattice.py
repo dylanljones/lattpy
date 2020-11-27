@@ -1105,7 +1105,7 @@ class Lattice:
     def build(self, shape: Union[int, Sequence[int]],
               inbound: Optional[bool] = True,
               cells: Optional[bool] = False,
-              periodic: Optional[bool] = None,
+              periodic: Optional[Union[int, Sequence[int]]] = None,
               pos: Optional[Union[float, Sequence[float]]] = None,
               window: Optional[int] = None) -> None:
         """ Constructs the indices and neighbours of a new finite size lattice and stores the data
@@ -1211,7 +1211,7 @@ class Lattice:
             for ax in axis:
                 # Get periodic translation vector
                 vec = np.zeros(self.dim, dtype="float")
-                vec[ax] = self.shape[ax] + 0.1 * self.cell_size[ax]
+                vec[ax] = self.shape[ax] + 0.8 * self.cell_size[ax]
                 nvec = vec @ np.linalg.inv(self._vectors.T)
                 nvec[ax] = np.ceil(nvec[ax])
                 nvec = np.round(nvec, decimals=0).astype("int")
@@ -1421,7 +1421,7 @@ class Lattice:
                             p1 = np.array([p1, 0])
                             p2 = np.array([p2, 0])
                         v = p2 - p1
-                        p2 = p1 + scale * v
+                        p2 = p1 + scale * v / np.linalg.norm(v)
                         conns.append([p1, p2])
         return conns
 
@@ -1574,7 +1574,8 @@ class Lattice:
         # Draw atoms, neighbour connections and optionally site indices.
         draw_lines(ax, segments, color="k", lw=lw)
         if show_periodic and len(self.periodic_axes):
-            periodic_segments = self.get_periodic_segments(scale=0.5)
+            scale = 0.3 * np.linalg.norm(self.vectors[0])
+            periodic_segments = self.get_periodic_segments(scale=scale)
             draw_lines(ax, periodic_segments, color="0.5", lw=lw)
 
         for atom, positions in atom_pos.items():

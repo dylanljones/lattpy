@@ -13,6 +13,84 @@ import matplotlib.pyplot as plt
 from .utils import vlinspace, chain
 
 
+def band_subplots(ticks, labels, x_label="k", disp_label="E(k)", grid="both"):
+    fig, ax = plt.subplots()
+    ax.set_xlim(0, ticks[-1])
+    ax.set_xticks(ticks)
+    ax.set_xticklabels(labels)
+    if x_label:
+        ax.set_xlabel(f"${x_label}$")
+    if disp_label:
+        ax.set_ylabel(f"${disp_label}$")
+
+    if grid:
+        ax.grid(axis=grid)
+    fig.tight_layout()
+    return fig, ax
+
+
+def plot_dispersion(ax, disp, fill=True, alpha=0.2, lw=1.0):
+    for band in disp.T:
+        ax.plot(band, lw=lw)
+        if fill:
+            ax.fill_between([0, len(band)], min(band), max(band), alpha=alpha)
+
+
+def plot_bands(disp, labels, x_label="k", disp_label="E(k)", grid="both",
+               fill=True, alpha=0.2, lw=1.0, show=True):
+    num_points = len(labels)
+    ticks = np.arange(num_points) * len(disp) / (num_points - 1)
+
+    fig, ax = band_subplots(ticks, labels, x_label, disp_label, grid)
+    plot_dispersion(ax, disp, fill, alpha, lw)
+
+    if show:
+        plt.show()
+    return fig, ax
+
+
+def band_dos_subplots(ticks, labels, x_label="k", disp_label="E(k)",
+                      dos_label="n(E)", wratio=(3, 1), grid="both"):
+    fig, axs = plt.subplots(1, 2, gridspec_kw={"width_ratios": wratio}, sharey="all")
+    ax1, ax2 = axs
+
+    ax1.set_xlim(0, ticks[-1])
+    if x_label:
+        ax1.set_xlabel(f"${x_label}$")
+    if disp_label:
+        ax1.set_ylabel(f"${disp_label}$")
+    ax1.set_xticks(ticks)
+    ax1.set_xticklabels(labels)
+
+    if dos_label:
+        ax2.set_xlabel(f"${dos_label}$")
+    ax2.set_xticks([0])
+
+    if grid:
+        ax1.grid(axis=grid)
+        ax2.grid(axis=grid)
+    fig.tight_layout()
+    return fig, axs
+
+
+def plot_band_dos(disp, bins, dos, labels, x_label="k", disp_label="E(k)", dos_label="n(E)",
+                  wratio=(3, 1), grid="both", fill=True, disp_alpha=0.2, dos_color="C0",
+                  dos_alpha=0.2, lw=1.0, show=True):
+    num_points = len(labels)
+    ticks = np.arange(num_points) * len(disp) / (num_points - 1)
+
+    fig, axs = band_dos_subplots(ticks, labels, x_label, disp_label, dos_label, wratio, grid)
+    ax1, ax2 = axs
+    plot_dispersion(ax1, disp, fill=fill, alpha=disp_alpha, lw=lw)
+    ax2.plot(dos, bins, lw=lw, color=dos_color)
+    ax2.fill_betweenx(bins, 0, dos, alpha=dos_alpha, color=dos_color)
+    ax2.set_xlim(0, ax2.get_xlim()[1])
+
+    if show:
+        plt.show()
+    return fig, axs
+
+
 class DispersionPath:
     """ This object is used to define a dispersion path between high symmetry (HS) points.
 

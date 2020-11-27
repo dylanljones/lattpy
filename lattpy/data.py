@@ -421,7 +421,8 @@ class LatticeData:
         self.positions = np.asarray(positions)
         self.neighbours.set(neighbours)
 
-    def set_positions(self, indices: Sequence[Iterable[int]], positions: Sequence[Iterable[float]]) -> None:
+    def set_positions(self, indices: Sequence[Iterable[int]],
+                      positions: Sequence[Iterable[float]]) -> None:
         """Sets the position data of the `LatticeData` instance.
 
         Parameters

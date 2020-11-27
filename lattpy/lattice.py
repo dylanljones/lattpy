@@ -33,7 +33,8 @@ class Lattice:
     REC_TOLERANCE: float = 1e-5  # Tolerance for reciprocal vectors/lattice
     MIN_DISTS: int = 3           # Minimum distances that are computed
 
-    def __init__(self, vectors: Union[Union[float, Sequence[float]], Sequence[Union[float, Sequence[float]]]],
+    def __init__(self, vectors: Union[Union[float, Sequence[float]],
+                                      Sequence[Union[float, Sequence[float]]]],
                  atom: Optional[Union[str, Atom]] = None,
                  pos: Optional[Union[float, Sequence[float]]] = None,
                  neighbours: Optional[int] = 1,
@@ -61,8 +62,8 @@ class Lattice:
         self._vectors = np.atleast_2d(vectors).T
         self._vectors_inv = np.linalg.inv(self._vectors)
         self._dim = len(self._vectors)
-        self._cell_size = cell_size(self._vectors)
-        self._cell_volume = cell_volume(self._vectors)
+        self._cell_size = cell_size(self.vectors)
+        self._cell_volume = cell_volume(self.vectors)
 
         # Atom data
         self._num_base = 0
@@ -90,7 +91,7 @@ class Lattice:
         return cls(a * np.eye(2), **kwargs)
 
     @classmethod
-    def rectangular(cls, a1: Optional[float] = 1.0, a2: Optional[float] = 1.0, **kwargs) -> 'Lattice':
+    def rectangular(cls, a1: Optional[float] = 1., a2: Optional[float] = 1., **kwargs) -> 'Lattice':
         return cls(np.array([[a1, 0], [0, a2]]), **kwargs)
 
     @classmethod
@@ -99,7 +100,7 @@ class Lattice:
         return cls(vectors)
 
     @classmethod
-    def hexagonal3D(cls, a: Optional[float] = 1.0, az: Optional[float] = 1.0, **kwargs) -> 'Lattice':  # noqa
+    def hexagonal3D(cls, a: Optional[float] = 1., az: Optional[float] = 1., **kwargs) -> 'Lattice':  # noqa
         vectors = a / 2 * np.array([[3, np.sqrt(3), 0], [3, -np.sqrt(3), 0], [0, 0, az]], **kwargs)
         return cls(vectors)
 
@@ -221,7 +222,8 @@ class Lattice:
         """
         return self._vectors @ np.asarray(basis_coords)
 
-    def is_reciprocal(self, vecs: Union[Union[float, Sequence[float]], Sequence[Union[float, Sequence[float]]]],
+    def is_reciprocal(self, vecs: Union[Union[float, Sequence[float]],
+                                        Sequence[Union[float, Sequence[float]]]],
                       tol: Optional[float] = REC_TOLERANCE) -> bool:
         r""" Checks if the given vectors are reciprocal to the lattice vectors.
 
@@ -250,7 +252,8 @@ class Lattice:
                 return False
         return True
 
-    def reciprocal_vectors(self, tol: Optional[float] = REC_TOLERANCE, check: Optional[bool] = False) -> np.ndarray:
+    def reciprocal_vectors(self, tol: Optional[float] = REC_TOLERANCE,
+                           check: Optional[bool] = False) -> np.ndarray:
         r""" Computes the reciprocal basis vectors of the bravais lattice.
 
         The lattice- and reciprocal vectors .math'a_i' and .math'b_i' must satisfy the relation
@@ -546,7 +549,7 @@ class Lattice:
         return indices
 
     def calculate_distances(self, num_dist: Optional[int] = 1) -> None:
-        """ Calculates the ´n´ lowest distances between sites in the lattice and the neighbours of the cell.
+        """ alculates the ´n´ lowest distances between sites and the neighbours of the cell.
 
         Checks distances between all sites of the bravais lattice and saves n lowest values.
         The neighbor lattice-indices of the unit-cell are also stored for later use.
@@ -561,7 +564,8 @@ class Lattice:
         Parameters
         ----------
         num_dist: int, optional
-            Number of distances of lattice structure to calculate. If 'None' the number of atoms is used.
+            Number of distances of lattice structure to calculate.
+            If 'None' the number of atoms is used.
             The default is 1 (nearest neighbours).
         """
         if len(self._atoms) == 0:
@@ -589,7 +593,8 @@ class Lattice:
             site_neighbours = list()
             for i_dist in range(len(self._distances)):
                 # Get neighbour indices of site for distance level
-                site_neighbours.append(self.calculate_neighbours(alpha=alpha, distidx=i_dist, array=True))
+                new = self.calculate_neighbours(alpha=alpha, distidx=i_dist, array=True)
+                site_neighbours.append(new)
             neighbours.append(site_neighbours)
         self._base_neighbors = neighbours
 
@@ -654,7 +659,7 @@ class Lattice:
     def get_neighbours(self, nvec: Optional[Union[int, Sequence[int]]] = None,
                        alpha: Optional[int] = 0,
                        distidx: Optional[int] = 0) -> List[np.ndarray]:
-        """ Returns the neighours of a given site by transforming stored neighbour indices.
+        """ Returns the neighour-indices of a given site by transforming stored neighbour indices.
 
         Raises
         ------
@@ -685,6 +690,40 @@ class Lattice:
             idx_t = idx.copy()
             idx_t[:-1] += n
             transformed.append(idx_t)
+        return transformed
+
+    def get_neighbour_positions(self, nvec: Optional[Union[int, Sequence[int]]] = None,
+                                alpha: Optional[int] = 0,
+                                distidx: Optional[int] = 0) -> List[np.ndarray]:
+        """Returns the neighour-positions of a given site by transforming the neighbour positions.
+
+        Raises
+        ------
+        NoBaseNeighboursError
+            Raised if the lattice distances and base-neighbours haven't been computed.
+
+        Parameters
+        ----------
+        nvec: array_like, optional
+            translation vector of site, the default is the origin.
+        alpha: int, optional
+            site index, default is 0.
+        distidx: int, default
+            index of distance to neighbours, defauzlt is 0 (nearest neighbours).
+
+        Returns
+        -------
+        positions: list of np.ndarray
+        """
+        if nvec is None:
+            nvec = np.zeros(self.dim)
+        if not self._base_neighbors:
+            raise NoBaseNeighboursError()
+
+        n = np.atleast_1d(nvec)
+        transformed = list()
+        for idx in self._base_neighbors[alpha][distidx]:
+            transformed.append(self.get_position(idx[:-1] + n, idx[-1]))
         return transformed
 
     def get_neighbour_vectors(self, alpha: Optional[int] = 0,
@@ -730,7 +769,8 @@ class Lattice:
                 delta = pos1 - pos0
                 yield delta, alpha1, alpha2
 
-    def get_base_atom_dict(self, atleast2d: Optional[bool] = True) -> Dict[Any, List[Union[np.ndarray, Any]]]:
+    def get_base_atom_dict(self, atleast2d: Optional[bool] = True) \
+            -> Dict[Any, List[Union[np.ndarray, Any]]]:
         """ Returns a dictionary containing the positions for eatch type of the base atoms.
 
         Parameters
@@ -885,8 +925,8 @@ class Lattice:
         return None
 
     def _build_indices_inbound(self, shape: Union[float, Sequence[float]],
-                               pos: Optional[Union[float, Sequence[float]]] = None) -> List[List[int]]:
-
+                               pos: Optional[Union[float, Sequence[float]]] = None
+                               ) -> List[List[int]]:
         origin = np.zeros(self.dim)
         shape = np.atleast_1d(shape)
         if pos is None:
@@ -951,8 +991,8 @@ class Lattice:
         Parameters
         ----------
         new_indices: array_like
-            Array of the new indices in the form of .math:'[n_1, .., n_N, alpha]' to add to the lattice.
-            If the lattice doesn't have data yet a new array is created.
+            Array of the new indices in the form of .math:'[n_1, .., n_N, alpha]'
+            to add to the lattice. If the lattice doesn't have data yet a new array is created.
         new_neighbours: array_like, optional
             Optional array of new neighbours to add. by default a new array is created.
             This is used for adding new connections to an extisting lattice block.
@@ -1082,8 +1122,9 @@ class Lattice:
             shape of finite size lattice to build.
         inbound: bool, optional
             If 'True' the shape will be interpreted in real-space. Only lattice-sites in this shape
-            will be added to the data. This ensures nicer shapes of the lattice. Otherwise the shape is
-            constructed in the basis if the unit-vectors. The default is 'True'
+            will be added to the data. This ensures nicer shapes of the lattice.
+            Otherwise the shape is constructed in the basis if the unit-vectors.
+            The default is 'True'
         periodic: int or array_like, optional
             Optional periodic axes to set. See 'set_periodic' for mor details.
         pos: array_like, optional
@@ -1091,12 +1132,14 @@ class Lattice:
         window: int, optional
             Window for looking up neighbours. This can speed up the computation significally.
             Generally at least a few layers of the lattice should be searched.
-            By default a window correspinding to '2 x atoms per layer x nnumber of distances' is used.
+            By default a window correspinding to '2 x atoms per layer x nnumber
+            of distances' is used.
         """
         self.data.reset()
         shape = np.atleast_1d(shape)
         if len(shape) != self.dim:
-            raise ValueError(f"Dimension of shape {len(shape)} doesn't match the dimension of the lattice {self.dim}")
+            raise ValueError(f"Dimension of shape {len(shape)} doesn't "
+                             f"match the dimension of the lattice {self.dim}")
         if not self._base_neighbors:
             raise NoBaseNeighboursError()
 
@@ -1153,13 +1196,10 @@ class Lattice:
         axis = np.atleast_1d(axis)
         self.periodic_axes = axis
         n = int(self.num_sites)
-        # neighbours = [[set() for _ in range(self.n_dist)] for _ in range(self.n_sites)]
         if self.dim == 1:
             for distidx in range(self._num_dist):
                 i = distidx
                 j = n - distidx - 1
-                # neighbours[i][distidx].add(j)
-                # neighbours[j][distidx].add(i)
                 self.data.add_periodic_neighbour(i, j, distidx, symmetric=True)
         else:
             for ax in axis:
@@ -1185,9 +1225,6 @@ class Lattice:
                             distidx = self._distances.index(dist)
                             if distidx < self._num_dist:
                                 self.data.add_periodic_neighbour(i, j, distidx, symmetric=True)
-                                # neighbours[i][i_dist].add(j)
-                                # neighbours[j][i_dist].add(i)
-        # self.data.set_periodic_neighbours(neighbours)
 
     def add_x(self, lattice: 'Lattice', shift: Optional[bool] = True) -> None:
         n_new = lattice.num_sites
@@ -1203,7 +1240,8 @@ class Lattice:
             new_neighbours.append(shifted)
         # Find neighbours of connecting sections
         window = range(0, int(n_new / 2))
-        indices, positions, neighbours = self._construct(new_indices, new_neighbours, site_indices=window)
+        indices, positions, neighbours = self._construct(new_indices, new_neighbours,
+                                                         site_indices=window)
         # Set data
         self.set_data(indices, positions, neighbours)
 
@@ -1226,7 +1264,7 @@ class Lattice:
         ----------
         pos: array_like
             Position coordinates to tranform.
-        ax: int or array_like:
+        ax: int or array_like
             The axis that the position will be transformed along.
         cell_offset: float, optional
             Optional offset in units of the cell size.
@@ -1563,4 +1601,5 @@ class Lattice:
 
     def __repr__(self) -> str:
         shape = str(self.shape) if self.shape else "None"
-        return f"{self.__class__.__name__}(dim: {self.dim}, num_base: {self.num_base}, shape: {shape})"
+        return f"{self.__class__.__name__}(dim: {self.dim}, " \
+               f"num_base: {self.num_base}, shape: {shape})"

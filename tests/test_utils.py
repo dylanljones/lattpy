@@ -9,6 +9,7 @@
 # be included in all copies or substantial portions of the Software.
 
 import numpy as np
+from pytest import mark
 from numpy.testing import assert_array_equal
 from lattpy.utils import vrange, vlinspace, distance, cell_size, cell_volume, chain
 
@@ -134,3 +135,13 @@ def test_chain():
     res = chain(items, cycle=True)
     expected = [[0, 1], [1, 2], [2, 0]]
     assert_array_equal(res, expected)
+
+
+@mark.parametrize("items, cycle, result", [
+    ([0, 1, 2], False, [[0, 1], [1, 2]]),
+    ([0, 1, 2],  True, [[0, 1], [1, 2], [2, 0]]),
+    (["0", "1", "2"], False, [["0", "1"], ["1", "2"]]),
+    (["0", "1", "2"],  True, [["0", "1"], ["1", "2"], ["2", "0"]]),
+])
+def test_chain_parametrized(items, cycle, result):
+    assert_array_equal(chain(items, cycle), result)

@@ -95,7 +95,7 @@ def draw_vectors(ax, vectors, pos=None, ls="-", lw=1, **kwargs):
 
 def draw_sites(ax, positions, size, **kwargs):
     positions = np.asarray(positions)
-    scat = ax.scatter(*positions.T, zorder=3, s=size**2, alpha=1, **kwargs)
+    scat = ax.scatter(*positions.T, zorder=3, s=size**2, **kwargs)
     # Manualy update data-limits
     ax.ignore_existing_data_limits = True
     datalim = scat.get_datalim(ax.transData)

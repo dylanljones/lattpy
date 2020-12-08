@@ -12,7 +12,8 @@ from .utils import (
     LatticeError,
     ConfigurationError,
     vrange,
-    vlinspace
+    vlinspace,
+    split_index
 )
 
 from .unitcell import (

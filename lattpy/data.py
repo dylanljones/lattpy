@@ -700,12 +700,29 @@ class LatticeData:
         mask = self.site_mask(mins, maxs, invert=True)
         return np.where(mask)[0]
 
-    def invalidtate(self, sites):
+    def invalidate(self, sites):
         sites = np.atleast_1d(sites).astype(np.int)
         for i in sites:
             self.neighbours.remove_site_neighbours(i, symmetric=True)
             self.indices[i, :] = np.nan
             self.positions[i, :] = np.nan
+
+    def get_invalid(self):
+        return np.sort(np.where(np.isnan(self.positions).any(axis=1))[0])
+
+    def find_index(self, indices):
+        locs = list()
+        indices = np.atleast_2d(indices)
+        if len(indices[0]):
+            for idx in indices:
+                locs.extend(np.where((self.indices == idx).all(axis=1))[0])
+        return locs
+
+    def iter_sites(self):
+        invalid = self.get_invalid()
+        for site in range(len(self.indices)):
+            if site not in invalid:
+                yield site
 
     def __bool__(self) -> bool:
         return bool(len(self.indices))

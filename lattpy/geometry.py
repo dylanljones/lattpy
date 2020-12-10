@@ -10,7 +10,8 @@ from .utils import distance
 from .plotting import draw_line, draw_lines, draw_plane
 
 
-def perp_vector(v):
+def perp_vector(v: np.ndarray) -> np.ndarray:
+    """Creates a perpendicular vector"""
     if len(v) == 2:
         return np.array([-v[1], v[0]])
     if v[1] == 0 and v[2] == 0:
@@ -21,31 +22,37 @@ def perp_vector(v):
     return np.cross(v, [1, 0, 0])
 
 
-def normalize(v):
+def normalize(v: np.ndarray) -> np.ndarray:
+    """Normalizes an array."""
     return v / np.linalg.norm(v)
 
 
-def normal_vector(v1, v2):
+def normal_vector(v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
+    """Computes a vector perpendicular to the two given vectors."""
     vec = np.cross(v1, v2)
     return vec / np.linalg.norm(vec)
 
 
-def rx(theta):
+def rx(theta: float) -> np.ndarray:
+    """X-Rotation matrix."""
     sin, cos = np.sin(theta), np.cos(theta)
     return np.array([[1, 0, 0], [0, cos, -sin], [0, sin, cos]])
 
 
-def ry(theta):
+def ry(theta: float) -> np.ndarray:
+    """Y-Rotation matrix."""
     sin, cos = np.sin(theta), np.cos(theta)
     return np.array([[cos, 0, sin], [0, 1, 0], [-sin, 0, +cos]])
 
 
-def rz(theta):
+def rz(theta: float) -> np.ndarray:
+    """Z-Rotation matrix."""
     sin, cos = np.sin(theta), np.cos(theta)
     return np.array([[cos, -sin, 0], [sin, cos, 0], [0, 0, 1]])
 
 
-def rot(thetax=0., thetay=0., thetaz=0.):
+def rot(thetax: float = 0., thetay: float = 0., thetaz: float = 0.) -> np.ndarray:
+    """General rotation matrix"""
     r = np.eye(3)
     if thetaz:
         r = np.dot(r, rz(thetaz))
@@ -57,20 +64,35 @@ def rot(thetax=0., thetay=0., thetaz=0.):
 
 
 def rotate2d(a, theta):
+    """Applies the z-rotation matrix to a 2D point"""
     return np.dot(a, rz(theta)[:2, :2])
 
 
 def rotate3d(a, thetax=0., thetay=0., thetaz=0.):
+    """Applies the general rotation matrix to a 3D point"""
     return np.dot(a, rot(thetax, thetay, thetaz))
 
 
-def _check_on_line(p0, v, point, epsilon=1e-10):
+def check_on_line(p0, v, point, epsilon=1e-10):
+    """Checks if a point is on an infinite line."""
     t_check = (point - p0) / v
     t_check = t_check[np.isfinite(t_check)][0]
     return np.all(np.abs(p0 + t_check * v - point) < epsilon)
 
 
+def check_on_linesegment(p0, v, point, epsilon=1e-6):
+    """Checks if a point is on an line segment."""
+    x = (point - p0) / v
+    x = float(x[np.isfinite(x)][0])
+    if not np.all(np.abs(p0 + x * v - point) < epsilon):
+        return False
+    if x is not None and 0 <= x <= +1:
+        return True
+    return False
+
+
 def line_line_intersection(p1, v1, p2, v2, epsilon=1e-6):
+    """Computes the intersection point of two infinite lines."""
     size = 1.0
     p1, v1 = p1 - size * v1, 2 * size * v1
     p2, v2 = p2 - size * v2, 2 * size * v2
@@ -79,16 +101,17 @@ def line_line_intersection(p1, v1, p2, v2, epsilon=1e-6):
     if denom:
         s = np.linalg.norm(np.cross(v2, p2 - p1)) / denom
         inter1 = p1 + s * v1
-        if _check_on_line(p2, v2, inter1, epsilon):
+        if check_on_line(p2, v2, inter1, epsilon):
             return inter1
         t = np.linalg.norm(np.cross(v1, p2 - p1)) / denom
         inter2 = p2 + t * v2
-        if _check_on_line(p1, v1, inter2, epsilon):
+        if check_on_line(p1, v1, inter2, epsilon):
             return inter2
     return None
 
 
 def line_plane_intersection(plane_point, normal_vec, line_point, line_vec, epsilon=1e-6):
+    """Computes the intersection point of an infinite line and plane."""
     ndotu = normal_vec.dot(line_vec)
     if abs(ndotu) < epsilon:
         return None
@@ -98,6 +121,7 @@ def line_plane_intersection(plane_point, normal_vec, line_point, line_vec, epsil
 
 
 def plane_plane_intersection(p1, n1, p2, n2, epsilon=1e-6):
+    """Computes the intersection line of two infinite planes."""
     v = np.cross(n1, n2)
     if np.sum(np.abs(v)) < epsilon:
         return None
@@ -107,6 +131,24 @@ def plane_plane_intersection(p1, n1, p2, n2, epsilon=1e-6):
     p0 = np.linalg.solve(a, d)[:, 0]
 
     return Line(p0, v / np.linalg.norm(v))
+
+
+def line_segment_intersection(p0, v, point1, point2, epsilon=1e-6):
+    """Computes the intersection point of an infinite line and a line segment."""
+    p1, v1 = p0, v
+    p2, v2 = point1, point2 - point1
+    denom = np.linalg.norm(np.cross(v1, v2))
+    if denom:
+        s = np.linalg.norm(np.cross(v2, p2 - p1)) / denom
+        t = np.linalg.norm(np.cross(v1, p1 - p2)) / denom
+        inter1 = p1 + s * v1
+        inter2 = p2 + t * v2
+        if np.sum(np.abs(inter1 - inter2)) < epsilon:
+            if check_on_linesegment(p2, v2, inter1, epsilon):
+                return inter1
+            if check_on_linesegment(p2, v2, inter2, epsilon):
+                return inter2
+    return None
 
 
 # ==================================================================================================
@@ -134,6 +176,21 @@ class Line:
     def norm(self):
         return np.linalg.norm(self.v)
 
+    def point(self, x):
+        return self.p0 + x * self.v
+
+    def factor(self, point, epsilon=1e-10):
+        x = (point - self.p0) / self.v
+        x = float(x[np.isfinite(x)][0])
+        if not np.all(np.abs(self.p0 + x * self.v - point) < epsilon):
+            return None
+        return x
+
+    def coeffs(self):
+        n = perp_vector(self.v)
+        d = np.dot(self.point(2), n)
+        return np.append(n, d)
+
     def normalize(self):
         return self.__class__(self.p0, self.v / self.norm)
 
@@ -149,8 +206,11 @@ class Line:
             return line_plane_intersection(self.p0, self.v, other.p0, other.n, epsilon)
         return None
 
+    def distance(self, points):
+        return np.cross(self.v, points - self.p0) / np.linalg.norm(self.v)
+
     def __call__(self, x):
-        return self.p0 + x * self.v
+        return self.point(x)
 
     def data(self, x1, x0=0):
         return np.asarray([self.__call__(x0), self.__call__(x1)])
@@ -197,8 +257,7 @@ class Plane:
     def n(self):
         return self.normal_vec()
 
-    @property
-    def hesse(self):
+    def coeffs(self):
         n = self.normal_vec()
         d = - np.dot(self.p0, n)
         return np.append(n, d)
@@ -281,25 +340,6 @@ def wigner_seitz_points(positions):
     return unique(points, axis=0)
 
 
-def check_point2d(points, point, origin):
-    point_distance = distance(point, origin)
-    dists = [distance(point, p) for p in points]
-    if point_distance > max(dists):
-        return False
-
-    p0, p1 = points[np.argsort(dists)[:2]]
-    x1, v1 = p0, p1 - p0
-    x2, v2 = point, origin - point
-    denom = np.linalg.norm(np.cross(v1, v2))
-    if denom == 0:
-        return True
-
-    s = np.linalg.norm(np.cross(v2, x2 - x1)) / denom
-    inter = np.asarray(x1 + s * v1)
-    inter_dist = distance(inter, origin)
-    return point_distance < inter_dist
-
-
 def find_edges(points):
     points = np.asarray(points)
     num_points, dim = points.shape
@@ -313,25 +353,63 @@ def find_edges(points):
     return np.unique(pairs, axis=0)
 
 
+def cell_distances(points):
+    origin = np.zeros(len(points[0]))
+    distances = list()
+    distances.extend(np.min(points, axis=0))
+    distances.extend(np.max(points, axis=0))
+    for p in points:
+        distances.append(distance(p, origin))
+    return distances
+
+
+def check_point2d(edges, point, size=5, epsilon=1e-6):
+    p0, v = point, size * point
+    for point1, point2 in edges:
+        inter = line_segment_intersection(p0, v, point1, point2, epsilon)
+        if inter is not None:
+            return True
+    return False
+
+
+def check_points2d(cell, grid, value=np.nan):
+    mindist = min(cell_distances(cell.points)) - 0.1
+    size = 5 * np.max(cell.limits)
+    xx, yy = grid
+    for i in range(xx.shape[0]):
+        for j in range(yy.shape[1]):
+            point = np.array([xx[i, j], yy[i, j]])
+            dist = np.sum(np.sqrt(point ** 2))
+            if dist > mindist:
+                if not check_point2d(cell, point, size):
+                    xx[i, j] = yy[i, j] = value
+    return np.array([xx, yy])
+
+
 class WignerSeitzCell:
 
     def __init__(self, points):
         self.points = np.array([])
-        self.edges = np.array([])
-        self.verts = np.array([])
+        self._edges = np.array([])
+        self._verts = np.array([])
         self.limits = np.array([])
+        self._mindist = 0
+        self._maxdist = 0
         self.init(points)
 
     def init(self, points):
         self.points = points
         self.limits = np.array([np.min(self.points, axis=0), np.max(self.points, axis=0)]).T
-        self.edges = np.array([])
-        self.verts = np.array([])
+        self._edges = np.array([])
+        self._verts = np.array([])
         dim = len(self.limits)
         if dim > 1:
-            self.edges = np.asarray(find_edges(self.points))
+            self._edges = np.asarray(find_edges(self.points))
         if dim > 2:
             pass
+        cell_dists = cell_distances(self.points)
+        self._mindist = min(cell_dists)
+        self._maxdist = max(cell_dists)
 
     @property
     def size(self):
@@ -341,11 +419,38 @@ class WignerSeitzCell:
     def dim(self):
         return len(self.limits)
 
+    @property
+    def edge_indices(self):
+        return self._edges
+
+    @property
+    def edges(self):
+        return self.points[self._edges]
+
+    @property
+    def vertex_indices(self):
+        return self._edges
+
+    @property
+    def vertices(self):
+        return self.points[self._verts]
+
+    def edge(self, i):
+        return self.edges[i]
+
+    def vertex(self, i):
+        return self.points[self._verts[i]]
+
     def edge_lines(self):
         lines = list()
-        for i, j in self.edges:
+        for i, j in self._edges:
             lines.append(self.points[[i, j]])
         return lines
+
+    def check(self, point):
+        if np.sum(np.sqrt(point ** 2)) < self._mindist - 0.1:
+            return True
+        return check_point2d(self.edges, point, 5 * self._maxdist)
 
     def arange(self, steps, offset=0.):
         limits = self.limits * (1 + offset)
@@ -357,7 +462,7 @@ class WignerSeitzCell:
         nums = [nums] * self.dim if not hasattr(nums, "__len__") else nums
         return [np.linspace(*lims, num=num) for lims, num in zip(limits, nums)]
 
-    def meshgrid(self, nums=None, steps=None, offset=0.):
+    def meshgrid(self, nums=None, steps=None, offset=0., check=False):
         if nums is not None:
             grid = np.array(np.meshgrid(*self.linspace(nums, offset)))
         elif steps is not None:
@@ -365,6 +470,14 @@ class WignerSeitzCell:
         else:
             raise ValueError("Either the number of points or the step size muste be specified")
 
+        if check:
+            lengths = grid.shape[1:]
+            dims = range(len(lengths))
+            for item in itertools.product(*[range(n) for n in lengths]):
+                point = np.array([grid[d][item] for d in dims])
+                if not self.check(point):
+                    for d in dims:
+                        grid[d][item] = np.nan
         return grid
 
     def draw(self, ax, color=None, lw=1.0, **kwargs):
@@ -375,8 +488,7 @@ def find_symmetry_points(cell):
     origin = np.zeros(cell.dim)
     corners = cell.points
     centers = list()
-    for i, item in enumerate(cell.edges):
-        p1, p2 = cell.points[item]
+    for i, (p1, p2) in enumerate(cell.edges):
         line = Line.from_points(p1, p2)
         center = line(0.5)
         if not len(np.where(np.array(np.abs(cell.points - center) < 1e-5).all(axis=1))[0]):

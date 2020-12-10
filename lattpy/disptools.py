@@ -10,7 +10,8 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from .utils import vlinspace, chain
+from .utils import vlinspace, chain, distance
+from .plotting import draw_lines
 
 
 def band_subplots(ticks, labels, x_label="k", disp_label="E(k)", grid="both"):
@@ -109,11 +110,10 @@ class DispersionPath:
     n_sect: int
     """
 
-    def __init__(self, dim=3):
+    def __init__(self, dim=0):
         self.dim = dim
         self.names = list()
         self.points = list()
-        self.scales = list()
         self.n_sect = 0
 
     @classmethod
@@ -152,7 +152,12 @@ class DispersionPath:
         """
         if not name:
             name = str(len(self.points))
-        self.points.append(point[:self.dim])
+        point = np.asarray(point)
+        if self.dim:
+            point = point[:self.dim]
+        else:
+            self.dim = len(point)
+        self.points.append(point)
         self.names.append(name)
         return self
 
@@ -234,6 +239,26 @@ class DispersionPath:
         labels: (N) list
         """
         return np.arange(self.num_points) * self.n_sect, self.names
+
+    def edges(self):
+        """Constructs the edges of the path."""
+        return list(chain(self.points))
+
+    def distances(self):
+        """Computes the distances between the edges of the path."""
+        dists = list()
+        for p0, p1 in self.edges():
+            dists.append(distance(p0, p1))
+        return np.array(dists)
+
+    def scales(self):
+        """Computes the scales of the the edges of the path."""
+        dists = self.distances()
+        return dists / dists[0]
+
+    def draw(self, ax, color=None, lw=1., **kwargs):
+        lines = draw_lines(ax, self.edges(), color=color, lw=lw, **kwargs)
+        return lines
 
     def subplots(self, xlabel="", ylabel="", grid=True):
         """ Creates an empty matplotlib plot with configured axes for the path.

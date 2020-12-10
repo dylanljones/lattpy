@@ -10,9 +10,9 @@
 
 import itertools
 import numpy as np
+from matplotlib.lines import Line2D
 from matplotlib.collections import LineCollection
-from mpl_toolkits.mplot3d.art3d import Line3DCollection
-
+from mpl_toolkits.mplot3d.art3d import Line3DCollection, Line3D
 
 # Golden ratio as standard ratio for plot-figures
 GOLDEN_RATIO = (np.sqrt(5) - 1.0) / 2.0
@@ -75,6 +75,19 @@ def draw_lines(ax, segments, *args, **kwargs):
     return coll
 
 
+def draw_line(ax, points, *args, **kwargs):
+    dim = len(points[0])
+    if dim < 3:
+        line = Line2D(*points.T, *args, **kwargs)
+        ax.add_line(line)
+    elif dim == 3:
+        line = Line3D(*points.T, *args, **kwargs)
+        ax.add_line(line)
+    else:
+        raise ValueError(f"Can't plot lines with dimension {dim}")
+    return line
+
+
 def draw_arrows(ax, vectors, pos=None, **kwargs):
     vectors = np.atleast_2d(vectors).T
     dim = len(vectors)
@@ -91,6 +104,15 @@ def draw_vectors(ax, vectors, pos=None, ls="-", lw=1, **kwargs):
     for v in vectors:
         segments.append([pos, pos + v])
     return draw_lines(ax, segments, linestyles=ls, linewidths=lw, **kwargs)
+
+
+def draw_points(ax, points, s=10, color=None, alpha=1.0, **kwargs):
+    scat = ax.scatter(*np.atleast_2d(points).T, s=s, color=color, alpha=alpha, **kwargs)
+    # Manualy update data-limits
+    # ax.ignore_existing_data_limits = True
+    datalim = scat.get_datalim(ax.transData)
+    ax.update_datalim(datalim)
+    return scat
 
 
 def draw_sites(ax, positions, size, **kwargs):
@@ -129,3 +151,21 @@ def draw_cell(ax, vectors, color="k", lw=2, outlines=True):
                 v, pos = vecs[0], np.sum(vecs[1:], axis=0)
                 data = np.asarray([pos, pos + v]).T
                 ax.plot(*data, color=color, ls='--', lw=1)
+
+
+def draw_plane(ax, points, size=3, color=None, draw=True, fill=True, alpha=0.2, lw=0.5):
+    scatter = ax.scatter(*points.T, s=size, color=color)
+    color = scatter.get_facecolor()[0]
+    if draw:
+        linepoints = np.append(points, points[0:1, :], axis=0)
+        line = Line3D(*linepoints.T, color=color, lw=lw)
+        ax.add_line(line)
+    if fill:
+        x, y, z = points.T
+        xx = x.reshape(2, 2)
+        yy = y.reshape(2, 2)
+        zz = z.reshape(2, 2)
+        xx[1, 0], xx[1, 1] = xx[1, 1], xx[1, 0]
+        yy[1, 0], yy[1, 1] = yy[1, 1], yy[1, 0]
+        zz[1, 0], zz[1, 1] = zz[1, 1], zz[1, 0]
+        ax.plot_surface(xx, yy, zz, color=color, alpha=alpha)

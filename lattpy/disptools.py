@@ -113,6 +113,7 @@ class DispersionPath:
         self.dim = dim
         self.names = list()
         self.points = list()
+        self.scales = list()
         self.n_sect = 0
 
     @classmethod

@@ -21,6 +21,13 @@ from .unitcell import (
     UnitCell
 )
 
+from .geometry import (
+    Line,
+    Plane,
+    WignerSeitzCell,
+    wigner_seitz_points
+)
+
 from .data import (
     NeighbourMap,
     LatticeData

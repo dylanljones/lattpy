@@ -274,6 +274,8 @@ class Lattice:
         v_rec: np.ndarray
         """
         two_pi = 2 * np.pi
+        if self.dim == 1:
+            return np.array([[two_pi / self.vectors[0, 0]]])
 
         # Convert basis vectors of the bravais lattice to 3D, compute
         # reciprocal vectors and convert back to actual dimension.
@@ -329,9 +331,14 @@ class Lattice:
         -------
         ws_cell: WignerSeitzCell
         """
-        nvecs = list(self.get_neighbour_cells())
-        positions = [self.translate(nvec) for nvec in nvecs]
-        return WignerSeitzCell(wigner_seitz_points(positions))
+        if self.dim == 1:
+            lim = np.abs(self.vectors[0, 0]) / 2
+            intersections = np.array([[-lim], [+lim]])
+        else:
+            nvecs = list(self.get_neighbour_cells())
+            positions = [self.translate(nvec) for nvec in nvecs]
+            intersections = wigner_seitz_points(positions)
+        return WignerSeitzCell(intersections)
 
     def brillouin_zone(self, min_negative: Optional[bool] = False) -> WignerSeitzCell:
         """Computes the first Brillouin-zone of the lattice structure.

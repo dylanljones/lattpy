@@ -22,10 +22,11 @@ from .unitcell import (
 )
 
 from .geometry import (
+    VoronoiTree,
+    WignerSeitzCell,
+    find_symmetry_points,
     Line,
     Plane,
-    WignerSeitzCell,
-    wigner_seitz_points
 )
 
 from .data import (

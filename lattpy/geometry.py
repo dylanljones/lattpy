@@ -6,8 +6,136 @@
 
 import numpy as np
 import itertools
+import matplotlib.pyplot as plt
+from scipy.spatial import cKDTree, Voronoi
 from .utils import distance
-from .plotting import draw_line, draw_lines, draw_plane
+from .plotting import draw_line, draw_points, draw_vectors, draw_planes
+
+
+class VoronoiTree:
+
+    def __init__(self, points):
+        points = np.asarray(points)
+        dim = points.shape[1]
+        edges = list()
+        if dim > 1:
+            vor = Voronoi(points)
+            # Save only finite vertices
+            vertices = vor.vertices  # noqa
+            for pointidx, simplex in zip(vor.ridge_points, vor.ridge_vertices):  # noqa
+                simplex = np.asarray(simplex)
+                if np.all(simplex >= 0):
+                    edges.append(simplex)
+        else:
+            vertices = points / 2
+            idx = np.where((vertices == np.zeros(vertices.shape[1])).all(axis=1))[0]
+            vertices = np.delete(vertices, idx)
+            vertices = np.atleast_2d(vertices).T
+
+        self.dim = dim
+        self.points = points
+        self.edges = edges
+        self.vertices = vertices
+        self.tree = cKDTree(points)  # noqa
+        self.origin = self.query(np.zeros(dim))
+
+    def query(self, x, k=1, eps=0):
+        return self.tree.query(x, k, eps)  # noqa
+
+    def draw(self, ax=None, color="C0", size=3, lw=1, alpha=0.15, point_color="k", point_size=3,
+             draw_data=True, draw_vertices=True, draw_edges=True, draw_faces=True):
+
+        if ax is None:
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection="3d" if self.dim == 3 else None)
+
+        if draw_data:
+            draw_points(ax, self.points, s=point_size**2, color=point_color)
+            if self.dim > 1:
+                draw_vectors(ax, self.points, lw=0.5, color=point_color)
+        if draw_vertices:
+            draw_points(ax, self.vertices, s=size**2, color=color)
+
+        draw_planes(ax, self.vertices, self.edges, color, color, lw, alpha, draw_edges, draw_faces)
+
+        return ax
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(vertices: {len(self.vertices)})"
+
+    def __str__(self):
+        return f"vertices:\n{self.vertices}\n" \
+               f"egdes:\n{self.edges}"
+
+
+class WignerSeitzCell(VoronoiTree):
+
+    def __init__(self, points):
+        super().__init__(points)
+        self._root = self.query(np.zeros(self.dim))[1]
+
+    @property
+    def limits(self):
+        return np.array([np.min(self.vertices, axis=0), np.max(self.vertices, axis=0)]).T
+
+    @property
+    def size(self):
+        return self.limits[1] - self.limits[0]
+
+    def check(self, points):
+        cells = np.asarray(self.query(points)[1])
+        return cells == self._root
+
+    def arange(self, steps, offset=0.):
+        limits = self.limits() * (1 + offset)
+        steps = [steps] * self.dim if not hasattr(steps, "__len__") else steps
+        return [np.arange(*lims, step=step) for lims, step in zip(limits, steps)]
+
+    def linspace(self, nums, offset=0.):
+        limits = self.limits() * (1 + offset)
+        nums = [nums] * self.dim if not hasattr(nums, "__len__") else nums
+        return [np.linspace(*lims, num=num) for lims, num in zip(limits, nums)]
+
+    def meshgrid(self, nums=None, steps=None, offset=0., check=True):
+        if nums is not None:
+            grid = np.array(np.meshgrid(*self.linspace(nums, offset)))
+        elif steps is not None:
+            grid = np.array(np.meshgrid(*self.arange(steps, offset)))
+        else:
+            raise ValueError("Either the number of points or the step size muste be specified")
+
+        if check:
+            lengths = grid.shape[1:]
+            dims = range(len(lengths))
+            for item in itertools.product(*[range(n) for n in lengths]):
+                point = np.array([grid[d][item] for d in dims])
+                if not self.check(point):
+                    for d in dims:
+                        grid[d][item] = np.nan
+        return grid
+
+
+def find_symmetry_points(cell):
+    origin = np.zeros(cell.dim)
+    corners = cell.points
+    centers = list()
+    for i, (p1, p2) in enumerate(cell.edges):
+        center = p1 + (p2 - p1) / 2
+        if not len(np.where(np.array(np.abs(cell.points - center) < 1e-5).all(axis=1))[0]):
+            centers.append(center)
+    centers = np.array(centers)
+    lim = -0.01
+    centers = centers[np.where(np.min(centers, axis=1) >= lim)[0]]
+    corners = corners[np.where(corners[:, 0] >= lim)[0]]
+    center = centers[np.argmax(centers[:, 0])]
+    indices = np.argsort([distance(center, p) for p in corners])
+    corners = corners[indices[:2]]
+    return np.array([origin, center, *corners])
+
+
+# =========================================================================
+# OLD
+# =========================================================================
 
 
 def perp_vector(v: np.ndarray) -> np.ndarray:
@@ -151,9 +279,6 @@ def line_segment_intersection(p0, v, point1, point2, epsilon=1e-6):
     return None
 
 
-# ==================================================================================================
-
-
 class Line:
 
     def __init__(self, p0, v):
@@ -284,11 +409,6 @@ class Plane:
         p4 = self.__call__(x10, x2)
         return np.asarray([p1, p2, p3, p4])
 
-    def draw(self, ax, x1=1, x2=1, x10=0, x20=0, size=3, color=None, draw=True, fill=True,
-             alpha=0.2, lw=0.5):
-        points = self.data(x1, x2, x10, x20)
-        draw_plane(ax, points, size, color, draw, fill, alpha, lw)
-
     def intersection(self, other, epsilon=1e-6):
         normal = self.normal_vec()
         if isinstance(other, Line):
@@ -296,208 +416,3 @@ class Plane:
         elif isinstance(other, Plane):
             return plane_plane_intersection(self.p0, normal, other.p0, other.normal_vec(), epsilon)
         return None
-
-
-# =========================================================================
-
-
-def get_intersections(items):
-    intersections = list()
-    for item1, item2 in itertools.permutations(items, r=2):
-        inter = item1.intersection(item2)
-        if inter is not None:
-            intersections.append(inter)
-    return intersections
-
-
-def unique(a, axis=0, tol=1e-10):
-    scale = 1 / tol
-    return np.unique(np.floor(scale*a) / scale, axis=axis)
-
-
-def wigner_seitz_points(positions):
-    if len(positions[0]) > 2:
-        planes = list()
-        for vec in positions:
-            vec = np.array(vec)
-            plane = Plane(vec / 2, vec)
-            planes.append(plane)
-        lines = get_intersections(planes)
-    else:
-        lines = list()
-        for pos in positions:
-            line = Line.from_points(pos)
-            pline = line.perp(line(0.5))
-            lines.append(pline)
-
-    # Remove lattice points from intersections
-    points = list()
-    for p in get_intersections(lines):
-        if not len(np.where(np.array(np.abs(positions - p) < 1e-5).all(axis=1))[0]):
-            points.append(p)
-
-    points = np.array(points)
-    return unique(points, axis=0)
-
-
-def find_edges(points):
-    points = np.asarray(points)
-    num_points, dim = points.shape
-    all_indices = np.arange(num_points)
-    pairs = list()
-    for i, p1 in enumerate(points):
-        indices = np.delete(all_indices, i)
-        distances = np.array([distance(p1, points[j]) for j in indices])
-        neighbours = indices[np.argsort(distances)[:dim]]
-        pairs.extend([sorted([i, j]) for j in neighbours])
-    return np.unique(pairs, axis=0)
-
-
-def cell_distances(points):
-    origin = np.zeros(len(points[0]))
-    distances = list()
-    distances.extend(np.min(points, axis=0))
-    distances.extend(np.max(points, axis=0))
-    for p in points:
-        distances.append(distance(p, origin))
-    return distances
-
-
-def check_point2d(edges, point, size=5, epsilon=1e-6):
-    p0, v = point, size * point
-    for point1, point2 in edges:
-        inter = line_segment_intersection(p0, v, point1, point2, epsilon)
-        if inter is not None:
-            return True
-    return False
-
-
-def check_points2d(cell, grid, value=np.nan):
-    mindist = min(cell_distances(cell.points)) - 0.1
-    size = 5 * np.max(cell.limits)
-    xx, yy = grid
-    for i in range(xx.shape[0]):
-        for j in range(yy.shape[1]):
-            point = np.array([xx[i, j], yy[i, j]])
-            dist = np.sum(np.sqrt(point ** 2))
-            if dist > mindist:
-                if not check_point2d(cell, point, size):
-                    xx[i, j] = yy[i, j] = value
-    return np.array([xx, yy])
-
-
-class WignerSeitzCell:
-
-    def __init__(self, points):
-        self.points = np.array([])
-        self._edges = np.array([])
-        self._verts = np.array([])
-        self.limits = np.array([])
-        self._mindist = 0
-        self._maxdist = 0
-        self.init(points)
-
-    def init(self, points):
-        self.points = points
-        self.limits = np.array([np.min(self.points, axis=0), np.max(self.points, axis=0)]).T
-        self._edges = np.array([])
-        self._verts = np.array([])
-        dim = len(self.limits)
-        if dim > 1:
-            self._edges = np.asarray(find_edges(self.points))
-        if dim > 2:
-            pass
-        cell_dists = cell_distances(self.points)
-        self._mindist = min(cell_dists)
-        self._maxdist = max(cell_dists)
-
-    @property
-    def size(self):
-        return self.limits[1] - self.limits[0]
-
-    @property
-    def dim(self):
-        return len(self.limits)
-
-    @property
-    def edge_indices(self):
-        return self._edges
-
-    @property
-    def edges(self):
-        return self.points[self._edges]
-
-    @property
-    def vertex_indices(self):
-        return self._edges
-
-    @property
-    def vertices(self):
-        return self.points[self._verts]
-
-    def edge(self, i):
-        return self.edges[i]
-
-    def vertex(self, i):
-        return self.points[self._verts[i]]
-
-    def edge_lines(self):
-        lines = list()
-        for i, j in self._edges:
-            lines.append(self.points[[i, j]])
-        return lines
-
-    def check(self, point):
-        if np.sum(np.sqrt(point ** 2)) < self._mindist - 0.1:
-            return True
-        return check_point2d(self.edges, point, 5 * self._maxdist)
-
-    def arange(self, steps, offset=0.):
-        limits = self.limits * (1 + offset)
-        steps = [steps] * self.dim if not hasattr(steps, "__len__") else steps
-        return [np.arange(*lims, step=step) for lims, step in zip(limits, steps)]
-
-    def linspace(self, nums, offset=0.):
-        limits = self.limits * (1 + offset)
-        nums = [nums] * self.dim if not hasattr(nums, "__len__") else nums
-        return [np.linspace(*lims, num=num) for lims, num in zip(limits, nums)]
-
-    def meshgrid(self, nums=None, steps=None, offset=0., check=False):
-        if nums is not None:
-            grid = np.array(np.meshgrid(*self.linspace(nums, offset)))
-        elif steps is not None:
-            grid = np.array(np.meshgrid(*self.arange(steps, offset)))
-        else:
-            raise ValueError("Either the number of points or the step size muste be specified")
-
-        if check:
-            lengths = grid.shape[1:]
-            dims = range(len(lengths))
-            for item in itertools.product(*[range(n) for n in lengths]):
-                point = np.array([grid[d][item] for d in dims])
-                if not self.check(point):
-                    for d in dims:
-                        grid[d][item] = np.nan
-        return grid
-
-    def draw(self, ax, color=None, lw=1.0, **kwargs):
-        draw_lines(ax, self.edge_lines(), color=color, lw=lw, **kwargs)
-
-
-def find_symmetry_points(cell):
-    origin = np.zeros(cell.dim)
-    corners = cell.points
-    centers = list()
-    for i, (p1, p2) in enumerate(cell.edges):
-        line = Line.from_points(p1, p2)
-        center = line(0.5)
-        if not len(np.where(np.array(np.abs(cell.points - center) < 1e-5).all(axis=1))[0]):
-            centers.append(center)
-    centers = np.array(centers)
-    lim = -0.01
-    centers = centers[np.where(np.min(centers, axis=1) >= lim)[0]]
-    corners = corners[np.where(corners[:, 0] >= lim)[0]]
-    center = centers[np.argmax(centers[:, 0])]
-    indices = np.argsort([distance(center, p) for p in corners])
-    corners = corners[indices[:2]]
-    return np.array([origin, center, *corners])

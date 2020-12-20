@@ -12,7 +12,7 @@ import itertools
 import numpy as np
 from matplotlib.lines import Line2D
 from matplotlib.collections import LineCollection
-from mpl_toolkits.mplot3d.art3d import Line3DCollection, Line3D
+from mpl_toolkits.mplot3d.art3d import Line3DCollection, Line3D, Poly3DCollection
 
 # Golden ratio as standard ratio for plot-figures
 GOLDEN_RATIO = (np.sqrt(5) - 1.0) / 2.0
@@ -98,7 +98,7 @@ def draw_arrows(ax, vectors, pos=None, **kwargs):
 
 
 def draw_vectors(ax, vectors, pos=None, ls="-", lw=1, **kwargs):
-    pos = pos if pos is not None else np.zeros(2)
+    pos = pos if pos is not None else np.zeros(len(vectors[0]))
     vectors = np.atleast_2d(vectors)
     segments = list()
     for v in vectors:
@@ -107,7 +107,14 @@ def draw_vectors(ax, vectors, pos=None, ls="-", lw=1, **kwargs):
 
 
 def draw_points(ax, points, s=10, color=None, alpha=1.0, **kwargs):
-    scat = ax.scatter(*np.atleast_2d(points).T, s=s, color=color, alpha=alpha, **kwargs)
+    # Fix 1D case
+    points = np.atleast_1d(points)
+    if len(points.shape) == 1:
+        points = points[:, np.newaxis]
+    if points.shape[1] == 1:
+        points = np.hstack((points, np.zeros((points.shape[0], 1))))
+
+    scat = ax.scatter(*points.T, s=s, color=color, alpha=alpha, **kwargs)
     # Manualy update data-limits
     # ax.ignore_existing_data_limits = True
     datalim = scat.get_datalim(ax.transData)
@@ -153,19 +160,20 @@ def draw_cell(ax, vectors, color="k", lw=2, outlines=True):
                 ax.plot(*data, color=color, ls='--', lw=1)
 
 
-def draw_plane(ax, points, size=3, color=None, draw=True, fill=True, alpha=0.2, lw=0.5):
-    scatter = ax.scatter(*points.T, s=size, color=color)
-    color = scatter.get_facecolor()[0]
-    if draw:
-        linepoints = np.append(points, points[0:1, :], axis=0)
-        line = Line3D(*linepoints.T, color=color, lw=lw)
-        ax.add_line(line)
-    if fill:
-        x, y, z = points.T
-        xx = x.reshape(2, 2)
-        yy = y.reshape(2, 2)
-        zz = z.reshape(2, 2)
-        xx[1, 0], xx[1, 1] = xx[1, 1], xx[1, 0]
-        yy[1, 0], yy[1, 1] = yy[1, 1], yy[1, 0]
-        zz[1, 0], zz[1, 1] = zz[1, 1], zz[1, 0]
-        ax.plot_surface(xx, yy, zz, color=color, alpha=alpha)
+def draw_planes(ax, vertices, edges, lc=None, fc=None, lw=1, alpha=0.15, draw=True, fill=True):
+    try:
+        dim = len(vertices[0])
+    except TypeError:
+        dim = 1
+    if dim == 2 and draw:
+        segments = np.array([vertices[i] for i in edges])
+        draw_lines(ax, segments, color=lc, lw=lw)
+    elif dim == 3:
+        if draw:
+            segments = np.array([vertices[np.append(i, i[0])] for i in edges])
+            draw_lines(ax, segments, color=lc, lw=lw)
+        if fill:
+            for simplex in edges:
+                verts = [list(vertices[simplex])]
+                poly = Poly3DCollection(verts, alpha=alpha, facecolor=fc, linewidths=1)
+                ax.add_collection3d(poly)

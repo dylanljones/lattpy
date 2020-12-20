@@ -24,7 +24,7 @@ from .plotting import (
 )
 from .unitcell import Atom
 from .data import LatticeData
-from .geometry import wigner_seitz_points, WignerSeitzCell
+from .geometry import WignerSeitzCell
 
 
 class Lattice:
@@ -324,6 +324,64 @@ class Lattice:
             rlatt.calculate_distances(self._num_dist)
         return rlatt
 
+
+    def get_neighbour_cells(self, distidx: Optional[int] = 0,
+                            include_origin: Optional[bool] = True) -> np.ndarray:
+        """ Find all neighbouring unit cells.
+
+        Parameters
+        ----------
+        distidx: int, default
+            Index of distance to neighbouring cells, default is 0 (nearest neighbours).
+        include_origin: bool, optional
+            If ``True`` the origin is included in the set.
+
+        Returns
+        -------
+        indices: np.ndarray
+        """
+        # Build cell points
+        max_factor = distidx + 1
+        axis_factors = np.arange(-max_factor, max_factor + 1)
+        factors = np.array(list(itertools.product(axis_factors, repeat=self.dim)))
+        points = np.dot(factors, self.vectors[np.newaxis, :, :])[:, 0, :]
+
+        # Compute distances to origin for all points
+        distances = np.linalg.norm(points, axis=1)
+
+        # Set maximum distances value to number of neighbours
+        # + number of unique vector lengths
+        max_distidx = distidx + len(np.unique(np.linalg.norm(self.vectors, axis=1)))
+
+        # Return points with distance lower than maximum distance
+        maxdist = np.sort(np.unique(distances))[max_distidx]
+        indices = np.where(distances <= maxdist)[0]
+
+        if not include_origin:
+            idx = np.where((points[indices] == np.zeros(self.dim)).all(axis=1))[0]
+            indices = np.delete(indices, idx)
+
+        return factors[indices]
+
+    def get_neighbour_cell_positions(self, distidx: Optional[int] = 0,
+                                     include_origin: Optional[bool] = True) -> np.ndarray:
+        """ Find all neighbouring unit cells.
+
+        Parameters
+        ----------
+        distidx: int, default
+            Index of distance to neighbouring cells, default is 0 (nearest neighbours).
+        include_origin: bool, optional
+            If ``True`` the origin is included in the set.
+
+        Returns
+        -------
+        positions: np.ndarray
+        """
+        indices = self.get_neighbour_cells(distidx, include_origin)
+        positions = np.dot(indices, self.vectors[np.newaxis, :, :])[:, 0, :]
+        return positions
+
     def wigner_seitz_cell(self) -> WignerSeitzCell:
         """Computes the Wigner-Seitz cell of the lattice structure.
 
@@ -331,14 +389,9 @@ class Lattice:
         -------
         ws_cell: WignerSeitzCell
         """
-        if self.dim == 1:
-            lim = np.abs(self.vectors[0, 0]) / 2
-            intersections = np.array([[-lim], [+lim]])
-        else:
-            nvecs = list(self.get_neighbour_cells())
-            positions = [self.translate(nvec) for nvec in nvecs]
-            intersections = wigner_seitz_points(positions)
-        return WignerSeitzCell(intersections)
+        nvecs = self.get_neighbour_cells(include_origin=True)
+        positions = np.dot(nvecs, self.vectors[np.newaxis, :, :])[:, 0, :]
+        return WignerSeitzCell(positions)
 
     def brillouin_zone(self, min_negative: Optional[bool] = False) -> WignerSeitzCell:
         """Computes the first Brillouin-zone of the lattice structure.
@@ -565,28 +618,6 @@ class Lattice:
         for n in n_vecs:
             for alpha in range(self._num_base):
                 yield n, alpha
-
-    def get_neighbour_cells(self, nvec: Optional[Union[int, Sequence[int]]] = None) -> Iterable:
-        """ Find all neighbouring unit cells.
-
-        Parameters
-        ----------
-        nvec: array_like, optional
-            translation vector of site, the default is the origin.
-
-        Returns
-        -------
-        indices: Iterable
-        """
-        nvec = np.zeros(self.dim) if nvec is None else np.atleast_1d(nvec)
-        pos0 = self.translate(nvec)
-        next_nvec = nvec.copy()
-        next_nvec[0] += 1
-        dist = distance(pos0, self.translate(next_nvec))
-        for nvec1 in self._neighbour_cell_range(nvec):
-            pos1 = self.translate(nvec1)
-            if np.round(abs(distance(pos0, pos1) - dist), decimals=self.DIST_DECIMALS) == 0.0:
-                yield nvec1
 
     def calculate_neighbours(self, nvec: Optional[Union[int, Sequence[int]]] = None,
                              alpha: Optional[int] = 0,

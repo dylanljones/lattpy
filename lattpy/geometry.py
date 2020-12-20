@@ -12,7 +12,7 @@ import numpy as np
 import itertools
 import matplotlib.pyplot as plt
 from scipy.spatial import cKDTree, Voronoi
-from .utils import distance
+from .utils import distance, chain
 from .plotting import draw_line, draw_points, draw_vectors, draw_planes
 
 
@@ -22,7 +22,12 @@ class VoronoiTree:
         points = np.asarray(points)
         dim = points.shape[1]
         edges = list()
-        if dim > 1:
+        if dim == 1:
+            vertices = points / 2
+            idx = np.where((vertices == np.zeros(vertices.shape[1])).all(axis=1))[0]
+            vertices = np.delete(vertices, idx)
+            vertices = np.atleast_2d(vertices).T
+        else:
             vor = Voronoi(points)
             # Save only finite vertices
             vertices = vor.vertices  # noqa
@@ -30,11 +35,6 @@ class VoronoiTree:
                 simplex = np.asarray(simplex)
                 if np.all(simplex >= 0):
                     edges.append(simplex)
-        else:
-            vertices = points / 2
-            idx = np.where((vertices == np.zeros(vertices.shape[1])).all(axis=1))[0]
-            vertices = np.delete(vertices, idx)
-            vertices = np.atleast_2d(vertices).T
 
         self.dim = dim
         self.points = points
@@ -118,23 +118,33 @@ class WignerSeitzCell(VoronoiTree):
                         grid[d][item] = np.nan
         return grid
 
-
-def find_symmetry_points(cell):
-    origin = np.zeros(cell.dim)
-    corners = cell.points
-    centers = list()
-    for i, (p1, p2) in enumerate(cell.edges):
-        center = p1 + (p2 - p1) / 2
-        if not len(np.where(np.array(np.abs(cell.points - center) < 1e-5).all(axis=1))[0]):
-            centers.append(center)
-    centers = np.array(centers)
-    lim = -0.01
-    centers = centers[np.where(np.min(centers, axis=1) >= lim)[0]]
-    corners = corners[np.where(corners[:, 0] >= lim)[0]]
-    center = centers[np.argmax(centers[:, 0])]
-    indices = np.argsort([distance(center, p) for p in corners])
-    corners = corners[indices[:2]]
-    return np.array([origin, center, *corners])
+    def symmetry_points(self):
+        origin = np.zeros((1,))
+        corners = self.vertices.copy()
+        face_centers = None
+        if self.dim == 1:
+            return origin, corners, None, None
+        elif self.dim == 2:
+            edge_centers = np.zeros((len(self.edges), 2))
+            for i, simplex in enumerate(self.edges):
+                p1, p2 = self.vertices[simplex]
+                edge_centers[i] = p1 + (p2 - p1) / 2
+            edge_centers = np.asarray(edge_centers)
+        elif self.dim == 3:
+            edge_centers = list()
+            face_centers = list()
+            for i, simplex in enumerate(self.edges):
+                edges = self.vertices[simplex]
+                # compute face centers
+                face_centers.append(np.mean(edges, axis=0))
+                # compute edge centers
+                for p1, p2 in chain(edges, cycle=True):
+                    edge_centers.append(p1 + (p2 - p1) / 2)
+            edge_centers = np.asarray(edge_centers)
+            face_centers = np.asarray(face_centers)
+        else:
+            raise NotImplementedError()
+        return origin, corners, edge_centers, face_centers
 
 
 # =========================================================================

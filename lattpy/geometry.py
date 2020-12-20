@@ -87,12 +87,12 @@ class WignerSeitzCell(VoronoiTree):
         return cells == self._root
 
     def arange(self, steps, offset=0.):
-        limits = self.limits() * (1 + offset)
+        limits = self.limits * (1 + offset)
         steps = [steps] * self.dim if not hasattr(steps, "__len__") else steps
         return [np.arange(*lims, step=step) for lims, step in zip(limits, steps)]
 
     def linspace(self, nums, offset=0.):
-        limits = self.limits() * (1 + offset)
+        limits = self.limits * (1 + offset)
         nums = [nums] * self.dim if not hasattr(nums, "__len__") else nums
         return [np.linspace(*lims, num=num) for lims, num in zip(limits, nums)]
 

@@ -12,7 +12,7 @@ import numpy as np
 import itertools
 import matplotlib.pyplot as plt
 from scipy.spatial import cKDTree, Voronoi
-from .utils import distance, chain
+from .utils import chain
 from .plotting import draw_line, draw_points, draw_vectors, draw_planes
 
 
@@ -129,7 +129,6 @@ class WignerSeitzCell(VoronoiTree):
             for i, simplex in enumerate(self.edges):
                 p1, p2 = self.vertices[simplex]
                 edge_centers[i] = p1 + (p2 - p1) / 2
-            edge_centers = np.asarray(edge_centers)
         elif self.dim == 3:
             edge_centers = list()
             face_centers = list()

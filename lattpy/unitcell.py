@@ -21,7 +21,8 @@ class Atom(collections.MutableMapping):
 
     __slots__ = ["_index", "_name", "_params"]
 
-    def __init__(self, name: Optional[str] = None, color: Optional[str] = None, size: Optional[int] = 10, **kwargs):
+    def __init__(self, name: Optional[str] = None, color: Optional[str] = None,
+                 size: Optional[int] = 10, **kwargs):
         super().__init__()
         index = next(Atom._counter)
         self._index = index
@@ -182,7 +183,8 @@ class UnitCell(collections.Sequence):
             The indx of the atom to remove.
         """
         if index >= len(self._atoms):
-            raise ValueError(f"Index {index} out of range for unitcell with {len(self._atoms)} atoms!")
+            raise ValueError(f"Index {index} out of range for unitcell "
+                             f"with {len(self._atoms)} atoms!")
         del self._atoms[index]
         del self._positions[index]
 
@@ -214,7 +216,8 @@ class UnitCell(collections.Sequence):
                     return at
             raise ValueError(f"No Atom with the name '{atom}' found!")
 
-    def get_atom_attrib(self, atom: Union[int, str, Atom], attrib: str, default: Optional[Any] = None) -> Any:
+    def get_atom_attrib(self, atom: Union[int, str, Atom], attrib: str,
+                        default: Optional[Any] = None) -> Any:
         """ Returns an attribute of a specific atom in the unit cell.
 
         Parameters
@@ -233,7 +236,8 @@ class UnitCell(collections.Sequence):
         atom = self.get_atom(atom)
         return atom.get(attrib, default)
 
-    def get_atom_positions(self, atom: Union[int, str, Atom], atleast2d: Optional[bool] = True) -> Iterator[np.ndarray]:
+    def get_atom_positions(self, atom: Union[int, str, Atom],
+                           atleast2d: Optional[bool] = True) -> Iterator[np.ndarray]:
         """Return a list of all positions of a specific atom in the unitcell.
 
         Parameters

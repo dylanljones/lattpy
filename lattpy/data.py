@@ -149,7 +149,8 @@ class NeighbourMap(Mapping):
         num_dist = self._neighbours.shape[1]
         self._periodic.setdefault(site, [set() for _ in range(num_dist)])[distidx].add(neighbour)
         if symmetric:
-            self._periodic.setdefault(neighbour, [set() for _ in range(num_dist)])[distidx].add(site)
+            empty_sets = [set() for _ in range(num_dist)]
+            self._periodic.setdefault(neighbour, empty_sets)[distidx].add(site)
 
     def remove(self, site: int, neighbour: int, distidx: Optional[int] = 0,
                symmetric: Optional[bool] = False) -> None:
@@ -362,7 +363,8 @@ class NeighbourMap(Mapping):
         for site in range(self._neighbours.shape[0]):
             self.ensure_neighbour_symmetry(site)
 
-    def __getitem__(self, item: Union[float, tuple, list, np.ndarray, slice]) -> Union[float, np.ndarray]:
+    def __getitem__(self,
+                    item: Union[float, tuple, list, np.ndarray, slice]) -> Union[float, np.ndarray]:
         """Returns the neighbours of a site."""
         return self._neighbours[item]
 
@@ -732,7 +734,8 @@ class LatticeData:
         delim = " | "
         headers = "Indices", "Positions", "Neighbours"
         lines = list()
-        lines.append(f"{headers[0]:<{widths[0]}}{delim}{headers[1]:<{widths[1]}}{delim}{headers[2]}")
+        s = f"{headers[0]:<{widths[0]}}{delim}{headers[1]:<{widths[1]}}{delim}{headers[2]}"
+        lines.append(s)
         for site in range(self.num_sites):
             pos = "[" + ", ".join(f"{x:.1f}" for x in self.positions[site]) + "]"
             idx = str(self.indices[site])

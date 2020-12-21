@@ -10,6 +10,7 @@
 
 import itertools
 import numpy as np
+from collections.abc import Iterable
 from matplotlib.lines import Line2D
 from matplotlib.collections import LineCollection
 from mpl_toolkits.mplot3d.art3d import Line3DCollection, Line3D, Poly3DCollection
@@ -160,20 +161,9 @@ def draw_cell(ax, vectors, color="k", lw=2, outlines=True):
                 ax.plot(*data, color=color, ls='--', lw=1)
 
 
-def draw_planes(ax, vertices, edges, lc=None, fc=None, lw=1, alpha=0.15, draw=True, fill=True):
-    try:
-        dim = len(vertices[0])
-    except TypeError:
-        dim = 1
-    if dim == 2 and draw:
-        segments = np.array([vertices[i] for i in edges])
-        draw_lines(ax, segments, color=lc, lw=lw)
-    elif dim == 3:
-        if draw:
-            segments = np.array([vertices[np.append(i, i[0])] for i in edges])
-            draw_lines(ax, segments, color=lc, lw=lw)
-        if fill:
-            for simplex in edges:
-                verts = [list(vertices[simplex])]
-                poly = Poly3DCollection(verts, alpha=alpha, facecolor=fc, linewidths=1)
-                ax.add_collection3d(poly)
+def draw_surfaces(ax, vertices, color=None, alpha=0.5):
+    if not isinstance(vertices[0][0], Iterable):
+        vertices = [list(vertices)]
+    poly = Poly3DCollection(vertices, alpha=alpha, facecolor=color)
+    ax.add_collection3d(poly)
+    return poly

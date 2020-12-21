@@ -23,9 +23,7 @@ from .unitcell import (
 
 from .geometry import (
     VoronoiTree,
-    WignerSeitzCell,
-    Line,
-    Plane,
+    WignerSeitzCell
 )
 
 from .data import (

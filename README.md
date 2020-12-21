@@ -1,6 +1,6 @@
-# lattpy 0.3.0
+# lattpy
 
-NOTE: This project is still under development!
+NOTE: This project is still under development and may change significantly!
 
 `lattpy` is a python package for modeling bravais lattices and constructing (finite) lattice structures.
 

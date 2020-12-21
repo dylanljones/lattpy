@@ -149,7 +149,8 @@ class NeighbourMap(Mapping):
         num_dist = self._neighbours.shape[1]
         self._periodic.setdefault(site, [set() for _ in range(num_dist)])[distidx].add(neighbour)
         if symmetric:
-            self._periodic.setdefault(neighbour, [set() for _ in range(num_dist)])[distidx].add(site)
+            empty_sets = [set() for _ in range(num_dist)]
+            self._periodic.setdefault(neighbour, empty_sets)[distidx].add(site)
 
     def remove(self, site: int, neighbour: int, distidx: Optional[int] = 0,
                symmetric: Optional[bool] = False) -> None:
@@ -176,6 +177,25 @@ class NeighbourMap(Mapping):
         self._neighbours[site, distidx].remove(neighbour)
         if symmetric:
             self._neighbours[neighbour, distidx].remove(site)
+
+    def remove_site_neighbours(self, site, symmetric=True):
+        """Removes all neighbours from a site.
+
+        Parameters
+        ----------
+        site: int
+            The index of the site where the neighbours are removed.
+        symmetric: bool, optional
+            Optional flag if the neighbours should be removed symmetric.
+            If `True` the `site` index will be removed as neighbour from
+            the site with the `neighbour` index. The default is `True`.
+        """
+        # shift indices to [0, ..., n], so that negative indices are valid.
+        site = self._neighbours.shape[0] + site if site < 0 else site
+        for distidx in range(self.num_dist):
+            neighbours = self._neighbours[site, distidx].copy()
+            for j in neighbours:
+                self.remove(site, j, distidx, symmetric)
 
     def remove_periodic(self, site: int, neighbour: int, distidx: Optional[int] = 0,
                         symmetric: Optional[bool] = False) -> None:
@@ -343,7 +363,8 @@ class NeighbourMap(Mapping):
         for site in range(self._neighbours.shape[0]):
             self.ensure_neighbour_symmetry(site)
 
-    def __getitem__(self, item: Union[float, tuple, list, np.ndarray, slice]) -> Union[float, np.ndarray]:
+    def __getitem__(self,
+                    item: Union[float, tuple, list, np.ndarray, slice]) -> Union[float, np.ndarray]:
         """Returns the neighbours of a site."""
         return self._neighbours[item]
 
@@ -421,7 +442,8 @@ class LatticeData:
         self.positions = np.asarray(positions)
         self.neighbours.set(neighbours)
 
-    def set_positions(self, indices: Sequence[Iterable[int]], positions: Sequence[Iterable[float]]) -> None:
+    def set_positions(self, indices: Sequence[Iterable[int]],
+                      positions: Sequence[Iterable[float]]) -> None:
         """Sets the position data of the `LatticeData` instance.
 
         Parameters
@@ -680,6 +702,30 @@ class LatticeData:
         mask = self.site_mask(mins, maxs, invert=True)
         return np.where(mask)[0]
 
+    def invalidate(self, sites):
+        sites = np.atleast_1d(sites).astype(np.int)
+        for i in sites:
+            self.neighbours.remove_site_neighbours(i, symmetric=True)
+            self.indices[i, :] = np.nan
+            self.positions[i, :] = np.nan
+
+    def get_invalid(self):
+        return np.sort(np.where(np.isnan(self.positions).any(axis=1))[0])
+
+    def find_index(self, indices):
+        locs = list()
+        indices = np.atleast_2d(indices)
+        if len(indices[0]):
+            for idx in indices:
+                locs.extend(np.where((self.indices == idx).all(axis=1))[0])
+        return locs
+
+    def iter_sites(self):
+        invalid = self.get_invalid()
+        for site in range(len(self.indices)):
+            if site not in invalid:
+                yield site
+
     def __bool__(self) -> bool:
         return bool(len(self.indices))
 
@@ -688,7 +734,8 @@ class LatticeData:
         delim = " | "
         headers = "Indices", "Positions", "Neighbours"
         lines = list()
-        lines.append(f"{headers[0]:<{widths[0]}}{delim}{headers[1]:<{widths[1]}}{delim}{headers[2]}")
+        s = f"{headers[0]:<{widths[0]}}{delim}{headers[1]:<{widths[1]}}{delim}{headers[2]}"
+        lines.append(s)
         for site in range(self.num_sites):
             pos = "[" + ", ".join(f"{x:.1f}" for x in self.positions[site]) + "]"
             idx = str(self.indices[site])

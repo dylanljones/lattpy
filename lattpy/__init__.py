@@ -12,12 +12,18 @@ from .utils import (
     LatticeError,
     ConfigurationError,
     vrange,
-    vlinspace
+    vlinspace,
+    split_index
 )
 
 from .unitcell import (
     Atom,
     UnitCell
+)
+
+from .geometry import (
+    VoronoiTree,
+    WignerSeitzCell
 )
 
 from .data import (

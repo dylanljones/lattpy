@@ -49,14 +49,16 @@ class SiteOccupiedError(ConfigurationError):
 class NoAtomsError(ConfigurationError):
 
     def __init__(self):
-        super().__init__("lattice doesn't contain any atoms", "use 'add_atom' to add an 'Atom'-object")
+        super().__init__("lattice doesn't contain any atoms",
+                         "use 'add_atom' to add an 'Atom'-object")
 
 
 class NoBaseNeighboursError(ConfigurationError):
 
     def __init__(self):
         msg = "base neighbours not configured"
-        hint = "call 'calculate_distances' after adding atoms or use the 'neighbours' keyword of 'add_atom'"
+        hint = "call 'calculate_distances' after adding atoms or " \
+               "use the 'neighbours' keyword of 'add_atom'"
         super().__init__(msg, hint)
 
 
@@ -66,6 +68,10 @@ class NotBuiltError(ConfigurationError):
         msg = "lattice has not been built"
         hint = "use the 'build' method to construct a finite size lattice model"
         super().__init__(msg, hint)
+
+
+def split_index(index):
+    return index[:-1], index[-1]
 
 
 def vrange(axis_ranges: Iterable) -> List:

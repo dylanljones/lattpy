@@ -23,7 +23,7 @@ def long_description():
 
 setup(
     name='lattpy',
-    version='0.3.0',
+    version='0.3.1',
     author='Dylan Jones',
     author_email='dylanljones94@gmail.com',
     description='Python package for modeling bravais lattices',

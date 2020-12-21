@@ -10,9 +10,10 @@
 
 import itertools
 import numpy as np
+from collections.abc import Iterable
+from matplotlib.lines import Line2D
 from matplotlib.collections import LineCollection
-from mpl_toolkits.mplot3d.art3d import Line3DCollection
-
+from mpl_toolkits.mplot3d.art3d import Line3DCollection, Line3D, Poly3DCollection
 
 # Golden ratio as standard ratio for plot-figures
 GOLDEN_RATIO = (np.sqrt(5) - 1.0) / 2.0
@@ -75,6 +76,19 @@ def draw_lines(ax, segments, *args, **kwargs):
     return coll
 
 
+def draw_line(ax, points, *args, **kwargs):
+    dim = len(points[0])
+    if dim < 3:
+        line = Line2D(*points.T, *args, **kwargs)
+        ax.add_line(line)
+    elif dim == 3:
+        line = Line3D(*points.T, *args, **kwargs)
+        ax.add_line(line)
+    else:
+        raise ValueError(f"Can't plot lines with dimension {dim}")
+    return line
+
+
 def draw_arrows(ax, vectors, pos=None, **kwargs):
     vectors = np.atleast_2d(vectors).T
     dim = len(vectors)
@@ -85,7 +99,7 @@ def draw_arrows(ax, vectors, pos=None, **kwargs):
 
 
 def draw_vectors(ax, vectors, pos=None, ls="-", lw=1, **kwargs):
-    pos = pos if pos is not None else np.zeros(2)
+    pos = pos if pos is not None else np.zeros(len(vectors[0]))
     vectors = np.atleast_2d(vectors)
     segments = list()
     for v in vectors:
@@ -93,9 +107,25 @@ def draw_vectors(ax, vectors, pos=None, ls="-", lw=1, **kwargs):
     return draw_lines(ax, segments, linestyles=ls, linewidths=lw, **kwargs)
 
 
+def draw_points(ax, points, s=10, color=None, alpha=1.0, **kwargs):
+    # Fix 1D case
+    points = np.atleast_1d(points)
+    if len(points.shape) == 1:
+        points = points[:, np.newaxis]
+    if points.shape[1] == 1:
+        points = np.hstack((points, np.zeros((points.shape[0], 1))))
+
+    scat = ax.scatter(*points.T, s=s, color=color, alpha=alpha, **kwargs)
+    # Manualy update data-limits
+    # ax.ignore_existing_data_limits = True
+    datalim = scat.get_datalim(ax.transData)
+    ax.update_datalim(datalim)
+    return scat
+
+
 def draw_sites(ax, positions, size, **kwargs):
     positions = np.asarray(positions)
-    scat = ax.scatter(*positions.T, zorder=3, s=size**2, alpha=1, **kwargs)
+    scat = ax.scatter(*positions.T, zorder=3, s=size**2, **kwargs)
     # Manualy update data-limits
     ax.ignore_existing_data_limits = True
     datalim = scat.get_datalim(ax.transData)
@@ -129,3 +159,11 @@ def draw_cell(ax, vectors, color="k", lw=2, outlines=True):
                 v, pos = vecs[0], np.sum(vecs[1:], axis=0)
                 data = np.asarray([pos, pos + v]).T
                 ax.plot(*data, color=color, ls='--', lw=1)
+
+
+def draw_surfaces(ax, vertices, color=None, alpha=0.5):
+    if not isinstance(vertices[0][0], Iterable):
+        vertices = [list(vertices)]
+    poly = Poly3DCollection(vertices, alpha=alpha, facecolor=color)
+    ax.add_collection3d(poly)
+    return poly

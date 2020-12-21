@@ -1,6 +1,6 @@
-# lattpy 0.3.0
+# lattpy
 
-NOTE: This project is still under development!
+NOTE: This project is still under development and may change significantly!
 
 `lattpy` is a python package for modeling bravais lattices and constructing (finite) lattice structures.
 
@@ -69,7 +69,7 @@ To view the built lattice the `plot`-method can be used:
 from lattpy import simple_square
 
 latt = simple_square(a=1.0, neighbours=1)
-latt.build((5, 3))
+latt.build((5, 3), periodic=0)
 latt.plot()
 ````
 
@@ -96,7 +96,7 @@ neighbour_indices = latt.get_neighbours(n=[0, 0], alpha=0, distidx=0)
 
 # Get vectors to the nearest neighbours of atom alpha=0 in the translated unit-cell  
 neighbour_vectors = latt.get_neighbour_vectors(alpha=0, distidx=0)
-````
+```` 
 
 Also, the reciprocal lattice vectors can be computed
 ````python
@@ -106,6 +106,16 @@ rvecs = latt.reciprocal_vectors()
 or used to construct the reciprocal lattice:
 ````python
 rlatt = latt.reciprocal_lattice()
+````
+
+The 1. Brillouin zone is the Wigner-Seitz cell of the reciprocal lattice:
+````python
+bz = rlatt.wigner_seitz_cell()
+````
+
+The 1.BZ can also be obtained by calling the explicit method of the direct lattice:
+````python
+bz = latt.brillouin_zone()
 ````
 
 
@@ -138,7 +148,7 @@ neighbour_indices = latt.nearest_neighbours(idx)
 Examples
 ========
 
-Using the (built) lattice model it is easy to construct the (kinetic) Hamiltonian of a non-interacting model:
+Using the (built) lattice model it is easy to construct the (tight-binding) Hamiltonian of a non-interacting model:
 
 ````python
 import numpy as np

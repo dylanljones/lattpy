@@ -153,3 +153,43 @@ class WignerSeitzCell(VoronoiTree):
         else:
             raise NotImplementedError()
         return origin, corners, edge_centers, face_centers
+
+
+def rx(theta: float) -> np.ndarray:
+    """X-Rotation matrix."""
+    sin, cos = np.sin(theta), np.cos(theta)
+    return np.array([[1, 0, 0], [0, cos, -sin], [0, sin, cos]])
+
+
+def ry(theta: float) -> np.ndarray:
+    """Y-Rotation matrix."""
+    sin, cos = np.sin(theta), np.cos(theta)
+    return np.array([[cos, 0, sin], [0, 1, 0], [-sin, 0, +cos]])
+
+
+def rz(theta: float) -> np.ndarray:
+    """Z-Rotation matrix."""
+    sin, cos = np.sin(theta), np.cos(theta)
+    return np.array([[cos, -sin, 0], [sin, cos, 0], [0, 0, 1]])
+
+
+def rot(thetax: float = 0., thetay: float = 0., thetaz: float = 0.) -> np.ndarray:
+    """General rotation matrix"""
+    r = np.eye(3)
+    if thetaz:
+        r = np.dot(r, rz(thetaz))
+    if thetay:
+        r = np.dot(r, ry(thetay))
+    if thetax:
+        r = np.dot(r, rz(thetax))
+    return r
+
+
+def rotate2d(a, theta):
+    """Applies the z-rotation matrix to a 2D point"""
+    return np.dot(a, rz(theta)[:2, :2])
+
+
+def rotate3d(a, thetax=0., thetay=0., thetaz=0.):
+    """Applies the general rotation matrix to a 3D point"""
+    return np.dot(a, rot(thetax, thetay, thetaz))

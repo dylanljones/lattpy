@@ -13,7 +13,10 @@ from .utils import (
     ConfigurationError,
     vrange,
     vlinspace,
-    split_index
+    split_index,
+    frmt_num,
+    frmt_time,
+    Timer
 )
 
 from .unitcell import (
@@ -35,7 +38,7 @@ from .disptools import DispersionPath
 from .lattice import Lattice
 
 # =========================================================================
-#                             1D Prefabs
+#                             1D Lattices
 # =========================================================================
 
 
@@ -55,7 +58,7 @@ def alternating_chain(a=1.0, atom1=None, atom2=None, x0=0.0, neighbours=1):
 
 
 # =========================================================================
-#                             2D Prefabs
+#                             2D Lattices
 # =========================================================================
 
 def simple_square(a=1.0, atom=None, neighbours=1):
@@ -89,7 +92,7 @@ def graphene(a=1.0, neighbours=1):
 
 
 # =========================================================================
-#                             3D Prefabs
+#                             3D Lattices
 # =========================================================================
 
 def simple_cubic(a=1.0, atom=None, neighbours=1):

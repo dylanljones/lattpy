@@ -99,13 +99,19 @@ class Lattice:
 
     @classmethod
     def hexagonal(cls, a: Optional[float] = 1.0, **kwargs) -> 'Lattice':
-        vectors = a / 2 * np.array([[3, np.sqrt(3)], [3, -np.sqrt(3)]], **kwargs)
-        return cls(vectors)
+        vectors = a / 2 * np.array([[3, np.sqrt(3)], [3, -np.sqrt(3)]])
+        return cls(vectors, **kwargs)
+
+    @classmethod
+    def oblique(cls, alpha: float, a1: Optional[float] = 1.0,
+                a2: Optional[float] = 1.0, **kwargs) -> 'Lattice':
+        vectors = np.array([[a1, 0], [a2 * np.cos(alpha), a2 * np.sin(alpha)]])
+        return cls(vectors, **kwargs)
 
     @classmethod
     def hexagonal3D(cls, a: Optional[float] = 1., az: Optional[float] = 1., **kwargs) -> 'Lattice':  # noqa
-        vectors = a / 2 * np.array([[3, np.sqrt(3), 0], [3, -np.sqrt(3), 0], [0, 0, az]], **kwargs)
-        return cls(vectors)
+        vectors = a / 2 * np.array([[3, np.sqrt(3), 0], [3, -np.sqrt(3), 0], [0, 0, az]])
+        return cls(vectors, **kwargs)
 
     @classmethod
     def sc(cls, a: Optional[float] = 1.0, **kwargs) -> 'Lattice':
@@ -323,7 +329,6 @@ class Lattice:
             rlatt._positions = self._positions.copy()
             rlatt.calculate_distances(self._num_dist)
         return rlatt
-
 
     def get_neighbour_cells(self, distidx: Optional[int] = 0,
                             include_origin: Optional[bool] = True) -> np.ndarray:

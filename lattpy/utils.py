@@ -8,6 +8,7 @@
 # LICENSE file in the root directory and this permission notice shall
 # be included in all copies or substantial portions of the Software.
 
+import time
 import math
 import numpy as np
 from typing import Iterable, List, Sequence, Optional, Union
@@ -74,23 +75,26 @@ def split_index(index):
     return index[:-1], index[-1]
 
 
-def vrange(axis_ranges: Iterable) -> List:
+def vrange(axis_ranges: Iterable, sort_axis=0) -> List:
     """ Return evenly spaced vectors within a given interval.
 
     Parameters
     ----------
     axis_ranges: array_like
         ranges for each axis.
+    sort_axis: int, optional
+        Optional axis that is used to sort vectors.
 
     Returns
     -------
     vectors: list
     """
     axis = np.meshgrid(*axis_ranges)
-    grid = np.asarray([np.asarray(a).flatten("F") for a in axis]).T
-    n_vecs = list(grid)
-    n_vecs.sort(key=lambda x: x[0])
-    return n_vecs
+    nvecs = np.asarray([np.asarray(a).flatten("F") for a in axis]).T
+    nvecs = nvecs[np.lexsort(nvecs.T[[sort_axis]])]
+    # n_vecs = list(grid)
+    # n_vecs.sort(key=lambda x: x[sort_axis])
+    return nvecs
 
 
 def vlinspace(start: Union[float, Sequence[float]],
@@ -165,6 +169,11 @@ def cell_volume(vectors: np.ndarray) -> float:
     .. math::
         V_{2d} = \abs{a_1 \cross a_2}, \quad V_{3d} = a_1 \cdot \abs{a_2 \cross a_3}
 
+    For higher dimensions the volume is computed using the determinant:
+    .. math::
+        V_{d} = \sqrt{\det{A A^T}}
+    where .math:`A` is the array of vectors.
+
     Returns
     -------
     vol: float
@@ -178,12 +187,12 @@ def cell_volume(vectors: np.ndarray) -> float:
         cross = np.cross(vectors[1], vectors[2])
         v = np.dot(vectors[0], cross)
     else:
-        raise ValueError('Only 1, 2 or 3D cells supported!')
+        v = np.sqrt(np.linalg.det(np.dot(vectors.T, vectors)))
     return abs(v)
 
 
 def chain(items: Sequence, cycle: bool = False) -> List:
-    """ Create chain between items
+    """Create chain between items
 
     Parameters
     ----------
@@ -213,82 +222,120 @@ def chain(items: Sequence, cycle: bool = False) -> List:
     return result
 
 
-class VectorBasis:
+def frmt_num(num, dec=1, unit='', div=1000.) -> str:
+    """Returns a formatted string of a numbe
 
-    def __init__(self, vectors: Union[int, float, Sequence[Sequence[float]]]):
-        logging.warning("DeprecationWarning: the ``VectorBasis`` object is deprecated and "
-                        "is now integrated to the ``Lattice``-object.")
+    Parameters
+    ----------
+    num: float
+        The number to format.
+    dec: int
+        Number of decimals.
+    unit: str, optional
+        Optional unit suffix.
+    div: float, optional
+        The divider used for units. The default is `1000`.
 
-        # Transpose vectors so they are a column of the basis matrix
-        self._vectors = np.atleast_2d(vectors).T
-        self._vectors_inv = np.linalg.inv(self._vectors)
+    Returns
+    -------
+    num_str: str
+    """
+    for prefix in ['', 'k', 'M', 'G', 'T', 'P', 'E', 'Z']:
+        if abs(num) < div:
+            return f"{num:.{dec}f}{prefix}{unit}"
+        num /= div
+    return f"{num:.{dec}f}Y{unit}"
 
-        self._dim = len(self._vectors)
-        self._cell_size = cell_size(self._vectors)
-        self._cell_volume = cell_volume(self._vectors)
+
+def frmt_time(seconds: float, short: bool = False, width: int = 0) -> str:
+    """Returns a formated string for a given time in seconds.
+
+    Parameters
+    ----------
+    seconds: float
+        Time value to format
+    short: bool, optional
+        Flag if short representation should be used.
+    width: int, optional
+        Optional minimum length of the returned string
+
+    Returns
+    -------
+    time_str: str
+    """
+    string = "00:00"
+
+    # short time string
+    if short:
+        if seconds > 0:
+            mins, secs = divmod(seconds, 60)
+            if mins > 60:
+                hours, mins = divmod(mins, 60)
+                string = f"{hours:02.0f}:{mins:02.0f}h"
+            else:
+                string = f"{mins:02.0f}:{secs:02.0f}"
+
+    # Full time strings
+    else:
+        if seconds < 1e-3:
+            nanos = 1e6 * seconds
+            string = f"{nanos:.0f}\u03BCs"
+        elif seconds < 1:
+            millis = 1000 * seconds
+            string = f"{millis:.1f}ms"
+        elif seconds < 60:
+            string = f"{seconds:.1f}s"
+        else:
+            mins, seconds = divmod(seconds, 60)
+            if mins < 60:
+                string = f"{mins:.0f}:{seconds:04.1f}min"
+            else:
+                hours, mins = divmod(mins, 60)
+                string = f"{hours:.0f}:{mins:02.0f}:{seconds:02.0f}h"
+
+    if width > 0:
+        string = f"{string:>{width}}"
+    return string
+
+
+class Timer:
+
+    __slots__ = ["_time", "_t0"]
+
+    def __init__(self, method=time.perf_counter):
+        self._time = method
+        self._t0 = 0
+        self.start()
 
     @property
-    def dim(self) -> int:
-        """The dimension of the vector basis."""
-        return self._dim
+    def seconds(self):
+        return self.time() - self._t0
 
     @property
-    def cell_size(self):
-        """The shape of the box spawned by the given vectors."""
-        return self._cell_size
+    def millis(self):
+        return 1000 * (self.time() - self._t0)
 
-    @property
-    def cell_volume(self):
-        """The volume of the unit cell defined by the primitive vectors."""
-        return self._cell_volume
+    def time(self):
+        return self._time()
 
-    @property
-    def vectors(self) -> np.ndarray:
-        """ (N, N) np.ndarray: Array with basis vectors as rows"""
-        return self._vectors.T
+    def start(self):
+        self._t0 = self._time()
 
-    @property
-    def vectors3d(self) -> np.ndarray:
-        """ (3, 3) np.ndarray: Basis vectors expanded to three dimensions """
-        vectors = np.eye(3)
-        vectors[:self.dim, :self.dim] = self._vectors
-        return vectors.T
+    def eta(self, progress: float) -> float:
+        if not progress:
+            return 0.0
+        else:
+            return (1 / progress - 1) * self.time()
 
-    def transform(self, world_coords) -> np.ndarray:
-        """ Transform the world-coordinates (x, y, ...) into the basis coordinates (n, m, ...)
+    def strfrmt(self, short: bool = False, width: int = 0) -> str:
+        return frmt_time(self.seconds, short, width)
 
-        Parameters
-        ----------
-        world_coords: (N) array_like
-
-        Returns
-        -------
-        basis_coords: (N) np.ndarray
-        """
-        return self._vectors_inv @ np.asarray(world_coords)
-
-    def itransform(self, basis_coords: Sequence) -> np.ndarray:
-        """ Transform the basis-coordinates (n, m, ...) into the world coordinates (x, y, ...)
-
-        Parameters
-        ----------
-        basis_coords: (N) array_like
-
-        Returns
-        -------
-        world_coords: (N) np.ndarray
-        """
-        return self._vectors @ np.asarray(basis_coords)
+    @staticmethod
+    def sleep(t):
+        time.sleep(t)
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({self.dim}D)"
+        return f'{self.__class__.__name__}({self.strfrmt(short=True)})'
 
     def __str__(self) -> str:
-        sep = "  "
-        lines = [self.__repr__()]
-        for i in range(self.dim):
-            parts = list()
-            for j in range(self.dim):
-                parts.append(f"[{self.vectors[i, j]:.1f}]")
-            lines.append(sep.join(parts))
-        return "\n".join(lines)
+        return self.strfrmt(short=True)

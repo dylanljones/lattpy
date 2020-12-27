@@ -427,25 +427,6 @@ class Lattice:
             factors = np.delete(factors, idx, axis=0)
         return factors
 
-    def get_neighbour_cell_positions(self, distidx: Optional[int] = 0,
-                                     include_origin: Optional[bool] = True) -> np.ndarray:
-        """ Find all neighbouring unit cells.
-
-        Parameters
-        ----------
-        distidx: int, default
-            Index of distance to neighbouring cells, default is 0 (nearest neighbours).
-        include_origin: bool, optional
-            If ``True`` the origin is included in the set.
-
-        Returns
-        -------
-        positions: np.ndarray
-        """
-        indices = self.get_neighbour_cells(distidx, include_origin)
-        positions = np.dot(indices, self.vectors[np.newaxis, :, :])[:, 0, :]
-        return positions
-
     def wigner_seitz_cell(self) -> WignerSeitzCell:
         """Computes the Wigner-Seitz cell of the lattice structure.
 
@@ -599,6 +580,74 @@ class Lattice:
             nvecs = nvecs[mask]
         return nvecs
 
+    def get_alpha(self, atom: Union[int, str, Atom]) -> int:
+        """Returns the index of the atom in the unit-cell.
+
+        Parameters
+        ----------
+        atom: int or str or Atom
+            The argument for getting the atom. If a ``int`` is passed
+            it is interpreted as the index, if a ``str`` is passed as
+            the name of an atom.
+
+        Returns
+        -------
+        alpha: int
+        """
+        if isinstance(atom, Atom):
+            return self._atoms.index(atom)
+        elif isinstance(atom, str):
+            for i, at in enumerate(self._atoms):
+                if atom == at.name:
+                    return i
+        return atom
+
+    def get_atom(self, atom: Union[int, str, Atom]) -> Atom:
+        """ Returns the Atom object of the given atom in the unit cell
+
+        Parameters
+        ----------
+        atom: int or str or Atom
+            The argument for getting the atom. If a ``int`` is passed
+            it is interpreted as the index, if a ``str`` is passed as
+            the name of an atom.
+
+        Returns
+        -------
+        atom: Atom
+        """
+        if isinstance(atom, Atom):
+            return atom
+        elif isinstance(atom, int):
+            return self._atoms[atom]
+        else:
+            for at in self._atoms:
+                if atom == at.name:
+                    return at
+            raise ValueError(f"No Atom with the name '{atom}' found!")
+
+    def get_atom_attrib(self, atom: Union[int, str, Atom], attrib: str,
+                        default: Optional[Any] = None) -> Any:
+        """ Returns an attribute of a specific atom in the unit cell.
+
+        Parameters
+        ----------
+        atom: int or str or Atom
+            The argument for getting the atom. If a ``int`` is passed
+            it is interpreted as the index, if a ``str`` is passed as
+            the name of an atom.
+        attrib: str
+            Name of the atom attribute.
+        default: str or int or float or object, optional
+            Default value used if the attribute couln't be found in the Atom dictionary.
+
+        Returns
+        -------
+        attrib: str or int or float or object
+        """
+        atom = self.get_atom(atom)
+        return atom.get(attrib, default)
+
     def estimate_index(self, pos: Union[float, Sequence[float]]) -> np.ndarray:
         """ Returns the nearest matching lattice index (n, alpha) for global position.
 
@@ -635,39 +684,6 @@ class Lattice:
             return r
         n = np.atleast_1d(nvec)
         return r + (self._vectors @ n)  # self.translate(n, r)
-
-    def get_atom(self, alpha: int) -> Atom:
-        """ Returns the Atom object of the given atom in the unit cell
-
-        Parameters
-        ----------
-        alpha: int
-            Index of the atom in the unit cell.
-
-        Returns
-        -------
-        atom: Atom
-        """
-        return self._atoms[alpha]
-
-    def get_atom_attrib(self, alpha: int, attrib: str, default: Optional[Any] = None) -> Any:
-        """ Returns an attribute of a specific atom in the unit cell.
-
-        Parameters
-        ----------
-        alpha: int
-            Index of the atom in the unit cell.
-        attrib: str
-            Name of the atom attribute.
-        default: str or int or float or object, optional
-            Default value used if the attribute couln't be found in the Atom dictionary.
-
-        Returns
-        -------
-        attrib: str or int or float or object
-        """
-        atom = self._atoms[alpha]
-        return atom.get(attrib, default)
 
     def translate_cell(self, nvec: Union[int, Sequence[int]]) -> np.ndarray:
         """ Translates all sites of the unit cell

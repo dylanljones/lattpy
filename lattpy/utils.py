@@ -222,6 +222,39 @@ def chain(items: Sequence, cycle: bool = False) -> List:
     return result
 
 
+def compute_vectors(a: float, b: Optional[float] = None, c: Optional[float] = None,
+                    alpha: Optional[float] = None, beta: Optional[float] = None,
+                    gamma: Optional[float] = None) -> np.ndarray:
+    """ Computes lattice vectors by the lengths and angles. """
+    if b is None and c is None:
+        vectors = [a]
+    elif c is None:
+        alpha = np.deg2rad(alpha)
+        ax = a
+        bx = b * np.cos(alpha)
+        by = b * np.sin(alpha)
+        vectors = np.array([
+            [ax, 0],
+            [bx, by]
+        ])
+    else:
+        alpha = np.deg2rad(alpha)
+        beta = np.deg2rad(beta)
+        gamma = np.deg2rad(gamma)
+        ax = a
+        bx = b * np.cos(gamma)
+        by = b * np.sin(gamma)
+        cx = c * np.cos(beta)
+        cy = (abs(c) * abs(b) * np.cos(alpha) - bx * cx) / by
+        cz = np.sqrt(c ** 2 - cx ** 2 - cy ** 2)
+        vectors = np.array([
+            [ax, 0, 0],
+            [bx, by, 0],
+            [cx, cy, cz]
+        ])
+    return np.round(vectors, decimals=10)
+
+
 def frmt_num(num, dec=1, unit='', div=1000.) -> str:
     """Returns a formatted string of a numbe
 

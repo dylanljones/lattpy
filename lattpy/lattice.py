@@ -13,8 +13,10 @@ import itertools
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.axes3d import Axes3D
-from typing import Union, Optional, Tuple, List, Iterator, Sequence, Any, Dict, Iterable, Set
-
+from typing import (
+    Union, Optional, Tuple, List, Iterator, Sequence, Callable,
+    Any, Dict, Iterable, Set
+)
 from .utils import (
     vrange, distance, cell_size, cell_volume,
     SiteOccupiedError, NoAtomsError, NoBaseNeighboursError, NotBuiltError
@@ -59,7 +61,7 @@ class Lattice:
         **atom_kwargs
             Keyword arguments for ``Atom`` constructor. Only used if a new Atom instance is created.
         """
-        # vector basis
+        # Vector basis
         self._vectors = np.atleast_2d(vectors).T
         self._vectors_inv = np.linalg.inv(self._vectors)
         self._dim = len(self._vectors)
@@ -149,16 +151,6 @@ class Lattice:
         return self._dim
 
     @property
-    def cell_size(self) -> np.ndarray:
-        """The shape of the box spawned by the given vectors."""
-        return self._cell_size
-
-    @property
-    def cell_volume(self) -> float:
-        """The volume of the unit cell defined by the primitive vectors."""
-        return self._cell_volume
-
-    @property
     def vectors(self) -> np.ndarray:
         """Array with basis vectors as rows"""
         return self._vectors.T
@@ -169,6 +161,21 @@ class Lattice:
         vectors = np.eye(3)
         vectors[:self.dim, :self.dim] = self._vectors
         return vectors.T
+
+    @property
+    def norms(self):
+        """Lengths of the basis-vectors"""
+        return np.linalg.norm(self._vectors, axis=0)
+
+    @property
+    def cell_size(self) -> np.ndarray:
+        """The shape of the box spawned by the given vectors."""
+        return self._cell_size
+
+    @property
+    def cell_volume(self) -> float:
+        """The volume of the unit cell defined by the primitive vectors."""
+        return self._cell_volume
 
     @property
     def num_base(self) -> int:
@@ -205,31 +212,82 @@ class Lattice:
         """Number of unit-cells in lattice data (only available if lattice has been built)."""
         return np.unique(self.data.indices[:, :-1], axis=0).shape[0]
 
-    def transform(self, world_coords) -> np.ndarray:
+    def transform(self, world_coords: Union[Sequence[int], Sequence[Sequence[int]]]) -> np.ndarray:
         """ Transform the world-coordinates (x, y, ...) into the basis coordinates (n, m, ...)
 
         Parameters
         ----------
-        world_coords: (N) array_like
+        world_coords: (..., N) array_like
 
         Returns
         -------
-        basis_coords: (N) np.ndarray
+        basis_coords: (..., N) np.ndarray
         """
-        return self._vectors_inv @ np.asarray(world_coords)
+        world_coords = np.atleast_1d(world_coords)
+        if len(world_coords.shape) == 1:
+            return np.asarray(world_coords) @ self._vectors_inv
+        else:
+            return np.dot(world_coords, self._vectors_inv[np.newaxis, :, :])[:, 0, :]
 
-    def itransform(self, basis_coords: Sequence) -> np.ndarray:
+    def itransform(self, basis_coords: Union[Sequence[int], Sequence[Sequence[int]]]) -> np.ndarray:
         """ Transform the basis-coordinates (n, m, ...) into the world coordinates (x, y, ...)
 
         Parameters
         ----------
-        basis_coords: (N) array_like
+        basis_coords: (..., N) array_like
 
         Returns
         -------
-        world_coords: (N) np.ndarray
+        world_coords: (..., N) np.ndarray
         """
-        return self._vectors @ np.asarray(basis_coords)
+        basis_coords = np.atleast_1d(basis_coords)
+        if len(basis_coords.shape) == 1:
+            return basis_coords @ self._vectors
+        else:
+            return np.dot(basis_coords, self.vectors[np.newaxis, :, :])[:, 0, :]
+
+    def translate(self, nvec: Union[int, Sequence[int], Sequence[Sequence[int]]],
+                  r: Optional[Union[float, Sequence[float]]] = 0.0) -> np.ndarray:
+        """ Translates the given postion vector r by the translation vector n.
+
+        Parameters
+        ----------
+        nvec: (..., N) array_like
+            Translation vector in the lattice basis.
+        r: (N) array_like, optional
+            The position in real-space. If no vector is passed only the translation is returned.
+
+        Returns
+        -------
+        r_trans: (N) np.ndarray
+        """
+        r = np.atleast_1d(r)
+        nvec = np.atleast_1d(nvec)
+        if len(nvec.shape) == 1:
+            return r + (self._vectors @ nvec)
+        else:
+            return r + np.dot(nvec, self.vectors[np.newaxis, :, :])[:, 0, :]
+
+    def itranslate(self, v: Union[float, Sequence[float]]) -> [np.ndarray, np.ndarray]:
+        """ Returns the lattice index and cell position leading to the given position in real space.
+
+        Parameters
+        ----------
+        v: (N) array_like or float
+            Position vector in real-space.
+
+        Returns
+        -------
+        nvec: (N) np.ndarray
+            Translation vector in the lattice basis.
+        r: (N) np.ndarray, optional
+            The position in real-space.
+        """
+        v = np.atleast_1d(v)
+        itrans = self._vectors_inv @ v
+        nvec = np.floor(itrans)
+        r = v - self.translate(nvec)
+        return nvec, r
 
     def is_reciprocal(self, vecs: Union[Union[float, Sequence[float]],
                                         Sequence[Union[float, Sequence[float]]]],
@@ -323,15 +381,11 @@ class Lattice:
         """
         rvecs = self.reciprocal_vectors(min_negative)
         rlatt = self.__class__(rvecs)
-        if self._num_base:
-            rlatt._num_base = self._num_base
-            rlatt._atoms = self._atoms.copy()
-            rlatt._positions = self._positions.copy()
-            rlatt.calculate_distances(self._num_dist)
         return rlatt
 
     def get_neighbour_cells(self, distidx: Optional[int] = 0,
-                            include_origin: Optional[bool] = True) -> np.ndarray:
+                            include_origin: Optional[bool] = True,
+                            comparison: Optional[Callable] = np.isclose) -> np.ndarray:
         """ Find all neighbouring unit cells.
 
         Parameters
@@ -340,6 +394,8 @@ class Lattice:
             Index of distance to neighbouring cells, default is 0 (nearest neighbours).
         include_origin: bool, optional
             If ``True`` the origin is included in the set.
+        comparison: callable, optional
+            The method used for comparing distances.
 
         Returns
         -------
@@ -360,13 +416,16 @@ class Lattice:
 
         # Return points with distance lower than maximum distance
         maxdist = np.sort(np.unique(distances))[max_distidx]
-        indices = np.where(distances <= maxdist)[0]
+        indices = np.where(comparison(distances, maxdist))[0]
+        factors = factors[indices]
 
-        if not include_origin:
-            idx = np.where((points[indices] == np.zeros(self.dim)).all(axis=1))[0]
-            indices = np.delete(indices, idx)
-
-        return factors[indices]
+        origin = np.zeros(self.dim)
+        idx = np.where((factors == origin).all(axis=1))[0]
+        if include_origin and not len(idx):
+            factors = np.append(origin[np.newaxis, :], factors, axis=0)
+        elif not include_origin and len(idx):
+            factors = np.delete(factors, idx, axis=0)
+        return factors
 
     def get_neighbour_cell_positions(self, distidx: Optional[int] = 0,
                                      include_origin: Optional[bool] = True) -> np.ndarray:
@@ -417,43 +476,128 @@ class Lattice:
         rlatt = self.__class__(rvecs)
         return rlatt.wigner_seitz_cell()
 
-    def translate(self, nvec: Union[int, Sequence[int]],
-                  r: Optional[Union[float, Sequence[float]]] = 0.0) -> np.ndarray:
-        """ Translates the given postion vector r by the translation vector n.
+    def check_points(self, points: np.ndarray,
+                     shape: Union[int, Sequence[int]],
+                     relative: Optional[bool] = False,
+                     pos: Optional[Union[float, Sequence[float]]] = None
+                     ) -> np.ndarray:
+        """Returns a mask for the points in the given shape.
 
         Parameters
         ----------
-        nvec: (N) array_like
-            Translation vector in the lattice basis.
-        r: (N) array_like, optional
-            The position in real-space. If no vector is passed only the translation is returned.
+        points: (M, N) np.ndarray
+            The points in cartesian coordinates.
+        shape: (N) array_like or int
+            shape of finite size lattice to build.
+        relative: bool, optional
+            If 'True' the shape will be multiplied by the cell size of the model.
+            The default is ``True``.
+        pos: (N) array_like or int, optional
+            Optional position of the section to build. If 'None' the origin is used.
 
         Returns
         -------
-        r_trans: (N) np.ndarray
+        mask: (M) np.ndarray
         """
-        return np.atleast_1d(r) + (self._vectors @ np.atleast_1d(nvec))
+        shape = np.atleast_1d(shape)
+        if len(shape) != self.dim:
+            raise ValueError(f"Dimension of shape {len(shape)} doesn't "
+                             f"match the dimension of the lattice {self.dim}")
+        if relative:
+            shape = np.array(shape) * np.max(self.vectors, axis=0) - 0.1 * self.norms
 
-    def itranslate(self, v: Union[float, Sequence[float]]) -> [np.ndarray, np.ndarray]:
-        """ Returns the lattice index and cell position leading to the given position in real space.
+        if pos is None:
+            pos = np.zeros(self.dim)
+        end = pos + shape
+
+        mask = (pos[0] <= points[:, 0]) & (points[:, 0] <= end[0])
+        for i in range(1, self.dim):
+            mask = mask & (pos[i] <= points[:, i]) & (points[:, i] <= end[i])
+        return mask
+
+    def filter_points(self, points: np.ndarray,
+                      shape: Union[int, Sequence[int]],
+                      relative: Optional[bool] = False,
+                      pos: Optional[Union[float, Sequence[float]]] = None
+                      ) -> np.ndarray:
+        """Returns the points that are in the given shape.
 
         Parameters
         ----------
-        v: (N) array_like or float
-            Position vector in real-space.
+        points: (M, N) np.ndarray
+            The points in cartesian coordinates.
+        shape: (N) array_like or int
+            shape of finite size lattice to build.
+        relative: bool, optional
+            If 'True' the shape will be multiplied by the cell size of the model.
+            The default is ``True``.
+        pos: (N) array_like or int, optional
+            Optional position of the section to build. If 'None' the origin is used.
 
         Returns
         -------
-        nvec: (N) np.ndarray
-            Translation vector in the lattice basis.
-        r: (N) np.ndarray, optional
-            The position in real-space.
+        points: (K, N) np.ndarray
         """
-        v = np.atleast_1d(v)
-        itrans = self._vectors_inv @ v
-        nvec = np.floor(itrans)
-        r = v - self.translate(nvec)
-        return nvec, r
+        mask = self.check_points(points, shape, relative, pos)
+        return points[mask]
+
+    def build_translation_vectors(self, shape: Union[int, Sequence[int]],
+                                  relative: Optional[bool] = False,
+                                  pos: Optional[Union[float, Sequence[float]]] = None,
+                                  check: Optional[bool] = True
+                                  ) -> np.ndarray:
+        """Constructs the translation vectors .math:`n` in thhe lattice basis in a given shape.
+
+        Raises
+        ------
+        ValueError
+            Raised if the dimension of the position doesn't match the dimension of the lattice.
+
+        Parameters
+        ----------
+        shape: (N) array_like or int
+            shape of finite size lattice to build.
+        relative: bool, optional
+            If 'True' the shape will be multiplied by the cell size of the model.
+            The default is ``True``.
+        pos: (N) array_like or int, optional
+            Optional position of the section to build. If 'None' the origin is used.
+        check: bool, optional
+            If ``True`` the positions of the translation vectors are checked and filtered.
+            The default is ``True``. This should only be disabled if filtered later.
+
+        Returns
+        -------
+        nvecs: (M, N) np.ndarray
+            The translation-vectors in lattice-coordinates
+        """
+        shape = np.atleast_1d(shape)
+        if len(shape) != self.dim:
+            raise ValueError(f"Dimension of shape {len(shape)} doesn't "
+                             f"match the dimension of the lattice {self.dim}")
+        if relative:
+            shape = np.array(shape) * np.max(self.vectors, axis=0) - 0.1 * self.norms
+        if pos is None:
+            pos = np.zeros(self.dim)
+        end = pos + shape
+
+        # Generate translation vectors with too many points.
+        min_values = (self.itranslate(pos)[0] - shape).astype("int")
+        max_values = (np.abs(self.itranslate(end)[0]) + shape).astype("int")
+        min_values[min_values == 0] = -1  # set minimum size to 1
+        max_values[max_values == 0] = +1  # set minimum size to 1
+
+        ranges = [(range(min_values[d], max_values[d])) for d in range(self.dim)]
+        nvecs = np.array(vrange(ranges))
+
+        if check:
+            # Filter points in the given volume
+            positions = np.dot(nvecs, self.vectors[np.newaxis, :, :])[:, 0, :]
+            mask = (pos[0] <= positions[:, 0]) & (positions[:, 0] <= end[0])
+            for i in range(1, self.dim):
+                mask = mask & (pos[i] <= positions[:, i]) & (positions[:, i] <= end[i])
+            nvecs = nvecs[mask]
+        return nvecs
 
     def estimate_index(self, pos: Union[float, Sequence[float]]) -> np.ndarray:
         """ Returns the nearest matching lattice index (n, alpha) for global position.
@@ -471,24 +615,6 @@ class Lattice:
         pos = np.asarray(pos)
         n = np.asarray(np.round(self._vectors_inv @ pos, decimals=0), dtype="int")
         return n
-
-    def get_index(self, nvec: Optional[Union[int, Sequence[int]]] = None,
-                  alpha: Optional[int] = 0) -> np.ndarray:
-        """ Returns lattice index in form of [n_1, ..., n_d, alpha]
-
-        Parameters
-        ----------
-        nvec: (N) array_like or int
-            translation vector.
-        alpha: int, optional
-            site index, default is 0.
-        Returns
-        -------
-        index: (N+1) np.ndarray
-        """
-        if nvec is None:
-            nvec = np.zeros(self.dim, dtype=np.int)
-        return np.append(nvec, alpha)
 
     def get_position(self, nvec: Optional[Union[int, Sequence[int]]] = None,
                      alpha: Optional[int] = 0) -> np.ndarray:
@@ -1242,7 +1368,6 @@ class Lattice:
             win = np.arange(i0, i1)
             site_window = all_indices[win]
 
-            # Get neighbour indices of site
             # Get neighbour indices of site in proximity
             for i_dist in range(n_dist):
                 # Get neighbour indices of site for distance level

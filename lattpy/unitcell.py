@@ -12,6 +12,7 @@ import itertools
 import collections
 import numpy as np
 from typing import Union, Optional, Any, Iterator, Dict, Sequence, List, Tuple
+from .utils import SiteOccupiedError
 
 
 class Atom(collections.MutableMapping):
@@ -114,18 +115,19 @@ class Atom(collections.MutableMapping):
 class UnitCell(collections.Sequence):
     """``Atom`` container representing the unitcell of a bravais lattice."""
 
-    __slots__ = ["_atoms", "_positions"]
+    __slots__ = ["_num_base", "_atoms", "_positions"]
 
     def __init__(self):
         """Initialize a unitcell instance."""
         super().__init__()
+        self._num_base = 0
         self._atoms = list()
         self._positions = list()
 
     @property
     def num_base(self):
         """Return the number of atoms in the unitcell."""
-        return len(self._atoms)
+        return self._num_base
 
     @property
     def atoms(self):
@@ -135,9 +137,9 @@ class UnitCell(collections.Sequence):
     @property
     def positions(self):
         """Return the positions of the atoms contained in the unitcell."""
-        return self._positions
+        return np.asarray(self._positions)
 
-    def add(self, pos: Optional[Union[int, float, Sequence[int], Sequence[float]]] = None,
+    def add(self, pos: Optional[Union[float, Sequence[float]]] = None,
             atom: Optional[Union[str, Dict[str, Any], Atom]] = None,
             **kwargs) -> Atom:
         """ Adds a new atom to the unitcell.
@@ -163,15 +165,17 @@ class UnitCell(collections.Sequence):
         """
         pos = np.atleast_1d(pos)
         if any(np.all(pos == x) for x in self._positions):
-            raise ValueError(f"The position {pos} in the unitcell is already occupied!")
+            raise SiteOccupiedError(atom, pos)
 
         if not isinstance(atom, Atom):
             atom = Atom(atom, **kwargs)
 
         self._atoms.append(atom)
         self._positions.append(np.asarray(pos))
-        assert len(self._atoms) == len(self._positions)  # Sanity check
 
+        # Update number of base atoms if data is valid
+        assert len(self._atoms) == len(self._positions)
+        self._num_base = len(self._positions)
         return atom
 
     def remove(self, index: int) -> None:
@@ -215,6 +219,28 @@ class UnitCell(collections.Sequence):
                 if atom == at.name:
                     return at
             raise ValueError(f"No Atom with the name '{atom}' found!")
+
+    def get_alpha(self, atom: Union[int, str, Atom]) -> int:
+        """Returns the index of the atom in the unit-cell.
+
+        Parameters
+        ----------
+        atom: int or str or Atom
+            The argument for getting the atom. If a ``int`` is passed
+            it is interpreted as the index, if a ``str`` is passed as
+            the name of an atom.
+
+        Returns
+        -------
+        alpha: int
+        """
+        if isinstance(atom, Atom):
+            return self._atoms.index(atom)
+        elif isinstance(atom, str):
+            for i, at in enumerate(self._atoms):
+                if atom == at.name:
+                    return i
+        return atom
 
     def get_atom_attrib(self, atom: Union[int, str, Atom], attrib: str,
                         default: Optional[Any] = None) -> Any:

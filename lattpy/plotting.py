@@ -99,6 +99,8 @@ def draw_arrows(ax, vectors, pos=None, **kwargs):
 
 
 def draw_vectors(ax, vectors, pos=None, ls="-", lw=1, **kwargs):
+    if not len(vectors):
+        return None
     pos = pos if pos is not None else np.zeros(len(vectors[0]))
     vectors = np.atleast_2d(vectors)
     segments = list()

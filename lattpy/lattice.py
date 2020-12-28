@@ -580,6 +580,102 @@ class Lattice:
             nvecs = nvecs[mask]
         return nvecs
 
+    # =========================================================================
+
+    def add_atom(self, pos: Optional[Union[float, Sequence[float]]] = None,
+                 atom: Optional[Union[str, Dict[str, Any], Atom]] = None,
+                 relative: Optional[bool] = False,
+                 neighbours: Optional[int] = 0,
+                 **kwargs) -> Atom:
+        """ Adds a site to the basis of the lattice unit-cell.
+
+        Raises
+        ------
+        ValueError
+            Raised if the dimension of the position doesn't match the dimension of the lattice.
+        ConfigurationError
+            Raised if the position of the new atom is already occupied.
+
+        Parameters
+        ----------
+        pos: (N) array_like or float, optional
+            Position of site in the unit-cell. The default is the origin of the cell.
+            The size of the array has to match the dimension of the lattice.
+        atom: str or dict or Atom, optional
+            Identifier of the site. If a string is passed, a new Atom instance is created.
+        relative: bool, optional
+            Flag if the specified position is in cartesian or lattice coordinates.
+            If ``True`` the passed position will be multiplied with the lattice vectors.
+            The default is ``False`` (cartesian coordinates).
+        neighbours: int, optional
+            The number of neighbor distance to calculate. If the number is ´0´ the distances have
+            to be calculated manually after configuring the lattice basis.
+        **kwargs
+            Keyword arguments for ´Atom´ constructor. Only used if a new Atom instance is created.
+
+        Returns
+        -------
+        atom: Atom
+        """
+        pos = np.zeros(self.dim) if pos is None else np.atleast_1d(pos)
+        if relative:
+            pos = self.translate(pos)
+
+        if len(pos) != self._dim:
+            raise ValueError(f"Shape of the position {pos} doesn't match "
+                             f"the dimension {self.dim} of the lattice!")
+        if any(np.all(pos == x) for x in self._positions):
+            raise SiteOccupiedError(atom, pos)
+
+        if not isinstance(atom, Atom):
+            atom = Atom(atom, **kwargs)
+
+        self._atoms.append(atom)
+        self._positions.append(np.asarray(pos))
+
+        # Update number of base atoms if data is valid
+        assert len(self._atoms) == len(self._positions)
+        self._num_base = len(self._positions)
+
+        if neighbours:
+            self.calculate_distances(neighbours)
+        return atom
+
+    def get_position(self, nvec: Optional[Union[int, Sequence[int]]] = None,
+                     alpha: Optional[int] = 0) -> np.ndarray:
+        """ Returns the position for a given translation vector and site index
+
+        Parameters
+        ----------
+        nvec: (N) array_like or int
+            translation vector.
+        alpha: int, optional
+            site index, default is 0.
+        Returns
+        -------
+        pos: (N) np.ndarray
+        """
+        r = self._positions[alpha]
+        if nvec is None:
+            return r
+        n = np.atleast_1d(nvec)
+        return r + (self._vectors @ n)  # self.translate(n, r)
+
+    def get_positions(self, indices):
+        """Returns the positions for multiple lattice indices
+
+        Parameters
+        ----------
+        indices: (N, D+1) array_like or int
+            List of lattice indices.
+
+        Returns
+        -------
+        pos: (N, D) np.ndarray
+        """
+        nvecs, alphas = indices[:, :-1], indices[:, -1]
+        return self.translate(nvecs, np.array(self.atom_positions)[alphas])
+
     def get_alpha(self, atom: Union[int, str, Atom]) -> int:
         """Returns the index of the atom in the unit-cell.
 
@@ -648,6 +744,8 @@ class Lattice:
         atom = self.get_atom(atom)
         return atom.get(attrib, default)
 
+    # =========================================================================
+
     def estimate_index(self, pos: Union[float, Sequence[float]]) -> np.ndarray:
         """ Returns the nearest matching lattice index (n, alpha) for global position.
 
@@ -664,26 +762,6 @@ class Lattice:
         pos = np.asarray(pos)
         n = np.asarray(np.round(self._vectors_inv @ pos, decimals=0), dtype="int")
         return n
-
-    def get_position(self, nvec: Optional[Union[int, Sequence[int]]] = None,
-                     alpha: Optional[int] = 0) -> np.ndarray:
-        """ Returns the position for a given translation vector and site index
-
-        Parameters
-        ----------
-        nvec: (N) array_like or int
-            translation vector.
-        alpha: int, optional
-            site index, default is 0.
-        Returns
-        -------
-        pos: (N) np.ndarray
-        """
-        r = self._positions[alpha]
-        if nvec is None:
-            return r
-        n = np.atleast_1d(nvec)
-        return r + (self._vectors @ n)  # self.translate(n, r)
 
     def translate_cell(self, nvec: Union[int, Sequence[int]]) -> np.ndarray:
         """ Translates all sites of the unit cell
@@ -857,64 +935,6 @@ class Lattice:
                 site_neighbours.append(new)
             neighbours.append(site_neighbours)
         self._base_neighbors = neighbours
-
-    def add_atom(self, pos: Optional[Union[float, Sequence[float]]] = None,
-                 atom: Optional[Union[str, Dict[str, Any], Atom]] = None,
-                 neighbours: Optional[int] = 0,
-                 **kwargs) -> Atom:
-        """ Adds a site to the basis of the lattice unit-cell.
-
-        Raises
-        ------
-        ValueError
-            Raised if the dimension of the position doesn't match the dimension of the lattice.
-        ConfigurationError
-            Raised if the position of the new atom is already occupied.
-
-        Parameters
-        ----------
-        pos: (N) array_like or float, optional
-            Position of site in the unit-cell. The default is the origin of the cell.
-            The size of the array has to match the dimension of the lattice.
-        atom: str or dict or Atom, optional
-            Identifier of the site. If a string is passed, a new Atom instance is created.
-        neighbours: int, optional
-            The number of neighbor distance to calculate. If the number is ´0´ the distances have
-            to be calculated manually after configuring the lattice basis.
-        **kwargs
-            Keyword arguments for ´Atom´ constructor. Only used if a new Atom instance is created.
-
-        Returns
-        -------
-        atom: Atom
-        """
-        if pos is None:
-            pos = np.zeros(self.dim)
-        else:
-            pos = np.atleast_1d(pos)
-
-        if len(pos) != self._dim:
-            raise ValueError(f"Shape of the position {pos} doesn't match "
-                             f"the dimension {self.dim} of the lattice!")
-
-        if any(np.all(pos == x) for x in self._positions):
-            raise SiteOccupiedError(atom, pos)
-
-        if isinstance(atom, Atom):
-            atom = atom
-        else:
-            atom = Atom(atom, **kwargs)
-
-        self._atoms.append(atom)
-        self._positions.append(np.asarray(pos))
-
-        # Update number of base atoms if data is valid
-        assert len(self._atoms) == len(self._positions)
-        self._num_base = len(self._positions)
-
-        if neighbours:
-            self.calculate_distances(neighbours)
-        return atom
 
     def get_neighbours(self, nvec: Optional[Union[int, Sequence[int]]] = None,
                        alpha: Optional[int] = 0,

@@ -36,7 +36,7 @@ from lattpy import Lattice
 
 latt = Lattice(np.eye(2))       # Construct a Bravais lattice with square unit-vectors
 latt.add_atom(pos=[0.0, 0.0])   # Add an Atom to the unit cell of the lattice
-latt.calculate_distances(1)     # Set the maximum number of distances in the configuration.
+latt.set_num_neighbours(1)     # Set the maximum number of distances in the configuration.
 ````
 
 To speed up the configuration prefabs of common lattices are included. The previous lattice for example
@@ -53,11 +53,6 @@ the model has to be built:
 latt.build(shape=(5, 3))
 ````
 This will compute the indices and neighbours of all sites in the given shape and store the data.
-By default the lattice is built in real-space, meaning the shape parameter passed to the `build`-method is
-interpreted as a rectangle in real space. Alternatively the lattice can be built in the unit-vector-space:
-````python
-latt.build(shape=(5, 3), inbound=False)
-````
 
 After building the lattice periodic boundary conditions can be set along one or multiple axes:
 ````python
@@ -156,7 +151,7 @@ from lattpy import simple_chain
 
 # Initializes a 1D lattice chain with a length of 5 atoms.
 latt = simple_chain(a=1.0)
-latt.build(shape=5, inbound=False)
+latt.build(shape=4)
 n = latt.num_sites
 
 # Construct the non-interacting (kinetic) Hamiltonian-matrix

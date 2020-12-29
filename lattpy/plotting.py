@@ -98,36 +98,28 @@ def draw_arrows(ax, vectors, pos=None, **kwargs):
     return ax.quiver(*pos, *vectors, **kwargs)
 
 
-def draw_vectors(ax, vectors, pos=None, ls="-", lw=1, **kwargs):
+def draw_vectors(ax, vectors, pos=None, ls="-", lw=1, zorder=1, **kwargs):
     if not len(vectors):
         return None
     pos = pos if pos is not None else np.zeros(len(vectors[0]))
     vectors = np.atleast_2d(vectors)
+    # Fix 1D case
+    if vectors.shape[1] == 1:
+        vectors = np.hstack((vectors, np.zeros((vectors.shape[0], 1))))
+        pos = np.array([pos[0], 0])
     segments = list()
     for v in vectors:
         segments.append([pos, pos + v])
-    return draw_lines(ax, segments, linestyles=ls, linewidths=lw, **kwargs)
+    return draw_lines(ax, segments, linestyles=ls, linewidths=lw, zorder=zorder, **kwargs)
 
 
-def draw_points(ax, points, s=10, color=None, alpha=1.0, **kwargs):
+def draw_points(ax, points, size=10, color=None, alpha=1.0, zorder=3, **kwargs):
+    points = np.atleast_2d(points)
     # Fix 1D case
-    points = np.atleast_1d(points)
-    if len(points.shape) == 1:
-        points = points[:, np.newaxis]
     if points.shape[1] == 1:
         points = np.hstack((points, np.zeros((points.shape[0], 1))))
 
-    scat = ax.scatter(*points.T, s=s, color=color, alpha=alpha, **kwargs)
-    # Manualy update data-limits
-    # ax.ignore_existing_data_limits = True
-    datalim = scat.get_datalim(ax.transData)
-    ax.update_datalim(datalim)
-    return scat
-
-
-def draw_sites(ax, positions, size=7, **kwargs):
-    positions = np.asarray(positions)
-    scat = ax.scatter(*positions.T, zorder=3, s=size**2, **kwargs)
+    scat = ax.scatter(*points.T, s=size**2, color=color, alpha=alpha, zorder=zorder, **kwargs)
     # Manualy update data-limits
     # ax.ignore_existing_data_limits = True
     datalim = scat.get_datalim(ax.transData)
@@ -145,22 +137,22 @@ def draw_indices(ax, positions, offset=0.1):
     return texts
 
 
-def draw_cell(ax, vectors, color="k", lw=2, outlines=True):
+def draw_cell(ax, vectors, color="k", lw=2, zorder=1, outlines=True):
     dim = len(vectors)
     if dim == 1:
-        draw_arrows(ax, [vectors[0, 0], 0], color=color, lw=lw)
+        draw_arrows(ax, [vectors[0, 0], 0], color=color, lw=lw, zorder=zorder)
         return
 
-    draw_arrows(ax, vectors, color=color, lw=lw)
+    draw_arrows(ax, vectors, color=color, lw=lw, zorder=zorder)
     if outlines:
         for v, pos in itertools.permutations(vectors, r=2):
             data = np.asarray([pos, pos + v]).T
-            ax.plot(*data, color=color, ls='--', lw=1)
+            ax.plot(*data, color=color, ls='--', lw=1, zorder=zorder)
         if dim == 3:
             for vecs in itertools.permutations(vectors, r=3):
                 v, pos = vecs[0], np.sum(vecs[1:], axis=0)
                 data = np.asarray([pos, pos + v]).T
-                ax.plot(*data, color=color, ls='--', lw=1)
+                ax.plot(*data, color=color, ls='--', lw=1, zorder=zorder)
 
 
 def draw_surfaces(ax, vertices, color=None, alpha=0.5):

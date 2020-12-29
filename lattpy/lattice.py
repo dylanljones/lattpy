@@ -18,7 +18,7 @@ from mpl_toolkits.mplot3d.axes3d import Axes3D
 from typing import Union, Optional, Tuple, List, Iterator, Sequence, Callable, Any, Dict
 
 from .utils import vrange, SiteOccupiedError, NoAtomsError, NoBaseNeighboursError, NotBuiltError
-from .plotting import draw_cell, draw_sites, draw_indices, draw_vectors
+from .plotting import draw_points, draw_vectors, draw_cell, draw_indices
 from .spatial import WignerSeitzCell, KDTree, compute_neighbours, cell_size, cell_volume
 from .unitcell import Atom
 from .data import LatticeData
@@ -27,8 +27,8 @@ from .data import LatticeData
 class Lattice:
     """Object representing the basis and data of a bravais lattice."""
 
-    DIST_DECIMALS: int = 4        # Decimals used for rounding distances
-    RVEC_TOLERANCE: float = 1e-5  # Tolerance for reciprocal vectors/lattice
+    DIST_DECIMALS: int = 6        # Decimals used for rounding distances
+    RVEC_TOLERANCE: float = 1e-6  # Tolerance for reciprocal vectors/lattice
 
     def __init__(self, vectors: Union[float, Sequence[float], Sequence[Sequence[float]]],
                  **kwargs):
@@ -1525,7 +1525,7 @@ class Lattice:
     def plot_cell(self, show: Optional[bool] = True,
                   ax: Optional[Union[plt.Axes, Axes3D]] = None,
                   lw: Optional[float] = 1.,
-                  color: Optional[str] = '0.7',
+                  color: Optional[Union[str, float]] = 'k',
                   alpha: Optional[float] = 0.5,
                   legend: Optional[bool] = True,
                   margins: Optional[Union[Sequence[float], float]] = 0.25,
@@ -1557,17 +1557,18 @@ class Lattice:
         show_cell: bool, optional
             If ``True`` the outlines of the unit cell are plotted.
         """
+        if self.dim > 3:
+            raise ValueError(f"Plotting in {self.dim} dimensions is not supported!")
         if ax is None:
             fig = plt.figure()
             ax = fig.add_subplot(111, projection="3d" if self.dim == 3 else None)
         else:
             fig = ax.get_figure()
 
-        # Plot atoms in the unit cell
-        for i in range(self.num_base):
-            atom = self.get_atom(i)
-            pos = self.atom_positions[i]
-            draw_sites(ax, pos, size=atom.size, color=atom.color, label=atom.name)
+        # Draw unit vectors and the cell they spawn.
+        if show_vecs:
+            vectors = self.vectors
+            draw_cell(ax, vectors, color="k", lw=1., outlines=show_cell)
 
         if show_neighbours:
             for i in range(self.num_base):
@@ -1579,23 +1580,22 @@ class Lattice:
                     for idx, pos1 in zip(indices, positions):
                         if np.any(idx[:-1]):
                             atom = self.atoms[idx[-1]]
-                            draw_sites(ax, pos1, size=atom.size * 0.75, color=atom.color,
-                                       alpha=alpha)
+                            draw_points(ax, pos1, size=atom.size * 0.75,
+                                        color=atom.color, alpha=alpha)
 
-        # Draw unit vectors and the cell they spawn.
-        if show_vecs:
-            vectors = self.vectors
-            draw_cell(ax, vectors, color="k", lw=1., outlines=show_cell)
+        # Plot atoms in the unit cell
+        for i in range(self.num_base):
+            atom = self.get_atom(i)
+            pos = self.atom_positions[i]
+            draw_points(ax, pos, size=atom.size, color=atom.color, label=atom.name)
 
         # Format plot
         if legend and self._num_base > 1:
             ax.legend()
-
         if isinstance(margins, float):
             margins = [margins] * self.dim
         if self.dim == 1:
             w = self.cell_size[0]
-            ax.set_xlim(-0.1 * w, 1.1 * w)
             ax.set_ylim(-w / 2, +w / 2)
         else:
             ax.margins(*margins)
@@ -1645,12 +1645,19 @@ class Lattice:
         show_cell: bool, optional
             If 'True' the first unit-cell is drawn.
         """
-        # Reuse or initialize new Plot
+        if self.dim > 3:
+            raise ValueError(f"Plotting in {self.dim} dimensions is not supported!")
+
         if ax is None:
             fig = plt.figure()
             ax = fig.add_subplot(111, projection="3d" if self.dim == 3 else None)
         else:
             fig = ax.get_figure()
+
+        # Draw unit vectors and the cell they spawn.
+        if show_cell:
+            vectors = self.vectors
+            draw_cell(ax, vectors, color='k', lw=2, outlines=True)
 
         # Draw connections
         limits = self.data.get_translation_limits()
@@ -1671,20 +1678,16 @@ class Lattice:
                     sign = +1 if x[pax] < pos[pax] else -1
                     x = self.translate(sign * nvec, x)
                     draw_vectors(ax, x - pos, pos=pos, color=color, lw=lw, zorder=1)
+
         # Draw sites
         for alpha in range(self.num_base):
             atom = self.atoms[alpha]
             points = self.data.get_positions(alpha)
-            draw_sites(ax, points, size=atom.size, color=atom.color, label=atom.name)
+            draw_points(ax, points, size=atom.size, color=atom.color, label=atom.name)
 
         if show_indices:
             positions = [self.position(i) for i in range(self.num_sites)]
             draw_indices(ax, positions)
-
-        # Draw unit vectors and the cell they spawn.
-        if show_cell:
-            vectors = self.vectors
-            draw_cell(ax, vectors, color='k', lw=2, outlines=True)
 
         # Format plot
         if legend and self._num_base > 1:
@@ -1696,9 +1699,10 @@ class Lattice:
         if isinstance(margins, float):
             margins = [margins] * self.dim
         if self.dim == 1:
+            sizex = self.shape[0]
+            h = sizex / 4
             w = self.cell_size[0]
-            ax.set_xlim(-0.1 * w, 1.1 * w)
-            ax.set_ylim(-w / 2, +w / 2)
+            ax.set_ylim(-h, +h)
         else:
             ax.margins(*margins)
 

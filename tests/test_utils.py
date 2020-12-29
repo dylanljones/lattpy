@@ -11,7 +11,7 @@
 import numpy as np
 from pytest import mark
 from numpy.testing import assert_array_equal
-from lattpy.utils import vrange, vlinspace, distance, cell_size, cell_volume, chain
+from lattpy.utils import vrange, vlinspace, chain
 
 
 def test_vrange():
@@ -53,77 +53,6 @@ def test_vlinspace():
     res = vlinspace(start, stop, 5)
     expected = np.array([[0, 2, 4, 6, 8], [0, 2, 4, 6, 8]]).T
     assert_array_equal(res, expected)
-
-
-def test_distance():
-    r1, r2 = np.array([0]), np.array([0])
-    expected = 0.0
-    assert distance(r1, r2) == expected
-    assert distance(r2, r1) == expected
-
-    r1, r2 = np.array([0]), np.array([2])
-    expected = 2.0
-    assert distance(r1, r2) == expected
-    assert distance(r2, r1) == expected
-
-    r1, r2 = np.array([0, 0]), np.array([2, 0])
-    expected = 2.0
-    assert distance(r1, r2) == expected
-    assert distance(r2, r1) == expected
-
-    r1, r2 = np.array([0, 0]), np.array([-2, 0])
-    expected = 2.0
-    assert distance(r1, r2) == expected
-    assert distance(r2, r1) == expected
-
-    r1, r2 = np.array([0, 0]), np.array([1, 1])
-    expected = np.sqrt(2)
-    assert distance(r1, r2) == expected
-    assert distance(r2, r1) == expected
-
-    r1, r2 = np.array([0, 0, 0]), np.array([1, 1, 1])
-    expected = np.sqrt(3)
-    assert distance(r1, r2) == expected
-    assert distance(r2, r1) == expected
-
-
-def test_cell_size():
-    vecs = np.eye(2).T
-    expected = [1, 1]
-    res = cell_size(vecs)
-    assert_array_equal(res, expected)
-
-    vecs = np.array([[2, 0], [0, 1]])
-    expected = [2, 1]
-    res = cell_size(vecs)
-    assert_array_equal(res, expected)
-
-    vecs = np.array([[2, 0], [1, 1]])
-    expected = [2, 1]
-    res = cell_size(vecs)
-    assert_array_equal(res, expected)
-
-    vecs = np.array([[2, 0], [-1, 1]])
-    expected = [3, 1]
-    res = cell_size(vecs)
-    assert_array_equal(res, expected)
-
-
-def test_cell_colume():
-    # square lattice vectors
-    vecs = np.array([[2, 0], [0, 2]])
-    res = cell_volume(vecs)
-    assert res == 4.0
-
-    # rectangle lattice vectors
-    vecs = np.array([[2, 0], [0, 1]])
-    res = cell_volume(vecs)
-    assert res == 2.0
-
-    # cubic lattice vectors
-    vecs = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 2]])
-    res = cell_volume(vecs)
-    assert res == 8.0
 
 
 def test_chain():

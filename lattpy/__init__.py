@@ -19,21 +19,22 @@ from .utils import (
     Timer
 )
 
+from .spatial import (
+    distance,
+    cell_size,
+    cell_volume,
+    compute_vectors,
+    compute_neighbours,
+    VoronoiTree,
+    WignerSeitzCell
+)
+
 from .unitcell import (
     Atom,
     UnitCell
 )
 
-from .geometry import (
-    VoronoiTree,
-    WignerSeitzCell
-)
-
-from .data import (
-    NeighbourMap,
-    LatticeData
-)
-
+from .data import LatticeData
 from .disptools import DispersionPath
 from .lattice import Lattice
 

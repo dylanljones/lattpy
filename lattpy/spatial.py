@@ -8,12 +8,156 @@
 # LICENSE file in the root directory and this permission notice shall
 # be included in all copies or substantial portions of the Software.
 
+import math
 import numpy as np
 import itertools
 import matplotlib.pyplot as plt
 from scipy.spatial import cKDTree, Voronoi
+from typing import Optional
 from .utils import chain
 from .plotting import draw_points, draw_vectors, draw_lines, draw_surfaces
+
+
+def distance(r1: np.ndarray, r2: np.ndarray, decimals: Optional[int] = None) -> float:
+    """ Calculates the euclidian distance bewteen two points.
+
+    Parameters
+    ----------
+    r1: (N) ndarray
+        First input point.
+    r2: (N) ndarray
+        Second input point of matching size.
+    decimals: int, optional
+        Optional decimals to round distance to.
+
+    Returns
+    -------
+    distance: float
+    """
+    dist = math.sqrt(np.sum(np.square(r1 - r2)))
+    if decimals is not None:
+        dist = round(dist, decimals)
+    return dist
+
+
+def cell_size(vectors: np.ndarray) -> np.ndarray:
+    """ Computes the shape of the box spawned by the given vectors.
+
+    Parameters
+    ----------
+    vectors: (N, N) array_like
+
+    Returns
+    -------
+    size: np.ndarray
+    """
+    max_values = np.max(vectors, axis=0)
+    min_values = np.min(vectors, axis=0)
+    min_values[min_values > 0] = 0
+    return max_values - min_values
+
+
+def cell_volume(vectors: np.ndarray) -> float:
+    r""" Computes the volume of the unit cell defined by the primitive vectors.
+
+    The volume of the unit-cell in two and three dimensions is defined by
+    .. math::
+        V_{2d} = \abs{a_1 \cross a_2}, \quad V_{3d} = a_1 \cdot \abs{a_2 \cross a_3}
+
+    For higher dimensions the volume is computed using the determinant:
+    .. math::
+        V_{d} = \sqrt{\det{A A^T}}
+    where .math:`A` is the array of vectors.
+
+    Returns
+    -------
+    vol: float
+    """
+    dim = len(vectors)
+    if dim == 1:
+        v = float(vectors)
+    elif dim == 2:
+        v = np.cross(vectors[0], vectors[1])
+    elif dim == 3:
+        cross = np.cross(vectors[1], vectors[2])
+        v = np.dot(vectors[0], cross)
+    else:
+        v = np.sqrt(np.linalg.det(np.dot(vectors.T, vectors)))
+    return abs(v)
+
+
+def compute_vectors(a: float, b: Optional[float] = None, c: Optional[float] = None,
+                    alpha: Optional[float] = None, beta: Optional[float] = None,
+                    gamma: Optional[float] = None) -> np.ndarray:
+    """ Computes lattice vectors by the lengths and angles. """
+    if b is None and c is None:
+        vectors = [a]
+    elif c is None:
+        alpha = np.deg2rad(alpha)
+        ax = a
+        bx = b * np.cos(alpha)
+        by = b * np.sin(alpha)
+        vectors = np.array([
+            [ax, 0],
+            [bx, by]
+        ])
+    else:
+        alpha = np.deg2rad(alpha)
+        beta = np.deg2rad(beta)
+        gamma = np.deg2rad(gamma)
+        ax = a
+        bx = b * np.cos(gamma)
+        by = b * np.sin(gamma)
+        cx = c * np.cos(beta)
+        cy = (abs(c) * abs(b) * np.cos(alpha) - bx * cx) / by
+        cz = np.sqrt(c ** 2 - cx ** 2 - cy ** 2)
+        vectors = np.array([
+            [ax, 0, 0],
+            [bx, by, 0],
+            [cx, cy, cz]
+        ])
+    return np.round(vectors, decimals=10)
+
+
+class KDTree(cKDTree):
+    """Simple wrapper of scipy's cKTree with global query settings."""
+
+    def __init__(self, points, k=1, distance_bound=np.inf, eps=0., p=2):
+        super().__init__(points)
+        self.distance_bound = distance_bound
+        self.k = k
+        self.p = p
+        self.eps = eps
+
+    def query(self, x, n_jobs=1, k=0, eps=0., p=0, distance_upper_bound=0):
+        k = k or self.k
+        eps = eps or self.eps
+        p = p or self.p
+        bound = distance_upper_bound or self.distance_bound
+        # noinspection PyUnresolvedReferences
+        return super().query(x, k, eps, p, bound, n_jobs)
+
+
+def compute_neighbours(positions, x=None, k=20, max_dist=np.inf, num_jobs=1, include_zero=False):
+    x = positions if x is None else x
+    tree = KDTree(positions, k=k, distance_bound=max_dist * 1.1, eps=0.1)
+    distances, neighbours = tree.query(x, n_jobs=num_jobs)
+    if not include_zero and np.all(distances[:, 0] == 0):
+        distances = distances[:, 1:]
+        neighbours = neighbours[:, 1:]
+    invalid = distances > max_dist
+    neighbours[invalid] = tree.n  # noqa
+    distances[invalid] = np.inf
+    return neighbours, distances
+
+
+def create_lookup_table(array):
+    values = np.sort(np.unique(array))
+    indices = np.zeros_like(array, dtype=np.int8)
+    for i, x in enumerate(values):
+        mask = array == x
+        indices[mask] = i
+    return values, indices
 
 
 class VoronoiTree:

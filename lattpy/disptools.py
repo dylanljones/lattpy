@@ -10,7 +10,8 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from .utils import vlinspace, chain, distance
+from .utils import vlinspace, chain
+from .spatial import distance
 from .plotting import draw_lines
 
 

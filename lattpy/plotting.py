@@ -125,7 +125,7 @@ def draw_points(ax, points, s=10, color=None, alpha=1.0, **kwargs):
     return scat
 
 
-def draw_sites(ax, positions, size, **kwargs):
+def draw_sites(ax, positions, size=7, **kwargs):
     positions = np.asarray(positions)
     scat = ax.scatter(*positions.T, zorder=3, s=size**2, **kwargs)
     # Manualy update data-limits

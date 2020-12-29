@@ -36,11 +36,11 @@ from lattpy import Lattice
 
 latt = Lattice(np.eye(2))       # Construct a Bravais lattice with square unit-vectors
 latt.add_atom(pos=[0.0, 0.0])   # Add an Atom to the unit cell of the lattice
-latt.set_num_neighbours(1)     # Set the maximum number of distances in the configuration.
+latt.set_num_neighbours(1)      # Set the maximum number of distances in the configuration.
 ````
 
-To speed up the configuration prefabs of common lattices are included. The previous lattice for example
-can also be constructed as following:
+To speed up the configuration prefabs of common lattices are included. The previous lattice 
+can also be created with
 ````python
 from lattpy import simple_square
 

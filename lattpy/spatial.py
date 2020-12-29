@@ -88,7 +88,8 @@ def cell_volume(vectors: np.ndarray) -> float:
 
 def compute_vectors(a: float, b: Optional[float] = None, c: Optional[float] = None,
                     alpha: Optional[float] = None, beta: Optional[float] = None,
-                    gamma: Optional[float] = None) -> np.ndarray:
+                    gamma: Optional[float] = None,
+                    decimals: Optional[int] = 0) -> np.ndarray:
     """ Computes lattice vectors by the lengths and angles. """
     if b is None and c is None:
         vectors = [a]
@@ -116,7 +117,9 @@ def compute_vectors(a: float, b: Optional[float] = None, c: Optional[float] = No
             [bx, by, 0],
             [cx, cy, cz]
         ])
-    return np.round(vectors, decimals=10)
+    if decimals:
+        vectors = np.round(vectors, decimals=decimals)
+    return vectors
 
 
 class KDTree(cKDTree):
@@ -138,9 +141,10 @@ class KDTree(cKDTree):
         return super().query(x, k, eps, p, bound, n_jobs)
 
 
-def compute_neighbours(positions, x=None, k=20, max_dist=np.inf, num_jobs=1, include_zero=False):
+def compute_neighbours(positions, x=None, k=20, max_dist=np.inf, eps=0., num_jobs=1,
+                       include_zero=False):
     x = positions if x is None else x
-    tree = KDTree(positions, k=k, distance_bound=max_dist * 1.1, eps=0.1)
+    tree = KDTree(positions, k=k, distance_bound=max_dist * 1.1, eps=eps)
     distances, neighbours = tree.query(x, n_jobs=num_jobs)
     if not include_zero and np.all(distances[:, 0] == 0):
         distances = distances[:, 1:]

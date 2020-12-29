@@ -437,129 +437,6 @@ class Lattice:
         rlatt = self.__class__(rvecs)
         return rlatt.wigner_seitz_cell()
 
-    def check_points(self, points: np.ndarray,
-                     shape: Union[int, Sequence[int]],
-                     relative: Optional[bool] = False,
-                     pos: Optional[Union[float, Sequence[float]]] = None
-                     ) -> np.ndarray:
-        """Returns a mask for the points in the given shape.
-
-        Parameters
-        ----------
-        points: (M, N) np.ndarray
-            The points in cartesian coordinates.
-        shape: (N) array_like or int
-            shape of finite size lattice to build.
-        relative: bool, optional
-            If 'True' the shape will be multiplied by the cell size of the model.
-            The default is ``True``.
-        pos: (N) array_like or int, optional
-            Optional position of the section to build. If 'None' the origin is used.
-
-        Returns
-        -------
-        mask: (M) np.ndarray
-        """
-        shape = np.atleast_1d(shape)
-        if len(shape) != self.dim:
-            raise ValueError(f"Dimension of shape {len(shape)} doesn't "
-                             f"match the dimension of the lattice {self.dim}")
-        if relative:
-            shape = np.array(shape) * np.max(self.vectors, axis=0) - 0.1 * self.norms
-
-        if pos is None:
-            pos = np.zeros(self.dim)
-        end = pos + shape
-
-        mask = (pos[0] <= points[:, 0]) & (points[:, 0] <= end[0])
-        for i in range(1, self.dim):
-            mask = mask & (pos[i] <= points[:, i]) & (points[:, i] <= end[i])
-        return mask
-
-    def filter_points(self, points: np.ndarray,
-                      shape: Union[int, Sequence[int]],
-                      relative: Optional[bool] = False,
-                      pos: Optional[Union[float, Sequence[float]]] = None
-                      ) -> np.ndarray:
-        """Returns the points that are in the given shape.
-
-        Parameters
-        ----------
-        points: (M, N) np.ndarray
-            The points in cartesian coordinates.
-        shape: (N) array_like or int
-            shape of finite size lattice to build.
-        relative: bool, optional
-            If 'True' the shape will be multiplied by the cell size of the model.
-            The default is ``True``.
-        pos: (N) array_like or int, optional
-            Optional position of the section to build. If 'None' the origin is used.
-
-        Returns
-        -------
-        points: (K, N) np.ndarray
-        """
-        mask = self.check_points(points, shape, relative, pos)
-        return points[mask]
-
-    def build_translation_vectors(self, shape: Union[int, Sequence[int]],
-                                  relative: Optional[bool] = False,
-                                  pos: Optional[Union[float, Sequence[float]]] = None,
-                                  check: Optional[bool] = True
-                                  ) -> np.ndarray:
-        """Constructs the translation vectors .math:`n` in the lattice basis in a given shape.
-
-        Raises
-        ------
-        ValueError
-            Raised if the dimension of the position doesn't match the dimension of the lattice.
-
-        Parameters
-        ----------
-        shape: (N) array_like or int
-            shape of finite size lattice to build.
-        relative: bool, optional
-            If 'True' the shape will be multiplied by the cell size of the model.
-            The default is ``True``.
-        pos: (N) array_like or int, optional
-            Optional position of the section to build. If 'None' the origin is used.
-        check: bool, optional
-            If ``True`` the positions of the translation vectors are checked and filtered.
-            The default is ``True``. This should only be disabled if filtered later.
-
-        Returns
-        -------
-        nvecs: (M, N) np.ndarray
-            The translation-vectors in lattice-coordinates
-        """
-        shape = np.atleast_1d(shape)
-        if len(shape) != self.dim:
-            raise ValueError(f"Dimension of shape {len(shape)} doesn't "
-                             f"match the dimension of the lattice {self.dim}")
-        if relative:
-            shape = np.array(shape) * np.max(self.vectors, axis=0) - 0.1 * self.norms
-        if pos is None:
-            pos = np.zeros(self.dim)
-        end = pos + shape
-
-        # Generate translation vectors with too many points.
-        min_values = (self.itranslate(pos)[0] - shape).astype("int")
-        max_values = (np.abs(self.itranslate(end)[0]) + shape).astype("int")
-        min_values[min_values == 0] = -1  # set minimum size to 1
-        max_values[max_values == 0] = +1  # set minimum size to 1
-
-        ranges = [(range(min_values[d], max_values[d])) for d in range(self.dim)]
-        nvecs = np.array(vrange(ranges))
-
-        if check:
-            # Filter points in the given volume
-            positions = np.dot(nvecs, self.vectors[np.newaxis, :, :])[:, 0, :]
-            mask = (pos[0] <= positions[:, 0]) & (positions[:, 0] <= end[0])
-            for i in range(1, self.dim):
-                mask = mask & (pos[i] <= positions[:, i]) & (positions[:, i] <= end[i])
-            nvecs = nvecs[mask]
-        return nvecs
-
     # ==============================================================================================
 
     def add_atom(self, pos: Optional[Union[float, Sequence[float]]] = None,
@@ -972,6 +849,103 @@ class Lattice:
                 atom_pos[atom] = [pos]
         return atom_pos
 
+    def build_translation_vectors(self, shape: Union[int, Sequence[int]],
+                                  relative: Optional[bool] = False,
+                                  pos: Optional[Union[float, Sequence[float]]] = None,
+                                  check: Optional[bool] = True
+                                  ) -> np.ndarray:
+        """Constructs the translation vectors .math:`n` in the lattice basis in a given shape.
+
+        Raises
+        ------
+        ValueError
+            Raised if the dimension of the position doesn't match the dimension of the lattice.
+
+        Parameters
+        ----------
+        shape: (N) array_like or int
+            shape of finite size lattice to build.
+        relative: bool, optional
+            If 'True' the shape will be multiplied by the cell size of the model.
+            The default is ``True``.
+        pos: (N) array_like or int, optional
+            Optional position of the section to build. If 'None' the origin is used.
+        check: bool, optional
+            If ``True`` the positions of the translation vectors are checked and filtered.
+            The default is ``True``. This should only be disabled if filtered later.
+
+        Returns
+        -------
+        nvecs: (M, N) np.ndarray
+            The translation-vectors in lattice-coordinates
+        """
+        shape = np.atleast_1d(shape)
+        if len(shape) != self.dim:
+            raise ValueError(f"Dimension of shape {len(shape)} doesn't "
+                             f"match the dimension of the lattice {self.dim}")
+        if relative:
+            shape = np.array(shape) * np.max(self.vectors, axis=0) - 0.1 * self.norms
+        if pos is None:
+            pos = np.zeros(self.dim)
+        end = pos + shape
+
+        # Generate translation vectors with too many points.
+        min_values = (self.itranslate(pos)[0] - shape).astype("int")
+        max_values = (np.abs(self.itranslate(end)[0]) + shape).astype("int")
+        min_values[min_values == 0] = -1  # set minimum size to 1
+        max_values[max_values == 0] = +1  # set minimum size to 1
+
+        ranges = [(range(min_values[d], max_values[d])) for d in range(self.dim)]
+        nvecs = np.array(vrange(ranges))
+
+        if check:
+            # Filter points in the given volume
+            positions = np.dot(nvecs, self.vectors[np.newaxis, :, :])[:, 0, :]
+            mask = (pos[0] <= positions[:, 0]) & (positions[:, 0] <= end[0])
+            for i in range(1, self.dim):
+                mask = mask & (pos[i] <= positions[:, i]) & (positions[:, i] <= end[i])
+            nvecs = nvecs[mask]
+        return nvecs
+
+    def check_points(self, points: np.ndarray,
+                     shape: Union[int, Sequence[int]],
+                     relative: Optional[bool] = False,
+                     pos: Optional[Union[float, Sequence[float]]] = None
+                     ) -> np.ndarray:
+        """Returns a mask for the points in the given shape.
+
+        Parameters
+        ----------
+        points: (M, N) np.ndarray
+            The points in cartesian coordinates.
+        shape: (N) array_like or int
+            shape of finite size lattice to build.
+        relative: bool, optional
+            If 'True' the shape will be multiplied by the cell size of the model.
+            The default is ``True``.
+        pos: (N) array_like or int, optional
+            Optional position of the section to build. If 'None' the origin is used.
+
+        Returns
+        -------
+        mask: (M) np.ndarray
+        """
+        shape = np.atleast_1d(shape)
+        if len(shape) != self.dim:
+            raise ValueError(f"Dimension of shape {len(shape)} doesn't "
+                             f"match the dimension of the lattice {self.dim}")
+        if relative:
+            shape = np.array(shape) * np.max(self.vectors, axis=0) - 0.1 * self.norms
+
+        if pos is None:
+            pos = np.zeros(self.dim)
+        end = pos + shape
+
+        mask = (pos[0] <= points[:, 0]) & (points[:, 0] <= end[0])
+        for i in range(1, self.dim):
+            mask = mask & (pos[i] <= points[:, i]) & (points[:, i] <= end[i])
+        return mask
+
     def build_indices(self, shape: Union[int, Sequence[int]],
                       relative: Optional[bool] = False,
                       pos: Optional[Union[float, Sequence[float]]] = None,
@@ -999,7 +973,8 @@ class Lattice:
             If ``True`` the positions of the translation vectors are checked and filtered.
             The default is ``True``. This should only be disabled if filtered later.
         callback: callable, optional
-            Optional callable for filtering positions.
+            Optional callable for filtering sites.
+            The indices and positions are passed as arguments.
         dtype: int or np.dtype, optional
             Optional data-type for storing the lattice indices. The default is ``np.int``.
             Using a smaller bit-size may help reduce memory usage.
@@ -1023,7 +998,7 @@ class Lattice:
             indices = indices[mask]
             positions = positions[mask]
         if callback is not None:
-            indices = indices[callback(positions)]
+            indices = indices[callback(indices, positions)]
         return indices.astype(dtype=dtype)
 
     def compute_neighbours(self, positions: Union[Sequence[float], Sequence[Sequence[float]]],
@@ -1180,8 +1155,9 @@ class Lattice:
               check: Optional[bool] = True,
               num_jobs: Optional[int] = 1,
               periodic: Optional[Union[int, Sequence[int]]] = None,
-              dtype: Union[int, np.dtype] = np.int,
-              callback: Optional[Callable] = None) -> LatticeData:
+              callback: Optional[Callable] = None,
+              dtype: Union[int, np.dtype] = np.int
+              ) -> LatticeData:
         """ Constructs the indices and neighbours of a new finite size lattice and stores the data
 
         Raises
@@ -1208,11 +1184,11 @@ class Lattice:
             If -1 is given all processors are used. The default is ``1``.
         periodic: int or array_like, optional
             Optional periodic axes to set. See 'set_periodic' for mor details.
+        callback: callable, optional
+            The indices and positions are passed as arguments.
         dtype: int or np.dtype, optional
             Optional data-type for storing the lattice indices. The default is ``np.int``.
             Using a smaller bit-size may help reduce memory usage.
-        callback: callable
-
         """
         self.data.reset()
         shape = np.atleast_1d(shape)
@@ -1565,12 +1541,21 @@ class Lattice:
         else:
             fig = ax.get_figure()
 
+        # prefecth colors
+        colors = list()
+        for i in range(self.num_base):
+            atom = self.get_atom(i)
+            line = ax.plot([], [], color=atom.color)[0]
+            col = line.get_color()
+            colors.append(col)
+
         # Draw unit vectors and the cell they spawn.
         if show_vecs:
             vectors = self.vectors
             draw_cell(ax, vectors, color="k", lw=1., outlines=show_cell)
 
         if show_neighbours:
+            position_arr = [list() for _ in range(self.num_base)]
             for i in range(self.num_base):
                 pos = self.atom_positions[i]
                 for distidx in range(self.num_distances):
@@ -1579,15 +1564,21 @@ class Lattice:
                     draw_vectors(ax, positions - pos, pos=pos, zorder=1, color=color, lw=lw)
                     for idx, pos1 in zip(indices, positions):
                         if np.any(idx[:-1]):
-                            atom = self.atoms[idx[-1]]
-                            draw_points(ax, pos1, size=atom.size * 0.75,
-                                        color=atom.color, alpha=alpha)
+                            a = idx[-1]
+                            position_arr[a].append(pos1)
+            for i in range(self.num_base):
+                atom = self.get_atom(i)
+                pos = np.unique(position_arr[i], axis=0)
+                size = 0.6 * atom.size
+                col = colors[i]
+                draw_points(ax, pos, size=size, color=col, label=atom.name, alpha=alpha)
 
         # Plot atoms in the unit cell
         for i in range(self.num_base):
             atom = self.get_atom(i)
             pos = self.atom_positions[i]
-            draw_points(ax, pos, size=atom.size, color=atom.color, label=atom.name)
+            col = colors[i]
+            draw_points(ax, pos, size=atom.size, color=col, label=atom.name)
 
         # Format plot
         if legend and self._num_base > 1:
@@ -1701,7 +1692,6 @@ class Lattice:
         if self.dim == 1:
             sizex = self.shape[0]
             h = sizex / 4
-            w = self.cell_size[0]
             ax.set_ylim(-h, +h)
         else:
             ax.margins(*margins)

@@ -30,6 +30,8 @@ import logging
 
 logging.captureWarnings(True)
 
+logger = logging.getLogger(__name__)
+
 
 class LatticeData:
     """Object for storing the indices, positions and neighbours of lattice sites."""
@@ -63,6 +65,14 @@ class LatticeData:
         """The number of distances of the neighbour data."""
         return len(np.unique(self.distances[np.isfinite(self.distances)]))
 
+    @property
+    def nbytes(self):
+        """Returns the number of bytes stored."""
+        size = self.indices.nbytes + self.positions.nbytes
+        size += self.neighbours.nbytes + self.distances.nbytes
+        size += self.distvals.nbytes + self.paxes.nbytes
+        return size
+
     def copy(self) -> 'LatticeData':
         """Creates a deep copy of the instance."""
         return deepcopy(self)
@@ -95,6 +105,7 @@ class LatticeData:
         distances: iterabe of iterable of int
             The distances of the neighbours.
         """
+        logger.debug("Setting data")
         distvals, distidx = create_lookup_table(distances)
 
         self.indices = indices

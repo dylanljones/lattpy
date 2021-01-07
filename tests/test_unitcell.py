@@ -8,10 +8,7 @@
 # LICENSE file in the root directory and this permission notice shall
 # be included in all copies or substantial portions of the Software.
 
-
-import numpy as np
 from lattpy.unitcell import Atom
-from numpy.testing import assert_array_equal, assert_array_almost_equal
 
 
 def test_atom_uniqueness():

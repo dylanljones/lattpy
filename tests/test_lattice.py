@@ -364,17 +364,22 @@ def test_simple_cubic():
     assert_array_equal(expected, sorted(actual))
 
     latt.set_periodic(1)
-    expected = [1, 2, 3, 9]
-    actual = latt.nearest_neighbours(0)
-    assert_array_equal(expected, sorted(actual))
-
-    latt.set_periodic(2)
     expected = [1, 3, 6, 9]
     actual = latt.nearest_neighbours(0)
     assert_array_equal(expected, sorted(actual))
 
+    latt.set_periodic(2)
+    expected = [1, 2, 3, 9]
+    actual = latt.nearest_neighbours(0)
+    assert_array_equal(expected, sorted(actual))
+
     latt.set_periodic([0, 1])
-    expected = [1, 2, 3, 9, 18]
+    expected = [1, 3, 6, 9, 18]
+    actual = latt.nearest_neighbours(0)
+    assert_array_equal(expected, sorted(actual))
+
+    latt.set_periodic([1, 2])
+    expected = [1, 2, 3, 6, 9]
     actual = latt.nearest_neighbours(0)
     assert_array_equal(expected, sorted(actual))
 

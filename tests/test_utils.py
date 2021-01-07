@@ -11,59 +11,48 @@
 import numpy as np
 from pytest import mark
 from numpy.testing import assert_array_equal
-from lattpy.utils import vrange, vlinspace, chain
+from lattpy import utils
 
 
-def test_vrange():
-    ranges = range(1)
-    res = vrange(ranges)
-    expected = np.array([[0]])
-    assert_array_equal(res, expected)
-
-    ranges = range(3)
-    res = vrange(ranges)
-    expected = np.array([[0, 1, 2]])
-    assert_array_equal(res, expected)
-
-    ranges = range(3), range(2)
-    res = vrange(ranges)
-    expected = np.array([[0, 0], [0, 1],
-                         [1, 0], [1, 1],
-                         [2, 0], [2, 1]])
-    assert_array_equal(res, expected)
+@mark.parametrize("arrays, result", [
+    (([1, 3], [2, 4]),           [1, 2, 3, 4]),
+    (([1, 4], [2, 5], [3, 6]),   [1, 2, 3, 4, 5, 6]),
+    (([[1, 1], [3, 3]], [[2, 2], [4, 4]]), [[1, 1], [2, 2], [3, 3], [4, 4]])
+])
+def test_interweave(arrays, result):
+    assert_array_equal(utils.interweave(np.array(arrays)), result)
 
 
-def test_vlinspace():
-    start, stop = 0, 8
-    res = vlinspace(start, stop, 5)
-    expected = np.array([[0, 2, 4, 6, 8]]).T
-    assert_array_equal(res, expected)
-
-    start, stop = [0, 0], [8, 0]
-    res = vlinspace(start, stop, 5)
-    expected = np.array([[0, 2, 4, 6, 8], [0, 0, 0, 0, 0]]).T
-    assert_array_equal(res, expected)
-
-    start, stop = [0, 0], [0, 8]
-    res = vlinspace(start, stop, 5)
-    expected = np.array([[0, 0, 0, 0, 0], [0, 2, 4, 6, 8]]).T
-    assert_array_equal(res, expected)
-
-    start, stop = [0, 0], [8, 8]
-    res = vlinspace(start, stop, 5)
-    expected = np.array([[0, 2, 4, 6, 8], [0, 2, 4, 6, 8]]).T
-    assert_array_equal(res, expected)
+@mark.parametrize("limits, result", [
+    (([0, 1], ),       [[0]]),
+    (([0, 1], [0, 1]), [[0, 0]]),
+    (([0, 2], ),       [[0], [1]]),
+    (([0, 2], [0, 1]), [[0, 0], [1, 0]]),
+    (([0, 2], [0, 2]), [[0, 0], [0, 1], [1, 0], [1, 1]]),
+    (([0, 3], [0, 2]), [[0, 0], [0, 1], [1, 0], [1, 1], [2, 0], [2, 1]]),
+])
+def test_vindices(limits, result):
+    assert_array_equal(utils.vindices(limits), result)
 
 
-def test_chain():
-    items = 0, 1, 2
-    res = chain(items, cycle=False)
-    expected = [[0, 1], [1, 2]]
-    assert_array_equal(res, expected)
+@mark.parametrize("stop, result", [
+    (1,         [[0]]),
+    (3,         [[0], [1], [2]]),
+    ((3, 2),    [[0, 0], [0, 1], [1, 0], [1, 1], [2, 0], [2, 1]])
+])
+def test_vrange_stop(stop, result):
+    assert_array_equal(utils.vrange(stop), result)
 
-    res = chain(items, cycle=True)
-    expected = [[0, 1], [1, 2], [2, 0]]
-    assert_array_equal(res, expected)
+
+@mark.parametrize("start, stop, result", [
+    (0, 1,            [[0]]),
+    (0, 3,            [[0], [1], [2]]),
+    (1, 3,            [[1], [2]]),
+    ((0, 0), (3, 2),  [[0, 0], [0, 1], [1, 0], [1, 1], [2, 0], [2, 1]]),
+    ((1, 0), (3, 2),  [[1, 0], [1, 1], [2, 0], [2, 1]])
+])
+def test_vrange_startstop(start, stop, result):
+    assert_array_equal(utils.vrange(start, stop), result)
 
 
 @mark.parametrize("items, cycle, result", [
@@ -73,4 +62,4 @@ def test_chain():
     (["0", "1", "2"],  True, [["0", "1"], ["1", "2"], ["2", "0"]]),
 ])
 def test_chain_parametrized(items, cycle, result):
-    assert_array_equal(chain(items, cycle), result)
+    assert_array_equal(utils.chain(items, cycle), result)

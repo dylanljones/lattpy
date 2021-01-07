@@ -74,50 +74,133 @@ def split_index(index):
     return index[:-1], index[-1]
 
 
-def vrange(axis_ranges: Iterable, sort_axis=0) -> List:
+def interweave(arrays: Sequence[np.ndarray]) -> np.ndarray:
+    """ Interweaves multiple arrays along the first axis
+
+    Example
+    -------
+    >>> arr1 = np.array([[1, 1], [3, 3], [5, 5]])
+    >>> arr2 = np.array([[2, 2], [4, 4], [6, 6]])
+    >>> interweave([arr1, arr2])
+    array([[1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6]])
+
+    Parameters
+    ----------
+    arrays: (M) Sequence of (N, ...) array_like
+        The input arrays to interwave. The shape of all arrays must match.
+
+    Returns
+    -------
+    interweaved: (M*N, ....) np.ndarray
+    """
+    shape = list(arrays[0].shape)
+    shape[0] = sum(x.shape[0] for x in arrays)
+    result = np.empty(shape, dtype=arrays[0].dtype)
+    n = len(arrays)
+    for i, arr in enumerate(arrays):
+        result[i::n] = arr
+    return result
+
+
+def vindices(limits: Iterable[Sequence[int]], sort_axis: Optional[int] = 0,
+             dtype: Optional[Union[int, str, np.dtype]] = None) -> np.ndarray:
+    """ Return an array representing the indices of a d-dimensional grid.
+
+    Parameters
+    ----------
+    limits: (D, 2) array_like
+        The limits of the indices for each axis.
+    sort_axis: int, optional
+        Optional axis that is used to sort indices.
+    dtype: int or str or np.dtype, optional
+        Optional data-type for storing the lattice indices. By default the given limits
+        are checked to determine the smallest possible data-type.
+
+    Returns
+    -------
+    vectors: (N, D) np.ndarray
+    """
+    if dtype is None:
+        # Estimate needed data type. Use the negative of the maximal
+        # absolute value to force data type to be signed
+        dtype = str(np.min_scalar_type(-np.max(np.abs(limits))))
+        dtype = dtype[1:] if dtype.startswith("u") else dtype
+    limits = np.asarray(limits)
+    dim = limits.shape[0]
+
+    # Create meshgrid reshape grid to array of indices
+
+    # version 1:
+    # axis = np.meshgrid(*(np.arange(*lim, dtype=dtype) for lim in limits))
+    # nvecs = np.asarray([np.asarray(a).flatten("F") for a in axis]).T
+
+    # version 2:
+    # slices = [slice(lim[0], lim[1], 1) for lim in limits]
+    # nvecs = np.mgrid[slices].astype(dtype).reshape(dim, -1).T
+
+    # version 3:
+    size = limits[:, 1] - limits[:, 0]
+    nvecs = np.indices(size, dtype=dtype).reshape(dim, -1).T + limits[:, 0]
+
+    # Optionally sort indices along given axis
+    if sort_axis is not None:
+        nvecs = nvecs[np.lexsort(nvecs.T[[sort_axis]])]
+
+    return nvecs
+
+
+def vrange(start=None, *args,
+           dtype: Optional[Union[int, str, np.dtype]] = None,
+           sort_axis: Optional[int] = 0, **kwargs) -> np.ndarray:
     """ Return evenly spaced vectors within a given interval.
 
     Parameters
     ----------
-    axis_ranges: array_like
-        ranges for each axis.
+    start: array_like, optional
+        The starting value of the interval. The interval includes this value.
+        The default start value is 0.
+    stop: array_like
+        The end value of the interval.
+    step: array_like, optional
+        Spacing between values. If `start` and `stop` are sequences and the `step`
+        is a scalar the given step size is used for all dimensions of the vectors.
+        The default step size is 1.
     sort_axis: int, optional
-        Optional axis that is used to sort vectors.
+        Optional axis that is used to sort indices.
+    dtype: dtype, optional
+        The type of the output array.  If `dtype` is not given, infer the data
+        type from the other input arguments.
 
     Returns
     -------
-    vectors: list
+    vectors: (N, D) np.ndarray
     """
-    axis = np.meshgrid(*axis_ranges)
-    nvecs = np.asarray([np.asarray(a).flatten("F") for a in axis]).T
-    nvecs = nvecs[np.lexsort(nvecs.T[[sort_axis]])]
-    return nvecs
+    # parse arguments
+    if len(args) == 0:
+        stop = start
+        start = np.zeros_like(stop)
+        step = kwargs.get("step", 1.0)
+    elif len(args) == 1:
+        stop = args[0]
+        step = kwargs.get("step", 1.0)
+    else:
+        stop, step = args
 
-
-def vlinspace(start: Union[float, Sequence[float]],
-              stop: Union[float, Sequence[float]],
-              n: Optional[int] = 1000) -> np.ndarray:
-    """ Vector linspace
-
-    Parameters
-    ----------
-    start: array_like or float
-        d-dimensional start-point
-    stop: array_like or float
-        d-dimensional stop-point
-    n: int, optional
-        number of points, default=1000
-
-    Returns
-    -------
-    vectors: np.ndarray
-    """
     start = np.atleast_1d(start)
     stop = np.atleast_1d(stop)
-    if not hasattr(start, '__len__') and not hasattr(stop, '__len__'):
-        return np.linspace(start, stop, n)
-    axes = [np.linspace(start[i], stop[i], n) for i in range(len(start))]
-    return np.asarray(axes).T
+    if step is None:
+        step = np.ones_like(start)
+    elif not hasattr(step, "__len__"):
+        step = np.ones_like(start) * step
+
+    # Create grid and reshape to array of vectors
+    slices = [slice(i, f, s) for i, f, s in zip(start, stop, step)]
+    array = np.mgrid[slices].reshape(len(slices), -1).T
+    # Optionally sort array along given axis
+    if sort_axis is not None:
+        array = array[np.lexsort(array.T[[sort_axis]])]
+
+    return array if dtype is None else array.astype(dtype)
 
 
 def chain(items: Sequence, cycle: bool = False) -> List:

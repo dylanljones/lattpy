@@ -202,12 +202,12 @@ class VoronoiTree:
             ax = fig.add_subplot(111, projection="3d" if self.dim == 3 else None)
 
         if draw_data:
-            draw_points(ax, self.points, s=point_size**2, color=point_color)
+            draw_points(ax, self.points, size=point_size, color=point_color)
             if self.dim > 1:
                 draw_vectors(ax, self.points, lw=0.5, color=point_color)
 
         if points:
-            draw_points(ax, self.vertices, s=size**2, color=color)
+            draw_points(ax, self.vertices, size=size, color=color)
 
         if self.dim == 2 and draw:
             segments = np.array([self.vertices[i] for i in self.edges])

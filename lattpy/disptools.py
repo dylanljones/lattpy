@@ -10,7 +10,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from .utils import vlinspace, chain
+from .utils import chain
 from .spatial import distance
 from .plotting import draw_lines
 
@@ -226,7 +226,7 @@ class DispersionPath:
         self.n_sect = n_sect
         path = np.zeros((0, self.dim))
         for p0, p1 in chain(self.points):
-            path = np.append(path, vlinspace(p0, p1, n_sect), axis=0)
+            path = np.append(path, np.linspace(p0, p1, num=n_sect), axis=0)
         return path
 
     def get_ticks(self):

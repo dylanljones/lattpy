@@ -50,6 +50,12 @@ class Atom(collections.MutableMapping):
         """Creates a deep copy of the ``Atom`` instance."""
         return Atom(self.name, **self._params.copy())
 
+    def get(self, key: str, default=None) -> Any:
+        try:
+            return self.__getitem__(key)
+        except KeyError:
+            return default
+
     def __len__(self) -> int:
         """Return the length of the ``Atom`` attributes."""
         return len(self._params)

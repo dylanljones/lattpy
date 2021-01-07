@@ -8,11 +8,14 @@
 # LICENSE file in the root directory and this permission notice shall
 # be included in all copies or substantial portions of the Software.
 
+from . import logging
+
 from .utils import (
     LatticeError,
     ConfigurationError,
+    interweave,
     vrange,
-    vlinspace,
+    vindices,
     split_index,
     frmt_num,
     frmt_time,

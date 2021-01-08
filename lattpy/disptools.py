@@ -8,11 +8,18 @@
 # LICENSE file in the root directory and this permission notice shall
 # be included in all copies or substantial portions of the Software.
 
+"""Tools for dispersion computations."""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from .utils import chain
 from .spatial import distance
 from .plotting import draw_lines
+
+__all__ = [
+    "band_subplots", "plot_dispersion", "plot_bands", "band_dos_subplots",
+    "plot_band_dos", "DispersionPath"
+]
 
 
 def band_subplots(ticks, labels, x_label="k", disp_label="E(k)", grid="both"):

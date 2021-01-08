@@ -8,21 +8,15 @@
 # LICENSE file in the root directory and this permission notice shall
 # be included in all copies or substantial portions of the Software.
 
-"""This module contains objects for storing and handling the data of finite lattices.
-
-Classes
--------
-
-LatticeData:
-    Used for saving the site-indices, site-positions and a `NeighbourMap` of
-    a (finite) Lattice.
-"""
+"""This module contains objects for low-level representation of lattice systems."""
 
 import numpy as np
 from copy import deepcopy
 from typing import Optional, Iterable, Union, Sequence
-from .spatial import create_lookup_table
+from .utils import create_lookup_table
 import logging
+
+__all__ = ["DataMap", "LatticeData"]
 
 logging.captureWarnings(True)
 

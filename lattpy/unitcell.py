@@ -8,11 +8,15 @@
 # LICENSE file in the root directory and this permission notice shall
 # be included in all copies or substantial portions of the Software.
 
+"""Objects for representing atoms and the unitcell of a lattice."""
+
 import itertools
 import collections
 import numpy as np
 from typing import Union, Optional, Any, Iterator, Dict, Sequence, List, Tuple
 from .utils import SiteOccupiedError
+
+__all__ = ["Atom", "UnitCell"]
 
 
 class Atom(collections.MutableMapping):

@@ -10,13 +10,11 @@
 
 from .utils import (
     logger,
+    ArrayLike,
     LatticeError,
     ConfigurationError,
     min_dtype,
-    interweave,
-    vrange,
-    vindices,
-    split_index,
+    chain,
     frmt_num,
     frmt_bytes,
     frmt_time,
@@ -25,6 +23,9 @@ from .utils import (
 
 from .spatial import (
     distance,
+    interweave,
+    vindices,
+    vrange,
     cell_size,
     cell_volume,
     compute_vectors,

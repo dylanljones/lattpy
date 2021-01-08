@@ -8,24 +8,33 @@
 # LICENSE file in the root directory and this permission notice shall
 # be included in all copies or substantial portions of the Software.
 
+"""Spatial algorithms and data structures."""
+
 import math
 import numpy as np
 import itertools
 import matplotlib.pyplot as plt
 from scipy.spatial import cKDTree, Voronoi
-from typing import Optional
-from .utils import chain
+from typing import Iterable, List, Sequence, Optional, Union
+from .utils import ArrayLike, min_dtype, chain
 from .plotting import draw_points, draw_vectors, draw_lines, draw_surfaces
 
 
-def distance(r1: np.ndarray, r2: np.ndarray, decimals: Optional[int] = None) -> float:
+__all__ = [
+    "distance", "interweave", "vindices", "vrange", "cell_size", "cell_volume",
+    "compute_vectors", "compute_neighbours", "KDTree", "VoronoiTree", "WignerSeitzCell",
+    "rx", "ry", "rz", "rotate2d", "rotate3d"
+]
+
+
+def distance(r1: ArrayLike, r2: ArrayLike, decimals: Optional[int] = None) -> float:
     """ Calculates the euclidian distance bewteen two points.
 
     Parameters
     ----------
-    r1: (N) ndarray
+    r1: array_like
         First input point.
-    r2: (N) ndarray
+    r2: array_like
         Second input point of matching size.
     decimals: int, optional
         Optional decimals to round distance to.
@@ -40,12 +49,139 @@ def distance(r1: np.ndarray, r2: np.ndarray, decimals: Optional[int] = None) -> 
     return dist
 
 
-def cell_size(vectors: np.ndarray) -> np.ndarray:
+def interweave(arrays: Sequence[np.ndarray]) -> np.ndarray:
+    """ Interweaves multiple arrays along the first axis
+
+    Example
+    -------
+    >>> arr1 = np.array([[1, 1], [3, 3], [5, 5]])
+    >>> arr2 = np.array([[2, 2], [4, 4], [6, 6]])
+    >>> interweave([arr1, arr2])
+    array([[1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6]])
+
+    Parameters
+    ----------
+    arrays: (M) Sequence of (N, ...) array_like
+        The input arrays to interwave. The shape of all arrays must match.
+
+    Returns
+    -------
+    interweaved: (M*N, ....) np.ndarray
+    """
+    shape = list(arrays[0].shape)
+    shape[0] = sum(x.shape[0] for x in arrays)
+    result = np.empty(shape, dtype=arrays[0].dtype)
+    n = len(arrays)
+    for i, arr in enumerate(arrays):
+        result[i::n] = arr
+    return result
+
+
+def vindices(limits: Iterable[Sequence[int]], sort_axis: Optional[int] = 0,
+             dtype: Optional[Union[int, str, np.dtype]] = None) -> np.ndarray:
+    """ Return an array representing the indices of a d-dimensional grid.
+
+    Parameters
+    ----------
+    limits: (D, 2) array_like
+        The limits of the indices for each axis.
+    sort_axis: int, optional
+        Optional axis that is used to sort indices.
+    dtype: int or str or np.dtype, optional
+        Optional data-type for storing the lattice indices. By default the given limits
+        are checked to determine the smallest possible data-type.
+
+    Returns
+    -------
+    vectors: (N, D) np.ndarray
+    """
+    if dtype is None:
+        dtype = min_dtype(limits, signed=True)
+    limits = np.asarray(limits)
+    dim = limits.shape[0]
+
+    # Create meshgrid reshape grid to array of indices
+
+    # version 1:
+    # axis = np.meshgrid(*(np.arange(*lim, dtype=dtype) for lim in limits))
+    # nvecs = np.asarray([np.asarray(a).flatten("F") for a in axis]).T
+
+    # version 2:
+    # slices = [slice(lim[0], lim[1], 1) for lim in limits]
+    # nvecs = np.mgrid[slices].astype(dtype).reshape(dim, -1).T
+
+    # version 3:
+    size = limits[:, 1] - limits[:, 0]
+    nvecs = np.indices(size, dtype=dtype).reshape(dim, -1).T + limits[:, 0]
+
+    # Optionally sort indices along given axis
+    if sort_axis is not None:
+        nvecs = nvecs[np.lexsort(nvecs.T[[sort_axis]])]
+
+    return nvecs
+
+
+def vrange(start=None, *args,
+           dtype: Optional[Union[int, str, np.dtype]] = None,
+           sort_axis: Optional[int] = 0, **kwargs) -> np.ndarray:
+    """ Return evenly spaced vectors within a given interval.
+
+    Parameters
+    ----------
+    start: array_like, optional
+        The starting value of the interval. The interval includes this value.
+        The default start value is 0.
+    stop: array_like
+        The end value of the interval.
+    step: array_like, optional
+        Spacing between values. If `start` and `stop` are sequences and the `step`
+        is a scalar the given step size is used for all dimensions of the vectors.
+        The default step size is 1.
+    sort_axis: int, optional
+        Optional axis that is used to sort indices.
+    dtype: dtype, optional
+        The type of the output array.  If `dtype` is not given, infer the data
+        type from the other input arguments.
+
+    Returns
+    -------
+    vectors: (N, D) np.ndarray
+    """
+    # parse arguments
+    if len(args) == 0:
+        stop = start
+        start = np.zeros_like(stop)
+        step = kwargs.get("step", 1.0)
+    elif len(args) == 1:
+        stop = args[0]
+        step = kwargs.get("step", 1.0)
+    else:
+        stop, step = args
+
+    start = np.atleast_1d(start)
+    stop = np.atleast_1d(stop)
+    if step is None:
+        step = np.ones_like(start)
+    elif not hasattr(step, "__len__"):
+        step = np.ones_like(start) * step
+
+    # Create grid and reshape to array of vectors
+    slices = [slice(i, f, s) for i, f, s in zip(start, stop, step)]
+    array = np.mgrid[slices].reshape(len(slices), -1).T
+    # Optionally sort array along given axis
+    if sort_axis is not None:
+        array = array[np.lexsort(array.T[[sort_axis]])]
+
+    return array if dtype is None else array.astype(dtype)
+
+
+def cell_size(vectors: ArrayLike) -> np.ndarray:
     """ Computes the shape of the box spawned by the given vectors.
 
     Parameters
     ----------
-    vectors: (N, N) array_like
+    vectors: array_like
+        The basis vectors defining the cell.
 
     Returns
     -------
@@ -57,7 +193,7 @@ def cell_size(vectors: np.ndarray) -> np.ndarray:
     return max_values - min_values
 
 
-def cell_volume(vectors: np.ndarray) -> float:
+def cell_volume(vectors: ArrayLike) -> float:
     r""" Computes the volume of the unit cell defined by the primitive vectors.
 
     The volume of the unit-cell in two and three dimensions is defined by
@@ -68,6 +204,11 @@ def cell_volume(vectors: np.ndarray) -> float:
     .. math::
         V_{d} = \sqrt{\det{A A^T}}
     where .math:`A` is the array of vectors.
+
+    Parameters
+    ----------
+    vectors: array_like
+        The basis vectors defining the cell.
 
     Returns
     -------
@@ -153,15 +294,6 @@ def compute_neighbours(positions, x=None, k=20, max_dist=np.inf, eps=0., num_job
     neighbours[invalid] = tree.n  # noqa
     distances[invalid] = np.inf
     return neighbours, distances
-
-
-def create_lookup_table(array, dtype=np.uint8):
-    values = np.sort(np.unique(array))
-    indices = np.zeros_like(array, dtype=dtype)
-    for i, x in enumerate(values):
-        mask = array == x
-        indices[mask] = i
-    return values, indices
 
 
 class VoronoiTree:

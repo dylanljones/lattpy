@@ -8,6 +8,8 @@
 # LICENSE file in the root directory and this permission notice shall
 # be included in all copies or substantial portions of the Software.
 
+"""This module contains the main `Lattice` object."""
+
 import pickle
 import logging
 import itertools
@@ -17,15 +19,17 @@ from copy import deepcopy
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from typing import Union, Optional, Tuple, List, Iterator, Sequence, Callable, Any, Dict
-
 from .utils import (
-    vindices, interweave, frmt_num,
-    SiteOccupiedError, NoAtomsError, NoBaseNeighboursError, NotBuiltError
+    frmt_num, SiteOccupiedError, NoAtomsError, NoBaseNeighboursError, NotBuiltError
 )
-from .plotting import draw_points, draw_vectors, draw_cell, draw_indices
-from .spatial import WignerSeitzCell, KDTree, compute_neighbours, cell_size, cell_volume
+from .spatial import (
+    vindices, interweave, cell_size, cell_volume, WignerSeitzCell, KDTree, compute_neighbours
+)
 from .unitcell import Atom
 from .data import LatticeData
+from .plotting import draw_points, draw_vectors, draw_cell, draw_indices
+
+__all__ = ["Lattice"]
 
 logger = logging.getLogger(__name__)
 

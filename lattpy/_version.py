@@ -8,3 +8,5 @@
 # LICENSE file in the root directory and this permission notice shall
 # be included in all copies or substantial portions of the Software.
 
+
+__version__ = "0.4.2"

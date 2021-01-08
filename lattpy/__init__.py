@@ -2,15 +2,16 @@
 #
 # This code is part of lattpy.
 #
-# Copyright (c) 2020, Dylan Jones
+# Copyright (c) 2021, Dylan Jones
 #
 # This code is licensed under the MIT License. The copyright notice in the
 # LICENSE file in the root directory and this permission notice shall
 # be included in all copies or substantial portions of the Software.
 
-from . import logging
+from ._version import __version__
 
 from .utils import (
+    logger,
     LatticeError,
     ConfigurationError,
     interweave,
@@ -41,6 +42,7 @@ from .unitcell import (
 from .data import LatticeData
 from .disptools import DispersionPath
 from .lattice import Lattice
+
 
 # =========================================================================
 #                             1D Lattices

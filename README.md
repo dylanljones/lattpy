@@ -1,4 +1,4 @@
-# lattpy 0.4
+# lattpy
 
 NOTE: This project is still under development and may change significantly!
 

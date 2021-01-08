@@ -10,11 +10,11 @@
 
 """This module contains objects for low-level representation of lattice systems."""
 
-import numpy as np
+import logging
 from copy import deepcopy
 from typing import Optional, Iterable, Union, Sequence
-from .utils import create_lookup_table
-import logging
+import numpy as np
+from .utils import ArrayLike, create_lookup_table
 
 __all__ = ["DataMap", "LatticeData"]
 
@@ -24,6 +24,17 @@ logger = logging.getLogger(__name__)
 
 
 class DataMap:
+    """Object for low-level representation of sites and site-pairs.
+
+    Parameters
+    ---------
+    alphas : (N) np.ndarray
+        The atom indices of the sites.
+    pairs : (M, 2) np.ndarray
+        An array of index-pairs of the lattice sites.
+    distindices : (M) np.ndarray
+        The distance-indices for each pair
+    """
 
     def __init__(self, alphas: np.ndarray, pairs: np.ndarray, distindices: np.ndarray):
         sites = np.arange(len(alphas), dtype=pairs.dtype)
@@ -31,45 +42,101 @@ class DataMap:
         self._indices = np.append(np.tile(sites, (2, 1)).T, pairs, axis=0)
 
     @property
-    def size(self):
+    def size(self) -> int:
+        """The number of the data points (sites + neighbour pairs)"""
         return len(self._indices)
 
     @property
-    def indices(self):
+    def indices(self) -> np.ndarray:
+        """The indices of the data points as rows and collumns."""
         return self._indices.T
 
     @property
     def rows(self):
+        """The rows of the data points."""
         return self._indices[:, 0]
 
     @property
     def cols(self):
+        """The columns of the data points."""
         return self._indices[:, 1]
 
     @property
     def nbytes(self):
-        """Returns the number of bytes stored."""
+        """The number of bytes stored in the datamap."""
         return self._map.nbytes + self._indices.nbytes
 
-    def onsite(self, alpha):
+    def onsite(self, alpha: int) -> np.ndarray:
+        """Creates a mask of the site elements for the atoms with the given index.
+
+        Parameters
+        ----------
+        alpha : int
+            Index of the atom in the unitcell.
+
+        Returns
+        -------
+        mask : np.ndarray
+        """
         return self._map == -alpha-1
 
-    def hopping(self, distidx):
+    def hopping(self, distidx) -> np.ndarray:
+        """Creates a mask of the site-pair elements with the given distance index.
+
+        Parameters
+        ----------
+        distidx : int, default
+            Index of distance to neighbouring sites, default is 0 (nearest neighbours).
+
+        Returns
+        -------
+        mask : np.ndarray
+        """
         return self._map == distidx
 
-    def fill(self, a, hop, eps=0., copy=False):
-        out = a.copy() if copy else a
+    def fill(self, array: np.ndarray, hop: ArrayLike,
+             eps: Optional[ArrayLike] = 0.) -> np.ndarray:
+        """Fills a data-array with the given values mapped to the right indices.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The array to add the values. The length of the array must match the
+            size of the `DataMap`-instance.
+        hop : array_like
+            The values are used for the site-pairs. The first value corresponds to
+            nearest neighbour hopping, the second to next-nearest neighbours and so on.
+        eps : array_like, optional
+            The onsite values used for the lattice sites. If there are multiple atoms
+            in the unitcell the length of the values must match. The default is 0.
+
+        Returns
+        -------
+        filled: np.ndarray
+        """
         eps = np.atleast_1d(eps)
         hop = np.atleast_1d(hop)
         for alpha, value in enumerate(eps):
-            out[self.onsite(alpha)] = value
+            array[self.onsite(alpha)] = value
         for dist, value in enumerate(hop):
-            out[self.hopping(dist)] = value
-        return out
+            array[self.hopping(dist)] = value
+        return array
 
 
 class LatticeData:
-    """Object for storing the indices, positions and neighbours of lattice sites."""
+    """Object for storing the indices, positions and neighbours of lattice sites.
+
+    Parameters
+    ----------
+    indices : array_like of iterable of int
+        The lattice indices of the sites.
+    positions : array_like of iterable of int
+        The positions of the sites.
+    neighbours : iterable of iterable of of int
+        The neighbours of the sites.
+    distances : iterabe of iterable of int
+        The distances of the neighbours.
+    """
 
     def __init__(self, *args):
         self.indices = np.array([])
@@ -315,24 +382,6 @@ class LatticeData:
         pairs = pairs[mask]
         distindices = distindices[mask]
         return DataMap(alphas, pairs.astype(dtype), distindices)
-
-    def get_all_neighbours(self, site: int) -> Iterable[int]:
-        """Gets the neighbours for all distances of a site."""
-        logging.warning("DeprecationWarning: "
-                        "Use `get_neighbours(site, distidx=None)` instead!")
-        return self.get_neighbours(site)
-
-    def get_periodic_neighbours(self, site: int, distidx: Optional[int] = 0) -> Iterable[int]:
-        """Gets only the periodic neighbours for a specific distance of a site."""
-        logging.warning("DeprecationWarning: "
-                        "Use `get_neighbours(site, distidx, periodic=True)` instead!")
-        return self.get_neighbours(site, distidx, periodic=True)
-
-    def get_nonperiodic_neighbours(self, site: int, distidx: Optional[int] = 0) -> Iterable[int]:
-        """Gets all neighbours for a specific distance of a site that are not periodic."""
-        logging.warning("DeprecationWarning: "
-                        "Use `get_neighbours(site, distidx, periodic=False)` instead!")
-        return self.get_neighbours(site, distidx, periodic=True)
 
     def site_mask(self, mins: Optional[Sequence[Union[float, None]]] = None,
                   maxs: Optional[Sequence[Union[float, None]]] = None,

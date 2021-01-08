@@ -10,10 +10,10 @@
 
 """Contains miscellaneous utility methods."""
 
+import logging
+from typing import Iterable, List, Sequence, Optional, Union, Tuple
 import time
 import numpy as np
-from typing import Iterable, List, Sequence, Optional, Union, Tuple
-import logging
 
 __all__ = [
     "ArrayLike", "logger", "LatticeError", "ConfigurationError", "SiteOccupiedError",
@@ -28,14 +28,14 @@ ArrayLike = Union[int, float, Iterable, np.ndarray]
 # Configure package logger
 logger = logging.getLogger("lattpy")
 
-_ch = logging.StreamHandler()
-_ch.setLevel(logging.DEBUG)
+_CH = logging.StreamHandler()
+_CH.setLevel(logging.DEBUG)
 
-_frmt = "[%(asctime)s] %(levelname)-8s - %(name)-15s - %(funcName)-25s -  %(message)s"
-_formatter = logging.Formatter(_frmt, datefmt='%H:%M:%S')
+_FRMT_STR = "[%(asctime)s] %(levelname)-8s - %(name)-15s - %(funcName)-25s -  %(message)s"
+_FRMT = logging.Formatter(_FRMT_STR, datefmt='%H:%M:%S')
 
-_ch.setFormatter(_formatter)        # Add formatter to stream handler
-logger.addHandler(_ch)              # Add stream handler to package logger
+_CH.setFormatter(_FRMT)             # Add formatter to stream handler
+logger.addHandler(_CH)              # Add stream handler to package logger
 
 logger.setLevel(logging.WARNING)    # Set initial logging level
 
@@ -46,9 +46,6 @@ class LatticeError(Exception):
 
 
 class ConfigurationError(LatticeError):
-
-    def __init__(self, msg="", hint=""):
-        super().__init__(msg, hint)
 
     @property
     def msg(self):
@@ -268,8 +265,8 @@ class Timer:
 
     __slots__ = ["_time", "_t0"]
 
-    def __init__(self, method=time.perf_counter):
-        self._time = method
+    def __init__(self, method=None):
+        self._time = method or time.perf_counter
         self._t0 = 0
         self.start()
 
@@ -306,8 +303,7 @@ class Timer:
         """
         if not progress:
             return 0.0
-        else:
-            return (1 / progress - 1) * self.time()
+        return (1 / progress - 1) * self.time()
 
     def strfrmt(self, short: bool = False, width: int = 0) -> str:
         """Formats the time since the timer has been started."""

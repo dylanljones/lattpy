@@ -23,6 +23,8 @@ from lattpy import spatial
     ([0, 0, 0], [1, 1, 1],  np.sqrt(3)),
 ])
 def test_distance(r1, r2, result):
+    r1 = np.asarray(r1)
+    r2 = np.asarray(r2)
     assert spatial.distance(r1, r2) == result
     assert spatial.distance(r2, r1) == result
 

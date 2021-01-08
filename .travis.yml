@@ -8,5 +8,8 @@ install:
   - pip install -r requirements.txt
   - python setup.py install
 script:
-  - pytest --cov=lattpy -v
+  - pytest --cov=tests -v
+
+after_success:
+  - codecov
 

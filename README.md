@@ -178,25 +178,9 @@ for i in range(n):
     for j in latt.nearest_neighbours(i):
         ham[i, j] = t
 ````
-This will create the Hamiltonian-matrix:
-````
-[[0. 1. 0. 0. 0.]
- [1. 0. 1. 0. 0.]
- [0. 1. 0. 1. 0.]
- [0. 0. 1. 0. 1.]
- [0. 0. 0. 1. 0.]]
-````
 
-If periodic boundary conditions are set (along axis 0) the matrix will be:
-````
-[[0. 1. 0. 0. 1.]
- [1. 0. 1. 0. 0.]
- [0. 1. 0. 1. 0.]
- [0. 0. 1. 0. 1.]
- [1. 0. 0. 1. 0.]]
-````
 
-Since we look over all sites of the lattice the construction of the hamiltonian is slow. 
+Since we loop over all sites of the lattice the construction of the hamiltonian is slow. 
 An alternative way of mapping the lattice data to the hamiltonian is using the `DataMap`
 object returned by the `map()` method of the lattice data. This stores the atom-types, 
 neighbour-pairs and corresponding distances of the lattice sites. Using the built-in 
@@ -222,4 +206,22 @@ values[dmap.hopping(distidx=0)] = t  # Map hopping-energies to array
 # The indices and data array can be used to construct a sparse matrix 
 ham_s = sparse.csr_matrix((values, dmap.indices))
 ham = ham_s.toarray()
+````
+
+Both construction methods will create the following Hamiltonian-matrix:
+````
+[[0. 1. 0. 0. 0.]
+ [1. 0. 1. 0. 0.]
+ [0. 1. 0. 1. 0.]
+ [0. 0. 1. 0. 1.]
+ [0. 0. 0. 1. 0.]]
+````
+
+If periodic boundary conditions are set (along axis 0) the output is:
+````
+[[0. 1. 0. 0. 1.]
+ [1. 0. 1. 0. 0.]
+ [0. 1. 0. 1. 0.]
+ [0. 0. 1. 0. 1.]
+ [1. 0. 0. 1. 0.]]
 ````

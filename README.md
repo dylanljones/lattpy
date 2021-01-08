@@ -117,8 +117,10 @@ bz = latt.brillouin_zone()
 Finite lattice data
 -------------------
 
-If the lattice has been built the needed data is cached. The lattice sites of the structure then can be 
-accessed by a simple index `i`. The syntax is the same as before, just without the `get_` prefix:
+If the lattice has been built the needed data is cached. The lattice sites of the 
+structure then can be accessed by a simple index `i`. The syntax is the same as before, 
+just without the `get_` prefix:
+
 ````python
 from lattpy import simple_square
 
@@ -137,13 +139,27 @@ neighbour_indices = latt.nearest_neighbours(idx)
 
 ````
 
+Performance
+===========
 
+Even though `lattpy` is written in pure python, it achieves high performance and 
+a low memory footprint by making heavy use of numpy's vectorized operations. 
+As an example the build-times of a square lattice for different number of sites 
+are shown in the following plot:
+
+<img src="benchmark.png" width="400">
+
+Note that the overhead of the multi-thread neighbour search results in a slight 
+increase of the build time for small systems. By using `num_jobs=1` in the `build`-method
+this overhead can be eliminated for small systems. By passing `num_jobs=-1` all cores
+of the system is used (faster large systems).
 
 
 Examples
 ========
 
-Using the (built) lattice model it is easy to construct the (tight-binding) Hamiltonian of a non-interacting model:
+Using the (built) lattice model it is easy to construct the (tight-binding) 
+Hamiltonian of a non-interacting model:
 
 ````python
 import numpy as np

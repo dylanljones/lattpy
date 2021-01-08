@@ -12,13 +12,6 @@ from setuptools import setup, find_packages
 import versioneer
 
 
-def version():
-    data = {}
-    with open("lattpy/_version.py") as fp:
-        exec(fp.read(), data)
-    return data["__version__"]
-
-
 def requirements():
     with open("requirements.txt", "r") as f:
         return f.readlines()

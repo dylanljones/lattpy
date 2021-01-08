@@ -155,9 +155,9 @@ def compute_neighbours(positions, x=None, k=20, max_dist=np.inf, eps=0., num_job
     return neighbours, distances
 
 
-def create_lookup_table(array):
+def create_lookup_table(array, dtype=np.uint8):
     values = np.sort(np.unique(array))
-    indices = np.zeros_like(array, dtype=np.int8)
+    indices = np.zeros_like(array, dtype=dtype)
     for i, x in enumerate(values):
         mask = array == x
         indices[mask] = i

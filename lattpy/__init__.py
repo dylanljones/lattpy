@@ -18,6 +18,7 @@ from .utils import (
     vindices,
     split_index,
     frmt_num,
+    frmt_bytes,
     frmt_time,
     Timer
 )

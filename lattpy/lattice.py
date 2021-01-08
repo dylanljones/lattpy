@@ -1208,7 +1208,7 @@ class Lattice:
               relative: Optional[bool] = False,
               pos: Optional[Union[float, Sequence[float]]] = None,
               check: Optional[bool] = True,
-              num_jobs: Optional[int] = 1,
+              num_jobs: Optional[int] = -1,
               periodic: Optional[Union[int, Sequence[int]]] = None,
               callback: Optional[Callable] = None,
               dtype: Union[int, np.dtype] = None
@@ -1236,7 +1236,7 @@ class Lattice:
             The default is ``True``. This should only be disabled if filtered later.
         num_jobs: int, optional
             Number of jobs to schedule for parallel processing of neighbours.
-            If -1 is given all processors are used. The default is ``1``.
+            If -1 is given all processors are used. The default is ``-1``.
         periodic: int or array_like, optional
             Optional periodic axes to set. See 'set_periodic' for mor details.
         callback: callable, optional

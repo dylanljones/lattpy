@@ -235,7 +235,7 @@ def chain(items: Sequence, cycle: bool = False) -> List:
 
 
 def frmt_num(num, dec=1, unit='', div=1000.) -> str:
-    """Returns a formatted string of a numbe
+    """Returns a formatted string of a number
 
     Parameters
     ----------
@@ -257,6 +257,11 @@ def frmt_num(num, dec=1, unit='', div=1000.) -> str:
             return f"{num:.{dec}f}{prefix}{unit}"
         num /= div
     return f"{num:.{dec}f}Y{unit}"
+
+
+def frmt_bytes(num, dec=1) -> str:
+    """Returns a formatted string of the number of bytes."""
+    return frmt_num(num, dec, unit="iB", div=1024)
 
 
 def frmt_time(seconds: float, short: bool = False, width: int = 0) -> str:

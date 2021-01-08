@@ -13,10 +13,6 @@
 Classes
 -------
 
-NeighbourMap:
-    Used for saving the mapping of different sites as neighbours.
-    Also supports periodic neighbours.
-
 LatticeData:
     Used for saving the site-indices, site-positions and a `NeighbourMap` of
     a (finite) Lattice.
@@ -31,6 +27,53 @@ import logging
 logging.captureWarnings(True)
 
 logger = logging.getLogger(__name__)
+
+
+class DataMap:
+
+    def __init__(self, alphas: np.ndarray, pairs: np.ndarray, distindices: np.ndarray,
+                 dtype=np.float):
+        sites = np.arange(len(alphas), dtype=pairs.dtype)
+        self._map = np.append(-alphas-1, distindices)
+        self._indices = np.append(np.tile(sites, (2, 1)).T, pairs, axis=0)
+        self._data = np.zeros(len(self._indices), dtype=dtype)
+
+    @property
+    def size(self):
+        return len(self._indices)
+
+    @property
+    def indices(self):
+        return self._indices.T
+
+    @property
+    def rows(self):
+        return self._indices[:, 0]
+
+    @property
+    def cols(self):
+        return self._indices[:, 1]
+
+    @property
+    def nbytes(self):
+        """Returns the number of bytes stored."""
+        return self._map.nbytes + self._indices.nbytes + self._data.nbytes
+
+    def onsite(self, alpha):
+        return self._map == -alpha-1
+
+    def hopping(self, distidx):
+        return self._map == distidx
+
+    def translate(self, hop, eps=0., copy=False):
+        out = self._data.copy() if copy else self._data
+        eps = np.atleast_1d(eps)
+        hop = np.atleast_1d(hop)
+        for alpha, value in enumerate(eps):
+            out[self.onsite(alpha)] = value
+        for dist, value in enumerate(hop):
+            out[self.hopping(dist)] = value
+        return out
 
 
 class LatticeData:
@@ -117,6 +160,36 @@ class LatticeData:
 
         self.invalid_idx = self.num_sites
         self.invalid_distidx = np.max(self.distances)
+
+    def get_limits(self) -> np.ndarray:
+        """Computes the geometric limits of the positions of the stored sites.
+
+        Returns
+        -------
+        limits: np.ndarray
+            The minimum and maximum value for each axis of the position data.
+        """
+        return np.array([np.min(self.positions, axis=0), np.max(self.positions, axis=0)])
+
+    def get_index_limits(self) -> np.ndarray:
+        """Computes the geometric limits of the lattice indices of the stored sites.
+
+        Returns
+        -------
+        limits: np.ndarray
+            The minimum and maximum value for each axis of the lattice indices.
+        """
+        return np.array([np.min(self.indices, axis=0), np.max(self.indices, axis=0)])
+
+    def get_translation_limits(self) -> np.ndarray:
+        """Computes the geometric limits of the translation vectors of the stored sites.
+
+        Returns
+        -------
+        limits: np.ndarray
+            The minimum and maximum value for each axis of the lattice indices.
+        """
+        return self.get_index_limits()[:, :-1]
 
     def neighbour_mask(self, site: int, distidx: Optional[int] = None,
                        periodic: Optional[bool] = None,
@@ -229,6 +302,28 @@ class LatticeData:
             if distidx != self.invalid_distidx:
                 yield distidx, self.get_neighbours(site, distidx, unique=unique)
 
+    def map(self) -> DataMap:
+        """ Builds a map containing the atom-indices, site-pairs and corresponding distances.
+
+        Returns
+        -------
+        datamap: DataMap
+        """
+        alphas = self.indices[:, -1].astype(np.int8)
+
+        # Build index pairs and corresponding distance array
+        dtype = np.min_scalar_type(self.num_sites)
+        sites = np.arange(self.num_sites, dtype=dtype)
+        sites_t = np.tile(sites, (self.neighbours.shape[1], 1)).T
+        pairs = np.reshape([sites_t, self.neighbours], newshape=(2, -1)).T
+        distindices = self.distances.flatten()
+
+        # Filter pairs with invalid indices
+        mask = distindices != self.invalid_distidx
+        pairs = pairs[mask]
+        distindices = distindices[mask]
+        return DataMap(alphas, pairs.astype(dtype), distindices)
+
     def get_all_neighbours(self, site: int) -> Iterable[int]:
         """Gets the neighbours for all distances of a site."""
         logging.warning("DeprecationWarning: "
@@ -246,36 +341,6 @@ class LatticeData:
         logging.warning("DeprecationWarning: "
                         "Use `get_neighbours(site, distidx, periodic=False)` instead!")
         return self.get_neighbours(site, distidx, periodic=True)
-
-    def get_limits(self) -> np.ndarray:
-        """Computes the geometric limits of the positions of the stored sites.
-
-        Returns
-        -------
-        limits: np.ndarray
-            The minimum and maximum value for each axis of the position data.
-        """
-        return np.array([np.min(self.positions, axis=0), np.max(self.positions, axis=0)])
-
-    def get_index_limits(self) -> np.ndarray:
-        """Computes the geometric limits of the lattice indices of the stored sites.
-
-        Returns
-        -------
-        limits: np.ndarray
-            The minimum and maximum value for each axis of the lattice indices.
-        """
-        return np.array([np.min(self.indices, axis=0), np.max(self.indices, axis=0)])
-
-    def get_translation_limits(self) -> np.ndarray:
-        """Computes the geometric limits of the translation vectors of the stored sites.
-
-        Returns
-        -------
-        limits: np.ndarray
-            The minimum and maximum value for each axis of the lattice indices.
-        """
-        return self.get_index_limits()[:, :-1]
 
     def site_mask(self, mins: Optional[Sequence[Union[float, None]]] = None,
                   maxs: Optional[Sequence[Union[float, None]]] = None,

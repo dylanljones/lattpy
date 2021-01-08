@@ -1,0 +1,11 @@
+language: python
+python:
+  - "3.6"
+sudo: false
+before_install:
+  - pip install 'pytest>=4.6' pytest-cov codecov
+install:
+  - pip install -r requirements.txt
+  - python setup.py install
+script:
+  - pytest --cov=lattpy -v

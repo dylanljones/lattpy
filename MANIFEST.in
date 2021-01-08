@@ -2,4 +2,5 @@
 include *.txt
 
 # Include the README file
-include *.md
+include *.mdinclude versioneer.py
+include lattpy/_version.py

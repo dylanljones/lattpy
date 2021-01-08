@@ -31,12 +31,10 @@ logger = logging.getLogger(__name__)
 
 class DataMap:
 
-    def __init__(self, alphas: np.ndarray, pairs: np.ndarray, distindices: np.ndarray,
-                 dtype=np.float):
+    def __init__(self, alphas: np.ndarray, pairs: np.ndarray, distindices: np.ndarray):
         sites = np.arange(len(alphas), dtype=pairs.dtype)
         self._map = np.append(-alphas-1, distindices)
         self._indices = np.append(np.tile(sites, (2, 1)).T, pairs, axis=0)
-        self._data = np.zeros(len(self._indices), dtype=dtype)
 
     @property
     def size(self):
@@ -57,7 +55,7 @@ class DataMap:
     @property
     def nbytes(self):
         """Returns the number of bytes stored."""
-        return self._map.nbytes + self._indices.nbytes + self._data.nbytes
+        return self._map.nbytes + self._indices.nbytes
 
     def onsite(self, alpha):
         return self._map == -alpha-1
@@ -65,8 +63,8 @@ class DataMap:
     def hopping(self, distidx):
         return self._map == distidx
 
-    def translate(self, hop, eps=0., copy=False):
-        out = self._data.copy() if copy else self._data
+    def fill(self, a, hop, eps=0., copy=False):
+        out = a.copy() if copy else a
         eps = np.atleast_1d(eps)
         hop = np.atleast_1d(hop)
         for alpha, value in enumerate(eps):

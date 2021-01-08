@@ -195,3 +195,31 @@ If periodic boundary conditions are set (along axis 0) the matrix will be:
  [0. 0. 1. 0. 1.]
  [1. 0. 0. 1. 0.]]
 ````
+
+Since we look over all sites of the lattice the construction of the hamiltonian is slow. 
+An alternative way of mapping the lattice data to the hamiltonian is using the `DataMap`
+object returned by the `map()` method of the lattice data. This stores the atom-types, 
+neighbour-pairs and corresponding distances of the lattice sites. Using the built-in 
+masks the construction of the hamiltonian-data can be vectorized:
+````python
+import numpy as np
+from scipy import sparse
+from lattpy import simple_chain
+
+# Initializes a 1D lattice chain with a length of 5 atoms.
+latt = simple_chain(a=1.0)
+latt.build(shape=4)
+n = latt.num_sites
+
+# Vectorized construction of the hamiltonian
+eps, t = 0., 1.
+
+dmap = latt.data.map()               # Build datamap
+values = np.zeros(dmap.size)         # Initialize array for data of H
+values[dmap.onsite(alpha=0)] = eps   # Map onsite-energies to the array
+values[dmap.hopping(distidx=0)] = t  # Map hopping-energies to array
+
+# The indices and data array can be used to construct a sparse matrix 
+ham_s = sparse.csr_matrix((values, dmap.indices))
+ham = ham_s.toarray()
+````

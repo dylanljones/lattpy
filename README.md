@@ -36,11 +36,11 @@ from lattpy import Lattice
 
 latt = Lattice(np.eye(2))       # Construct a Bravais lattice with square unit-vectors
 latt.add_atom(pos=[0.0, 0.0])   # Add an Atom to the unit cell of the lattice
-latt.calculate_distances(1)     # Set the maximum number of distances in the configuration.
+latt.set_num_neighbours(1)      # Set the maximum number of distances in the configuration.
 ````
 
-To speed up the configuration prefabs of common lattices are included. The previous lattice for example
-can also be constructed as following:
+To speed up the configuration prefabs of common lattices are included. The previous lattice 
+can also be created with
 ````python
 from lattpy import simple_square
 
@@ -53,11 +53,6 @@ the model has to be built:
 latt.build(shape=(5, 3))
 ````
 This will compute the indices and neighbours of all sites in the given shape and store the data.
-By default the lattice is built in real-space, meaning the shape parameter passed to the `build`-method is
-interpreted as a rectangle in real space. Alternatively the lattice can be built in the unit-vector-space:
-````python
-latt.build(shape=(5, 3), inbound=False)
-````
 
 After building the lattice periodic boundary conditions can be set along one or multiple axes:
 ````python
@@ -73,7 +68,7 @@ latt.build((5, 3), periodic=0)
 latt.plot()
 ````
 
-<img src="example.png" width="400">
+<img src="examples/example.png" width="400">
 
 General lattice attributes
 --------------------------
@@ -122,8 +117,10 @@ bz = latt.brillouin_zone()
 Finite lattice data
 -------------------
 
-If the lattice has been built the needed data is cached. The lattice sites of the structure then can be 
-accessed by a simple index `i`. The syntax is the same as before, just without the `get_` prefix:
+If the lattice has been built the needed data is cached. The lattice sites of the 
+structure then can be accessed by a simple index `i`. The syntax is the same as before, 
+just without the `get_` prefix:
+
 ````python
 from lattpy import simple_square
 
@@ -142,13 +139,27 @@ neighbour_indices = latt.nearest_neighbours(idx)
 
 ````
 
+Performance
+===========
 
+Even though `lattpy` is written in pure python, it achieves high performance and 
+a low memory footprint by making heavy use of numpy's vectorized operations. 
+As an example the build-times of a square lattice for different number of sites 
+are shown in the following plot:
+
+<img src="examples/benchmark.png" width="400">
+
+Note that the overhead of the multi-thread neighbour search results in a slight 
+increase of the build time for small systems. By using `num_jobs=1` in the `build`-method
+this overhead can be eliminated for small systems. By passing `num_jobs=-1` all cores
+of the system is used.
 
 
 Examples
 ========
 
-Using the (built) lattice model it is easy to construct the (tight-binding) Hamiltonian of a non-interacting model:
+Using the (built) lattice model it is easy to construct the (tight-binding) 
+Hamiltonian of a non-interacting model:
 
 ````python
 import numpy as np
@@ -156,7 +167,7 @@ from lattpy import simple_chain
 
 # Initializes a 1D lattice chain with a length of 5 atoms.
 latt = simple_chain(a=1.0)
-latt.build(shape=5, inbound=False)
+latt.build(shape=4)
 n = latt.num_sites
 
 # Construct the non-interacting (kinetic) Hamiltonian-matrix

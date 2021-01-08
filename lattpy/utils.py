@@ -2,18 +2,35 @@
 #
 # This code is part of lattpy.
 #
-# Copyright (c) 2020, Dylan Jones
+# Copyright (c) 2021, Dylan Jones
 #
 # This code is licensed under the MIT License. The copyright notice in the
 # LICENSE file in the root directory and this permission notice shall
 # be included in all copies or substantial portions of the Software.
 
-import math
+import time
 import numpy as np
 from typing import Iterable, List, Sequence, Optional, Union
 import logging
 
-logging.captureWarnings(True)
+# Configure package logger
+
+logger = logging.getLogger("lattpy")
+
+# create console handler and set level to debug
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+
+# create formatter
+frmt = "[%(asctime)s] %(levelname)-8s - %(name)-15s - %(funcName)-25s -  %(message)s"
+formatter = logging.Formatter(frmt, datefmt='%H:%M:%S')
+
+# add formatter to ch
+ch.setFormatter(formatter)
+
+# add ch to logger
+logger.addHandler(ch)
+logger.setLevel(logging.WARNING)
 
 
 class LatticeError(Exception):
@@ -74,116 +91,162 @@ def split_index(index):
     return index[:-1], index[-1]
 
 
-def vrange(axis_ranges: Iterable) -> List:
+def min_dtype(a: Union[int, float, np.ndarray, Iterable],
+              signed: Optional[bool] = True) -> np.dtype:
+    """Returns the minimum required dtype to store the given values.
+
+    Parameters
+    ----------
+    a : array_like
+        One or more values for determining the dtype.
+        Should contain the maximal expected values.
+    signed : bool, optional
+        If `True` the dtype is forced to be signed. The default is `True`.
+
+    Returns
+    -------
+    dtype : dtype
+        The required dtype.
+    """
+    if signed:
+        a = -np.max(np.abs(a))-1
+    else:
+        amin, amax = np.min(a), np.max(a)
+        if amin < 0:
+            a = - amax - 1 if abs(amin) <= amax else amin
+        else:
+            a = amax
+    return np.dtype(np.min_scalar_type(a))
+
+
+def interweave(arrays: Sequence[np.ndarray]) -> np.ndarray:
+    """ Interweaves multiple arrays along the first axis
+
+    Example
+    -------
+    >>> arr1 = np.array([[1, 1], [3, 3], [5, 5]])
+    >>> arr2 = np.array([[2, 2], [4, 4], [6, 6]])
+    >>> interweave([arr1, arr2])
+    array([[1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6]])
+
+    Parameters
+    ----------
+    arrays: (M) Sequence of (N, ...) array_like
+        The input arrays to interwave. The shape of all arrays must match.
+
+    Returns
+    -------
+    interweaved: (M*N, ....) np.ndarray
+    """
+    shape = list(arrays[0].shape)
+    shape[0] = sum(x.shape[0] for x in arrays)
+    result = np.empty(shape, dtype=arrays[0].dtype)
+    n = len(arrays)
+    for i, arr in enumerate(arrays):
+        result[i::n] = arr
+    return result
+
+
+def vindices(limits: Iterable[Sequence[int]], sort_axis: Optional[int] = 0,
+             dtype: Optional[Union[int, str, np.dtype]] = None) -> np.ndarray:
+    """ Return an array representing the indices of a d-dimensional grid.
+
+    Parameters
+    ----------
+    limits: (D, 2) array_like
+        The limits of the indices for each axis.
+    sort_axis: int, optional
+        Optional axis that is used to sort indices.
+    dtype: int or str or np.dtype, optional
+        Optional data-type for storing the lattice indices. By default the given limits
+        are checked to determine the smallest possible data-type.
+
+    Returns
+    -------
+    vectors: (N, D) np.ndarray
+    """
+    if dtype is None:
+        dtype = min_dtype(limits, signed=True)
+    limits = np.asarray(limits)
+    dim = limits.shape[0]
+
+    # Create meshgrid reshape grid to array of indices
+
+    # version 1:
+    # axis = np.meshgrid(*(np.arange(*lim, dtype=dtype) for lim in limits))
+    # nvecs = np.asarray([np.asarray(a).flatten("F") for a in axis]).T
+
+    # version 2:
+    # slices = [slice(lim[0], lim[1], 1) for lim in limits]
+    # nvecs = np.mgrid[slices].astype(dtype).reshape(dim, -1).T
+
+    # version 3:
+    size = limits[:, 1] - limits[:, 0]
+    nvecs = np.indices(size, dtype=dtype).reshape(dim, -1).T + limits[:, 0]
+
+    # Optionally sort indices along given axis
+    if sort_axis is not None:
+        nvecs = nvecs[np.lexsort(nvecs.T[[sort_axis]])]
+
+    return nvecs
+
+
+def vrange(start=None, *args,
+           dtype: Optional[Union[int, str, np.dtype]] = None,
+           sort_axis: Optional[int] = 0, **kwargs) -> np.ndarray:
     """ Return evenly spaced vectors within a given interval.
 
     Parameters
     ----------
-    axis_ranges: array_like
-        ranges for each axis.
+    start: array_like, optional
+        The starting value of the interval. The interval includes this value.
+        The default start value is 0.
+    stop: array_like
+        The end value of the interval.
+    step: array_like, optional
+        Spacing between values. If `start` and `stop` are sequences and the `step`
+        is a scalar the given step size is used for all dimensions of the vectors.
+        The default step size is 1.
+    sort_axis: int, optional
+        Optional axis that is used to sort indices.
+    dtype: dtype, optional
+        The type of the output array.  If `dtype` is not given, infer the data
+        type from the other input arguments.
 
     Returns
     -------
-    vectors: list
+    vectors: (N, D) np.ndarray
     """
-    axis = np.meshgrid(*axis_ranges)
-    grid = np.asarray([np.asarray(a).flatten("F") for a in axis]).T
-    n_vecs = list(grid)
-    n_vecs.sort(key=lambda x: x[0])
-    return n_vecs
+    # parse arguments
+    if len(args) == 0:
+        stop = start
+        start = np.zeros_like(stop)
+        step = kwargs.get("step", 1.0)
+    elif len(args) == 1:
+        stop = args[0]
+        step = kwargs.get("step", 1.0)
+    else:
+        stop, step = args
 
-
-def vlinspace(start: Union[float, Sequence[float]],
-              stop: Union[float, Sequence[float]],
-              n: Optional[int] = 1000) -> np.ndarray:
-    """ Vector linspace
-
-    Parameters
-    ----------
-    start: array_like or float
-        d-dimensional start-point
-    stop: array_like or float
-        d-dimensional stop-point
-    n: int, optional
-        number of points, default=1000
-
-    Returns
-    -------
-    vectors: np.ndarray
-    """
     start = np.atleast_1d(start)
     stop = np.atleast_1d(stop)
-    if not hasattr(start, '__len__') and not hasattr(stop, '__len__'):
-        return np.linspace(start, stop, n)
-    axes = [np.linspace(start[i], stop[i], n) for i in range(len(start))]
-    return np.asarray(axes).T
+    if step is None:
+        step = np.ones_like(start)
+    elif not hasattr(step, "__len__"):
+        step = np.ones_like(start) * step
 
+    # Create grid and reshape to array of vectors
+    slices = [slice(i, f, s) for i, f, s in zip(start, stop, step)]
+    array = np.mgrid[slices].reshape(len(slices), -1).T
+    # Optionally sort array along given axis
+    if sort_axis is not None:
+        array = array[np.lexsort(array.T[[sort_axis]])]
 
-def distance(r1: np.ndarray, r2: np.ndarray, decimals: Optional[int] = None) -> float:
-    """ Calculates the euclidian distance bewteen two points.
-
-    Parameters
-    ----------
-    r1: (N) ndarray
-        First input point.
-    r2: (N) ndarray
-        Second input point of matching size.
-    decimals: int, optional
-        Optional decimals to round distance to.
-
-    Returns
-    -------
-    distance: float
-    """
-    dist = math.sqrt(np.sum(np.square(r1 - r2)))
-    if decimals is not None:
-        dist = round(dist, decimals)
-    return dist
-
-
-def cell_size(vectors: np.ndarray) -> np.ndarray:
-    """ Computes the shape of the box spawned by the given vectors.
-
-    Parameters
-    ----------
-    vectors: (N, N) array_like
-
-    Returns
-    -------
-    size: np.ndarray
-    """
-    max_values = np.max(vectors, axis=0)
-    min_values = np.min(vectors, axis=0)
-    min_values[min_values > 0] = 0
-    return max_values - min_values
-
-
-def cell_volume(vectors: np.ndarray) -> float:
-    r""" Computes the volume of the unit cell defined by the primitive vectors.
-
-    The volume of the unit-cell in two and three dimensions is defined by
-    .. math::
-        V_{2d} = \abs{a_1 \cross a_2}, \quad V_{3d} = a_1 \cdot \abs{a_2 \cross a_3}
-
-    Returns
-    -------
-    vol: float
-    """
-    dim = len(vectors)
-    if dim == 1:
-        v = float(vectors)
-    elif dim == 2:
-        v = np.cross(vectors[0], vectors[1])
-    elif dim == 3:
-        cross = np.cross(vectors[1], vectors[2])
-        v = np.dot(vectors[0], cross)
-    else:
-        raise ValueError('Only 1, 2 or 3D cells supported!')
-    return abs(v)
+    return array if dtype is None else array.astype(dtype)
 
 
 def chain(items: Sequence, cycle: bool = False) -> List:
-    """ Create chain between items
+    """Create chain between items
 
     Parameters
     ----------
@@ -213,82 +276,125 @@ def chain(items: Sequence, cycle: bool = False) -> List:
     return result
 
 
-class VectorBasis:
+def frmt_num(num, dec=1, unit='', div=1000.) -> str:
+    """Returns a formatted string of a number
 
-    def __init__(self, vectors: Union[int, float, Sequence[Sequence[float]]]):
-        logging.warning("DeprecationWarning: the ``VectorBasis`` object is deprecated and "
-                        "is now integrated to the ``Lattice``-object.")
+    Parameters
+    ----------
+    num: float
+        The number to format.
+    dec: int
+        Number of decimals.
+    unit: str, optional
+        Optional unit suffix.
+    div: float, optional
+        The divider used for units. The default is `1000`.
 
-        # Transpose vectors so they are a column of the basis matrix
-        self._vectors = np.atleast_2d(vectors).T
-        self._vectors_inv = np.linalg.inv(self._vectors)
+    Returns
+    -------
+    num_str: str
+    """
+    for prefix in ['', 'k', 'M', 'G', 'T', 'P', 'E', 'Z']:
+        if abs(num) < div:
+            return f"{num:.{dec}f}{prefix}{unit}"
+        num /= div
+    return f"{num:.{dec}f}Y{unit}"
 
-        self._dim = len(self._vectors)
-        self._cell_size = cell_size(self._vectors)
-        self._cell_volume = cell_volume(self._vectors)
+
+def frmt_bytes(num, dec=1) -> str:
+    """Returns a formatted string of the number of bytes."""
+    return frmt_num(num, dec, unit="iB", div=1024)
+
+
+def frmt_time(seconds: float, short: bool = False, width: int = 0) -> str:
+    """Returns a formated string for a given time in seconds.
+
+    Parameters
+    ----------
+    seconds: float
+        Time value to format
+    short: bool, optional
+        Flag if short representation should be used.
+    width: int, optional
+        Optional minimum length of the returned string
+
+    Returns
+    -------
+    time_str: str
+    """
+    string = "00:00"
+
+    # short time string
+    if short:
+        if seconds > 0:
+            mins, secs = divmod(seconds, 60)
+            if mins > 60:
+                hours, mins = divmod(mins, 60)
+                string = f"{hours:02.0f}:{mins:02.0f}h"
+            else:
+                string = f"{mins:02.0f}:{secs:02.0f}"
+
+    # Full time strings
+    else:
+        if seconds < 1e-3:
+            nanos = 1e6 * seconds
+            string = f"{nanos:.0f}\u03BCs"
+        elif seconds < 1:
+            millis = 1000 * seconds
+            string = f"{millis:.1f}ms"
+        elif seconds < 60:
+            string = f"{seconds:.1f}s"
+        else:
+            mins, seconds = divmod(seconds, 60)
+            if mins < 60:
+                string = f"{mins:.0f}:{seconds:04.1f}min"
+            else:
+                hours, mins = divmod(mins, 60)
+                string = f"{hours:.0f}:{mins:02.0f}:{seconds:02.0f}h"
+
+    if width > 0:
+        string = f"{string:>{width}}"
+    return string
+
+
+class Timer:
+
+    __slots__ = ["_time", "_t0"]
+
+    def __init__(self, method=time.perf_counter):
+        self._time = method
+        self._t0 = 0
+        self.start()
 
     @property
-    def dim(self) -> int:
-        """The dimension of the vector basis."""
-        return self._dim
+    def seconds(self):
+        return self.time() - self._t0
 
     @property
-    def cell_size(self):
-        """The shape of the box spawned by the given vectors."""
-        return self._cell_size
+    def millis(self):
+        return 1000 * (self.time() - self._t0)
 
-    @property
-    def cell_volume(self):
-        """The volume of the unit cell defined by the primitive vectors."""
-        return self._cell_volume
+    def time(self):
+        return self._time()
 
-    @property
-    def vectors(self) -> np.ndarray:
-        """ (N, N) np.ndarray: Array with basis vectors as rows"""
-        return self._vectors.T
+    def start(self):
+        self._t0 = self._time()
 
-    @property
-    def vectors3d(self) -> np.ndarray:
-        """ (3, 3) np.ndarray: Basis vectors expanded to three dimensions """
-        vectors = np.eye(3)
-        vectors[:self.dim, :self.dim] = self._vectors
-        return vectors.T
+    def eta(self, progress: float) -> float:
+        if not progress:
+            return 0.0
+        else:
+            return (1 / progress - 1) * self.time()
 
-    def transform(self, world_coords) -> np.ndarray:
-        """ Transform the world-coordinates (x, y, ...) into the basis coordinates (n, m, ...)
+    def strfrmt(self, short: bool = False, width: int = 0) -> str:
+        return frmt_time(self.seconds, short, width)
 
-        Parameters
-        ----------
-        world_coords: (N) array_like
-
-        Returns
-        -------
-        basis_coords: (N) np.ndarray
-        """
-        return self._vectors_inv @ np.asarray(world_coords)
-
-    def itransform(self, basis_coords: Sequence) -> np.ndarray:
-        """ Transform the basis-coordinates (n, m, ...) into the world coordinates (x, y, ...)
-
-        Parameters
-        ----------
-        basis_coords: (N) array_like
-
-        Returns
-        -------
-        world_coords: (N) np.ndarray
-        """
-        return self._vectors @ np.asarray(basis_coords)
+    @staticmethod
+    def sleep(t):
+        time.sleep(t)
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({self.dim}D)"
+        return f'{self.__class__.__name__}({self.strfrmt(short=True)})'
 
     def __str__(self) -> str:
-        sep = "  "
-        lines = [self.__repr__()]
-        for i in range(self.dim):
-            parts = list()
-            for j in range(self.dim):
-                parts.append(f"[{self.vectors[i, j]:.1f}]")
-            lines.append(sep.join(parts))
-        return "\n".join(lines)
+        return self.strfrmt(short=True)

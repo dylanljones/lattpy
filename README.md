@@ -1,14 +1,14 @@
 # lattpy
 
-+---------+-------------------------------------------------------------------------------------------------------------------------------------------------+
-| master  | [![codecov](https://codecov.io/gh/dylanljones/lattpy/branch/master/graph/badge.svg?token=P61R3IQKXC)](https://codecov.io/gh/dylanljones/lattpy) |
-+---------+-------------------------------------------------------------------------------------------------------------------------------------------------+
-| dev     | [![codecov](https://codecov.io/gh/dylanljones/lattpy/branch/master/graph/badge.svg?token=P61R3IQKXC)](https://codecov.io/gh/dylanljones/lattpy) |
-+---------+-------------------------------------------------------------------------------------------------------------------------------------------------+
+| Master | Dev  |
+|:-------|:-----|
+| [![codecov](https://codecov.io/gh/dylanljones/lattpy/branch/master/graph/badge.svg?token=P61R3IQKXC)](https://codecov.io/gh/dylanljones/lattpy) | [![codecov](https://codecov.io/gh/dylanljones/lattpy/branch/dev/graph/badge.svg?token=P61R3IQKXC)](https://codecov.io/gh/dylanljones/lattpy) |
 
-NOTE: This project is still under development and may change significantly!
 
 `lattpy` is a python package for modeling bravais lattices and constructing (finite) lattice structures.
+
+
+NOTE: This project is still under development and may change significantly!
 
 Installation
 ------------

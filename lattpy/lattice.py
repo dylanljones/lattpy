@@ -1753,7 +1753,7 @@ class Lattice:
 
         if isinstance(margins, float):
             margins = [margins] * self.dim
-        if self.dim == 1:
+        if self.dim == 1 or (self.dim == 2 and self.shape[1] < 1):
             sizex = self.shape[0]
             h = sizex / 4
             ax.set_ylim(-h, +h)

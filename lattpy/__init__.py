@@ -14,6 +14,7 @@ from .utils import (
     logger,
     LatticeError,
     ConfigurationError,
+    min_dtype,
     interweave,
     vrange,
     vindices,

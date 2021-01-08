@@ -91,6 +91,34 @@ def split_index(index):
     return index[:-1], index[-1]
 
 
+def min_dtype(a: Union[int, float, np.ndarray, Iterable],
+              signed: Optional[bool] = True) -> np.dtype:
+    """Returns the minimum required dtype to store the given values.
+
+    Parameters
+    ----------
+    a : array_like
+        One or more values for determining the dtype.
+        Should contain the maximal expected values.
+    signed : bool, optional
+        If `True` the dtype is forced to be signed. The default is `True`.
+
+    Returns
+    -------
+    dtype : dtype
+        The required dtype.
+    """
+    if signed:
+        a = -np.max(np.abs(a))-1
+    else:
+        amin, amax = np.min(a), np.max(a)
+        if amin < 0:
+            a = - amax - 1 if abs(amin) <= amax else amin
+        else:
+            a = amax
+    return np.dtype(np.min_scalar_type(a))
+
+
 def interweave(arrays: Sequence[np.ndarray]) -> np.ndarray:
     """ Interweaves multiple arrays along the first axis
 
@@ -138,10 +166,7 @@ def vindices(limits: Iterable[Sequence[int]], sort_axis: Optional[int] = 0,
     vectors: (N, D) np.ndarray
     """
     if dtype is None:
-        # Estimate needed data type. Use the negative of the maximal
-        # absolute value to force data type to be signed
-        dtype = str(np.min_scalar_type(-np.max(np.abs(limits))))
-        dtype = dtype[1:] if dtype.startswith("u") else dtype
+        dtype = min_dtype(limits, signed=True)
     limits = np.asarray(limits)
     dim = limits.shape[0]
 

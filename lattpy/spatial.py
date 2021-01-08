@@ -219,6 +219,12 @@ class VoronoiTree:
             if fill:
                 surfaces = np.array([self.vertices[i] for i in self.edges])
                 draw_surfaces(ax, surfaces, color=color, alpha=alpha)
+
+        if self.dim == 3:
+            ax.set_aspect("equal")
+        else:
+            ax.set_aspect("equal", "box")
+
         return ax
 
     def __repr__(self):

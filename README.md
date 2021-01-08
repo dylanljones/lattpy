@@ -152,7 +152,7 @@ are shown in the following plot:
 Note that the overhead of the multi-thread neighbour search results in a slight 
 increase of the build time for small systems. By using `num_jobs=1` in the `build`-method
 this overhead can be eliminated for small systems. By passing `num_jobs=-1` all cores
-of the system is used (faster large systems).
+of the system is used.
 
 
 Examples

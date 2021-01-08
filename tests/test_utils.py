@@ -14,6 +14,22 @@ from numpy.testing import assert_array_equal
 from lattpy import utils
 
 
+@mark.parametrize("a, signed, result", [
+    (+127,          False,     np.uint8),
+    (-127,          False,     np.int8),
+    (+127,          True,      np.int8),
+    (+128,          False,     np.uint8),
+    (-128,          False,     np.int8),
+    (+128,          True,      np.int16),
+    ([-128, 127],   False,     np.int8),
+    ([-128, 128],   False,     np.int16),
+    ([-129, 127],   False,     np.int16),
+    ([+30,  127],   False,     np.uint8),
+])
+def test_min_dtype(a, signed, result):
+    assert utils.min_dtype(a, signed) == result
+
+
 @mark.parametrize("arrays, result", [
     (([1, 3], [2, 4]),           [1, 2, 3, 4]),
     (([1, 4], [2, 5], [3, 6]),   [1, 2, 3, 4, 5, 6]),

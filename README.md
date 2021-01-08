@@ -68,7 +68,7 @@ latt.build((5, 3), periodic=0)
 latt.plot()
 ````
 
-<img src="example\example.png" width="400">
+<img src="example/example.png" width="400">
 
 General lattice attributes
 --------------------------
@@ -147,7 +147,7 @@ a low memory footprint by making heavy use of numpy's vectorized operations.
 As an example the build-times of a square lattice for different number of sites 
 are shown in the following plot:
 
-<img src="example\benchmark.png" width="400">
+<img src="example/benchmark.png" width="400">
 
 Note that the overhead of the multi-thread neighbour search results in a slight 
 increase of the build time for small systems. By using `num_jobs=1` in the `build`-method

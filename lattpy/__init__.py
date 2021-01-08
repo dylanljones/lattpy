@@ -8,8 +8,6 @@
 # LICENSE file in the root directory and this permission notice shall
 # be included in all copies or substantial portions of the Software.
 
-from ._version import __version__
-
 from .utils import (
     logger,
     LatticeError,
@@ -44,6 +42,9 @@ from .data import LatticeData
 from .disptools import DispersionPath
 from .lattice import Lattice
 
+from ._version import get_versions
+__version__ = get_versions()['version']
+del get_versions
 
 # =========================================================================
 #                             1D Lattices

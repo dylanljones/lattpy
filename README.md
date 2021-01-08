@@ -1,8 +1,14 @@
 # lattpy
 
-NOTE: This project is still under development and may change significantly!
+| Master | Dev  |
+|:-------|:-----|
+| [![codecov](https://codecov.io/gh/dylanljones/lattpy/branch/master/graph/badge.svg?token=P61R3IQKXC)](https://codecov.io/gh/dylanljones/lattpy) | [![codecov](https://codecov.io/gh/dylanljones/lattpy/branch/dev/graph/badge.svg?token=P61R3IQKXC)](https://codecov.io/gh/dylanljones/lattpy) |
+
 
 `lattpy` is a python package for modeling bravais lattices and constructing (finite) lattice structures.
+
+
+NOTE: This project is still under development and may change significantly!
 
 Installation
 ------------
@@ -193,14 +199,12 @@ from lattpy import simple_chain
 # Initializes a 1D lattice chain with a length of 5 atoms.
 latt = simple_chain(a=1.0)
 latt.build(shape=4)
-n = latt.num_sites
 
 # Vectorized construction of the hamiltonian
 eps, t = 0., 1.
-
 dmap = latt.data.map()               # Build datamap
 values = np.zeros(dmap.size)         # Initialize array for data of H
-values[dmap.onsite(alpha=0)] = eps   # Map onsite-energies to the array
+values[dmap.onsite(alpha=0)] = eps   # Map onsite-energies to array
 values[dmap.hopping(distidx=0)] = t  # Map hopping-energies to array
 
 # The indices and data array can be used to construct a sparse matrix 

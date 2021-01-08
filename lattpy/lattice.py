@@ -20,14 +20,29 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from typing import Union, Optional, Tuple, List, Iterator, Sequence, Callable, Any, Dict
 from .utils import (
-    frmt_num, SiteOccupiedError, NoAtomsError, NoBaseNeighboursError, NotBuiltError
+    frmt_num,
+    SiteOccupiedError,
+    NoAtomsError,
+    NoBaseNeighboursError,
+    NotBuiltError
 )
 from .spatial import (
-    vindices, interweave, cell_size, cell_volume, WignerSeitzCell, KDTree, compute_neighbours
+    vindices,
+    interweave,
+    cell_size,
+    cell_volume,
+    WignerSeitzCell,
+    KDTree,
+    compute_neighbours
+)
+from .plotting import (
+    draw_points,
+    draw_vectors,
+    draw_cell,
+    draw_indices
 )
 from .unitcell import Atom
 from .data import LatticeData
-from .plotting import draw_points, draw_vectors, draw_cell, draw_indices
 
 __all__ = ["Lattice"]
 

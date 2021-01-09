@@ -19,7 +19,7 @@ from .utils import SiteOccupiedError
 __all__ = ["Atom", "UnitCell"]
 
 
-class Atom(collections.MutableMapping):
+class Atom(collections.abc.MutableMapping):
     """Object representing an atom of a bravais lattice."""
 
     _counter = itertools.count()
@@ -122,7 +122,7 @@ class Atom(collections.MutableMapping):
         return f"Atom({argstr})"
 
 
-class UnitCell(collections.Sequence):
+class UnitCell(collections.abc.Sequence):
     """``Atom`` container representing the unitcell of a bravais lattice."""
 
     __slots__ = ["_num_base", "_atoms", "_positions"]

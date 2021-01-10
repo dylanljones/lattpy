@@ -907,6 +907,7 @@ class Lattice:
                                   pos: Optional[Union[float, Sequence[float]]] = None,
                                   check: Optional[bool] = True,
                                   dtype: Union[int, np.dtype] = None,
+                                  oversample: Optional[float] = 0.0,
                                   ) -> np.ndarray:
         """Constructs the translation vectors .math:`n` in the lattice basis in a given shape.
 
@@ -930,6 +931,11 @@ class Lattice:
         dtype: int or np.dtype, optional
             Optional data-type for storing the lattice indices. By default the given limits
             are checked to determine the smallest possible data-type.
+        oversample: float, optional
+            Faktor for upscaling limits for initial index grid. This ensures that all
+            positions are included. Only needed if corner points are missing.
+            The default is `0`.
+
         Returns
         -------
         nvecs: (M, N) np.ndarray
@@ -947,14 +953,22 @@ class Lattice:
             pos = np.zeros(self.dim)
         end = pos + shape
 
-        # Generate translation vectors with too many points.
-        min_values = (self.itranslate(pos)[0] - shape).astype("int")
-        max_values = (np.abs(self.itranslate(end)[0]) + shape).astype("int")
-        min_values[min_values == 0] = -1  # set minimum size to 1
-        max_values[max_values == 0] = +1  # set minimum size to 1
-        limits = np.array([[min_values[d] - 5, max_values[d] + 5] for d in range(self.dim)])
+        # Estimate the maximum needed translation vector to reach all points
+        max_nvecs = np.array([self.itranslate(pos)[0], self.itranslate(end)[0]])
+        for i in range(1, self.dim):
+            for idx in itertools.combinations(range(self.dim), r=i):
+                _pos = end.copy()
+                _pos[np.array(idx)] = 0
+                index = self.itranslate(_pos)[0]
+                max_nvecs[0] = np.min([index, max_nvecs[0]], axis=0)
+                max_nvecs[1] = np.max([index, max_nvecs[1]], axis=0)
+        # Pad maximum translation vectors and create index limits
+        padding = oversample * shape + 1
+        max_nvecs += [-padding, +padding]
+        limits = max_nvecs.astype(np.int).T
         logger.debug("Limits: %s, %s", limits[:, 0], limits[:, 1])
 
+        # Generate translation vectors with too many points to reach each corner
         nvecs = vindices(limits, sort_axis=0, dtype=dtype)
         logger.debug("%s Translation vectors buildt", len(nvecs))
         if check:
@@ -1009,10 +1023,10 @@ class Lattice:
     def build_indices(self, shape: Union[int, Sequence[int]],
                       relative: Optional[bool] = False,
                       pos: Optional[Union[float, Sequence[float]]] = None,
-                      check: Optional[bool] = True,
                       callback: Optional[Callable] = None,
-                      dtype: Union[int, np.dtype] = None,
-                      ) -> np.ndarray:
+                      dtype: Union[int, str, np.dtype] = None,
+                      return_pos: Optional[bool] = False
+                      ) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
         """Constructs the lattice indices .math:`(n, \alpha)` in the given shape.
 
         Raises
@@ -1029,25 +1043,28 @@ class Lattice:
             The default is ``True``.
         pos: (N) array_like or int, optional
             Optional position of the section to build. If 'None' the origin is used.
-        check: bool, optional
-            If ``True`` the positions of the translation vectors are checked and filtered.
-            The default is ``True``. This should only be disabled if filtered later.
         callback: callable, optional
             Optional callable for filtering sites.
             The indices and positions are passed as arguments.
-        dtype: int or np.dtype, optional
+        dtype: int or str or np.dtype, optional
             Optional data-type for storing the lattice indices. By default the given limits
             are checked to determine the smallest possible data-type.
+        return_pos: bool, optional
+            Flag if positions should be returned with the indices. This can speed up
+            the building process, since the positions have to be computed here anyway.
+            The default is `False`.
 
         Returns
         -------
         indices: (M, N+1) np.ndarray
             The lattice indices of the sites in the format .math:`(n_1, .. n_d, \alpha)`.
+        positions: (M, N) np.ndarray
+            Corresponding positions. Only returned if `return_positions` equals `True`.
         """
         logger.debug("Building lattice-indices: %s at %s", shape, pos)
 
         # Build lattice inbdices
-        nvecs = self.build_translation_vectors(shape, relative, pos, check=False, dtype=dtype)
+        nvecs = self.build_translation_vectors(shape, relative, pos, False, dtype)
         ones = np.ones(nvecs.shape[0], dtype=nvecs.dtype)
         arrays = [np.c_[nvecs, i * ones] for i in range(self.num_base)]
         cols = self.dim + 1
@@ -1057,22 +1074,23 @@ class Lattice:
         logger.debug("Computing positions of sub-lattices")
         # Compute positions for filtering
         positions = [self.translate(nvecs, pos) for pos in self.atom_positions]
-        # positions = np.ravel(positions, order="F")
-        # positions = positions.reshape(self.dim, int(positions.shape[0] / self.dim)).T
-        logger.debug("Interweaving positions of sub-lattices")
         positions = interweave(positions)
 
         # Filter points in the given volume
-        if check:
-            logger.debug("Filtering points")
-            mask = self.check_points(positions, shape, relative, pos)
-            indices = indices[mask]
-            positions = positions[mask]
+        logger.debug("Filtering points")
+        mask = self.check_points(positions, shape, relative, pos)
+        indices = indices[mask]
+        positions = positions[mask]
+
+        # Filter points with user method
         if callback is not None:
             logger.debug("Applying callback-method")
-            indices = indices[callback(indices, positions)]
+            mask = callback(indices, positions)
+            indices = indices[mask]
+            positions = positions[mask]
+
         logger.debug("Created %i lattice sites", len(indices))
-        return indices
+        return indices, positions if return_pos else indices
 
     def compute_neighbours(self, positions: Union[Sequence[float], Sequence[Sequence[float]]],
                            num_jobs: Optional[int] = 1) -> Tuple[np.ndarray, np.ndarray]:
@@ -1230,7 +1248,7 @@ class Lattice:
               num_jobs: Optional[int] = -1,
               periodic: Optional[Union[int, Sequence[int]]] = None,
               callback: Optional[Callable] = None,
-              dtype: Union[int, np.dtype] = None
+              dtype: Union[int, str, np.dtype] = None
               ) -> LatticeData:
         """ Constructs the indices and neighbours of a new finite size lattice and stores the data
 
@@ -1260,10 +1278,7 @@ class Lattice:
             Optional periodic axes to set. See 'set_periodic' for mor details.
         callback: callable, optional
             The indices and positions are passed as arguments.
-        dtype: int or np.dtype, optional
-            Optional data-type for storing the lattice indices. The default is ``np.int``.
-
-        dtype: int or np.dtype, optional
+        dtype: int or str or np.dtype, optional
             Optional data-type for storing the lattice indices. Using a smaller bit-size may
             help reduce memory usage. By default the given limits are checked to determine
             the smallest possible data-type.
@@ -1278,8 +1293,7 @@ class Lattice:
         logger.debug("Building lattice: %s at %s", shape, pos)
 
         # Build indices and positions
-        indices = self.build_indices(shape, relative, pos, check, callback, dtype)
-        positions = self.get_positions(indices)
+        indices, positions = self.build_indices(shape, relative, pos, callback, dtype, True)
 
         # Compute the neighbours and distances between the sites
         neighbours, distances = self.compute_neighbours(positions, num_jobs=num_jobs)

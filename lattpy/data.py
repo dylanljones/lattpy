@@ -154,6 +154,7 @@ class LatticeData:
 
         self.invalid_idx = -1
         self.invalid_distidx = -1
+        self._dmap = None
 
         if args:
             self.set(*args)
@@ -193,6 +194,7 @@ class LatticeData:
         self.distances = np.array([])
         self.distvals = np.array([])
         self.paxes = np.array([])
+        self._dmap = None
         self.invalid_idx = -1
         self.invalid_distidx = -1
 
@@ -225,6 +227,7 @@ class LatticeData:
 
         self.invalid_idx = self.num_sites
         self.invalid_distidx = np.max(self.distances)
+        self._dmap = None
 
     def get_limits(self) -> np.ndarray:
         """Computes the geometric limits of the positions of the stored sites.
@@ -374,20 +377,20 @@ class LatticeData:
         -------
         datamap: DataMap
         """
-        alphas = self.indices[:, -1].astype(np.int8)
-
-        # Build index pairs and corresponding distance array
-        dtype = np.min_scalar_type(self.num_sites)
-        sites = np.arange(self.num_sites, dtype=dtype)
-        sites_t = np.tile(sites, (self.neighbours.shape[1], 1)).T
-        pairs = np.reshape([sites_t, self.neighbours], newshape=(2, -1)).T
-        distindices = self.distances.flatten()
-
-        # Filter pairs with invalid indices
-        mask = distindices != self.invalid_distidx
-        pairs = pairs[mask]
-        distindices = distindices[mask]
-        return DataMap(alphas, pairs.astype(dtype), distindices)
+        if self._dmap is None:
+            alphas = self.indices[:, -1].astype(np.int8)
+            # Build index pairs and corresponding distance array
+            dtype = np.min_scalar_type(self.num_sites)
+            sites = np.arange(self.num_sites, dtype=dtype)
+            sites_t = np.tile(sites, (self.neighbours.shape[1], 1)).T
+            pairs = np.reshape([sites_t, self.neighbours], newshape=(2, -1)).T
+            distindices = self.distances.flatten()
+            # Filter pairs with invalid indices
+            mask = distindices != self.invalid_distidx
+            pairs = pairs[mask]
+            distindices = distindices[mask]
+            self._dmap = DataMap(alphas, pairs.astype(dtype), distindices)
+        return self._dmap
 
     def site_mask(self, mins: Optional[Sequence[Union[float, None]]] = None,
                   maxs: Optional[Sequence[Union[float, None]]] = None,

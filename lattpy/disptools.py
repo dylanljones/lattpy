@@ -19,8 +19,8 @@ from .plotting import draw_lines
 from .unitcell import Atom
 
 __all__ = [
-    "band_subplots", "plot_dispersion", "plot_bandpath", "band_dos_subplots",
-    "plot_band_dos", "plot_bands", "DispersionPath"
+    "bandpath_subplots", "plot_dispersion", "disp_dos_subplots",
+    "plot_disp_dos", "plot_bands", "DispersionPath"
 ]
 
 
@@ -50,24 +50,24 @@ def _set_piticks(axis, num_ticks=2, frmt=".1f"):
     axis.set_major_locator(tck.LinearLocator(2 * num_ticks + 1))
 
 
-def band_subplots(ticks, labels, x_label="k", disp_label="E(k)", grid="both"):
+def bandpath_subplots(ticks, labels, xlabel="$k$", ylabel="$E(k)$", grid="both"):
     fig, ax = plt.subplots()
     ax.set_xlim(0, ticks[-1])
     ax.set_xticks(ticks)
     ax.set_xticklabels(labels)
-    if x_label:
-        ax.set_xlabel(f"${x_label}$")
-    if disp_label:
-        ax.set_ylabel(f"${disp_label}$")
-
+    if xlabel:
+        ax.set_xlabel(xlabel)
+    if ylabel:
+        ax.set_ylabel(ylabel)
     if grid:
+        if not isinstance(grid, str):
+            grid = "both"
         ax.set_axisbelow(True)
         ax.grid(b=True, which='major', axis=grid)
-    fig.tight_layout()
     return fig, ax
 
 
-def plot_dispersion(ax, k, disp, color=None, fill=True, alpha=0.2, lw=1.0):
+def _draw_dispersion(ax, k, disp, color=None, fill=False, alpha=0.2, lw=1.0):
     x = [0, np.max(k)]
     colors = _color_list(color, disp.shape[1])
     for i, band in enumerate(disp.T):
@@ -79,52 +79,64 @@ def plot_dispersion(ax, k, disp, color=None, fill=True, alpha=0.2, lw=1.0):
             ax.fill_between(x, min(band), max(band), color=col, alpha=alpha)
 
 
-def plot_bandpath(disp, labels, x_label="k", disp_label="E(k)", grid="both", color=None,
-                  alpha=0.2, lw=1.0, scales=None, fill=False, show=True):
-
+def plot_dispersion(disp, labels, xlabel="$k$", ylabel="$E(k)$", grid="both", color=None,
+                    alpha=0.2, lw=1.0, scales=None, fill=False, ax=None, show=True):
     num_points = len(labels)
     k, ticks = _scale_xaxis(num_points, disp, scales)
+    if ax is None:
+        fig, ax = bandpath_subplots(ticks, labels, xlabel, ylabel, grid)
+    else:
+        fig = ax.get_figure()
 
-    fig, ax = band_subplots(ticks, labels, x_label, disp_label, grid)
-    plot_dispersion(ax, k, disp, color, fill, alpha, lw)
+    x = [0, np.max(k)]
+    colors = _color_list(color, disp.shape[1])
+    for i, band in enumerate(disp.T):
+        col = colors[i]
+        if isinstance(col, Atom):
+            col = col.color
+        ax.plot(k, band, lw=lw, color=col)
+        if fill:
+            ax.fill_between(x, min(band), max(band), color=col, alpha=alpha)
+
+    fig.tight_layout()
     if show:
         plt.show()
-    return fig, ax
+    return ax
 
 
-def band_dos_subplots(ticks, labels, x_label="k", disp_label="E(k)", dos_label="n(E)",
+def disp_dos_subplots(ticks, labels, xlabel="$k$", ylabel="$E(k)$", doslabel="$n(E)$",
                       wratio=(3, 1), grid="both"):
     fig, axs = plt.subplots(1, 2, gridspec_kw={"width_ratios": wratio}, sharey="all")
     ax1, ax2 = axs
-
     ax1.set_xlim(0, ticks[-1])
-    if x_label:
-        ax1.set_xlabel(f"${x_label}$")
-    if disp_label:
-        ax1.set_ylabel(f"${disp_label}$")
+    if xlabel:
+        ax1.set_xlabel(xlabel)
+    if ylabel:
+        ax1.set_ylabel(ylabel)
+    if doslabel:
+        ax2.set_xlabel(doslabel)
     ax1.set_xticks(ticks)
     ax1.set_xticklabels(labels)
-
-    if dos_label:
-        ax2.set_xlabel(f"${dos_label}$")
     ax2.set_xticks([0])
     if grid:
         ax1.set_axisbelow(True)
         ax1.grid(b=True, which='major', axis=grid)
         ax2.set_axisbelow(True)
         ax2.grid(b=True, which='major', axis=grid)
-    fig.tight_layout()
     return fig, axs
 
 
-def plot_band_dos(disp, dos_data, labels, x_label="k", disp_label="E(k)", dos_label="n(E)",
+def plot_disp_dos(disp, dos_data, labels, xlabel="k", ylabel="E(k)", doslabel="n(E)",
                   wratio=(3, 1), grid="both", color=None, fill=True, disp_alpha=0.2,
-                  dos_alpha=0.2, lw=1.0, scales=None, show=True):
+                  dos_alpha=0.2, lw=1.0, scales=None, axs=None, show=True):
     num_points = len(labels)
     k, ticks = _scale_xaxis(num_points, disp, scales)
-
-    fig, axs = band_dos_subplots(ticks, labels, x_label, disp_label, dos_label, wratio, grid)
-    ax1, ax2 = axs
+    if axs is None:
+        fig, axs = disp_dos_subplots(ticks, labels, xlabel, ylabel, doslabel, wratio, grid)
+        ax1, ax2 = axs
+    else:
+        ax1, ax2 = axs
+        fig = ax1.get_figure()
 
     x = [0, np.max(k)]
     colors = _color_list(color, disp.shape[1])
@@ -145,10 +157,10 @@ def plot_band_dos(disp, dos_data, labels, x_label="k", disp_label="E(k)", dos_la
         ax2.fill_betweenx(bins, 0, dos, alpha=dos_alpha, color=col)
 
     ax2.set_xlim(0, ax2.get_xlim()[1])
-
+    fig.tight_layout()
     if show:
         plt.show()
-    return fig, axs
+    return axs
 
 
 def plot_bands(kgrid, bands, k_label="k", disp_label="E(k)", grid="both", contour_grid=False,
@@ -210,7 +222,7 @@ def plot_bands(kgrid, bands, k_label="k", disp_label="E(k)", grid="both", contou
     fig.tight_layout()
     if show:
         plt.show()
-    return fig, ax
+    return ax
 
 
 class DispersionPath:
@@ -381,14 +393,14 @@ class DispersionPath:
         lines = draw_lines(ax, self.edges(), color=color, lw=lw, **kwargs)
         return lines
 
-    def subplots(self, xlabel="", ylabel="", grid=True):
+    def subplots(self, xlabel="k", ylabel="E(k)", grid="both"):
         """ Creates an empty matplotlib plot with configured axes for the path.
 
         Parameters
         ----------
         xlabel: str, optional
         ylabel: str, optional
-        grid: bool, optional
+        grid: str, optional
 
         Returns
         -------
@@ -396,12 +408,12 @@ class DispersionPath:
         ax: plt.Axis
         """
         ticks, labels = self.get_ticks()
-        fig, ax = plt.subplots()
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
-        ax.set_xlim(0, ticks[-1])
-        ax.set_xticks(ticks)
-        ax.set_xticklabels(labels)
-        if grid:
-            ax.grid()
-        return fig, ax
+        return bandpath_subplots(ticks, labels, xlabel, ylabel, grid)
+
+    def plot_dispersion(self, disp, ax=None, show=True, **kwargs):
+        scales = self.scales()
+        return plot_dispersion(disp, self.labels, scales=scales, ax=ax, show=show,  **kwargs)
+
+    def plot_disp_dos(self, disp, dos, axs=None, show=True, **kwargs):
+        scales = self.scales()
+        return plot_disp_dos(disp, dos, self.labels, scales=scales, axs=axs, show=show, **kwargs)

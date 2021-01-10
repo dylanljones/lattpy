@@ -20,6 +20,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from typing import Union, Optional, Tuple, List, Iterator, Sequence, Callable, Any, Dict
 from .utils import (
+    ArrayLike,
     frmt_num,
     SiteOccupiedError,
     NoAtomsError,
@@ -214,7 +215,7 @@ class Lattice:
         """Number of unit-cells in lattice data (only available if lattice has been built)."""
         return np.unique(self.data.indices[:, :-1], axis=0).shape[0]
 
-    def transform(self, world_coords: Union[Sequence[int], Sequence[Sequence[int]]]) -> np.ndarray:
+    def itransform(self, world_coords: Union[Sequence[int], Sequence[Sequence[int]]]) -> np.ndarray:
         """ Transform the world-coordinates (x, y, ...) into the basis coordinates (n, m, ...)
 
         Parameters
@@ -226,12 +227,13 @@ class Lattice:
         basis_coords: (..., N) np.ndarray
         """
         world_coords = np.atleast_1d(world_coords)
-        if len(world_coords.shape) == 1:
-            return np.asarray(world_coords) @ self._vectors_inv
-        else:
-            return np.dot(world_coords, self._vectors_inv[np.newaxis, :, :])[:, 0, :]
+        # if len(world_coords.shape) == 1:
+        #     return np.asarray(world_coords) @ self._vectors_inv
+        # else:
+        #     return np.dot(world_coords, self._vectors_inv[np.newaxis, :, :])[:, 0, :]
+        return np.inner(world_coords, self._vectors_inv)
 
-    def itransform(self, basis_coords: Union[Sequence[int], Sequence[Sequence[int]]]) -> np.ndarray:
+    def transform(self, basis_coords: Union[Sequence[int], Sequence[Sequence[int]]]) -> np.ndarray:
         """ Transform the basis-coordinates (n, m, ...) into the world coordinates (x, y, ...)
 
         Parameters
@@ -243,10 +245,11 @@ class Lattice:
         world_coords: (..., N) np.ndarray
         """
         basis_coords = np.atleast_1d(basis_coords)
-        if len(basis_coords.shape) == 1:
-            return basis_coords @ self._vectors
-        else:
-            return np.dot(basis_coords, self.vectors[np.newaxis, :, :])[:, 0, :]
+        # if len(basis_coords.shape) == 1:
+        #     return basis_coords @ self._vectors
+        # else:
+        #     return np.dot(basis_coords, self.vectors[np.newaxis, :, :])[:, 0, :]
+        return np.inner(basis_coords, self._vectors)
 
     def translate(self, nvec: Union[int, Sequence[int], Sequence[Sequence[int]]],
                   r: Optional[Union[float, Sequence[float]]] = 0.0) -> np.ndarray:
@@ -271,10 +274,11 @@ class Lattice:
         """
         r = np.atleast_1d(r)
         nvec = np.atleast_1d(nvec)
-        if len(nvec.shape) == 1:
-            return r + (self._vectors @ nvec)
-        else:
-            return r + np.dot(nvec, self.vectors[np.newaxis, :, :])[:, 0, :]
+        # if len(nvec.shape) == 1:
+        #     return r + (self._vectors @ nvec)
+        # else:
+        #     return r + np.dot(nvec, self.vectors[np.newaxis, :, :])[:, 0, :]
+        return r + np.inner(nvec, self._vectors)
 
     def itranslate(self, x: Union[float, Sequence[float]]) -> [np.ndarray, np.ndarray]:
         """ Returns the translation vector and atom position of the given position.
@@ -292,7 +296,7 @@ class Lattice:
             The position in real-space.
         """
         x = np.atleast_1d(x)
-        itrans = self._vectors_inv @ x
+        itrans = self.itransform(x)
         nvec = np.floor(itrans)
         r = x - self.translate(nvec)
         return nvec, r
@@ -543,6 +547,8 @@ class Lattice:
             self.analyze()
 
     def _compute_base_neighbours(self, max_distidx, num_jobs=1):
+        # save positions as np.ndarray
+        self._positions = np.asarray(self._positions)
         logger.debug("Building indices of neighbour-cells")
         # Build indices of neighbour-cells
         cell_range = 2 * max_distidx
@@ -844,8 +850,8 @@ class Lattice:
 
     def get_neighbour_vectors(self, alpha: Optional[int] = 0,
                               distidx: Optional[int] = 0,
-                              include_zero: Optional[bool] = False) -> List[np.ndarray]:
-        """ Returns the neighours of a given site by transforming stored neighbour indices.
+                              include_zero: Optional[bool] = False) -> np.ndarray:
+        """Returns the neighours of a given site by transforming stored neighbour indices.
 
         Raises
         ------
@@ -854,16 +860,16 @@ class Lattice:
 
         Parameters
         ----------
-        alpha: int, optional
+        alpha : int, optional
             Index of the base atom. The default is the first atom in the unit cell.
-        distidx: int, default
+        distidx : int, default
             Index of distance to neighbours, default is 0 (nearest neighbours).
-        include_zero: bool, optional
+        include_zero : bool, optional
             Flag if zero-vector is included in result. The default is False.
 
         Returns
         -------
-        vectors: list of np.ndarray
+        vectors : np.ndarray
         """
         if not self._base_neighbours:
             raise NoBaseNeighboursError()
@@ -877,6 +883,28 @@ class Lattice:
         logger.debug("Neighbour-vectors: %s", vecs)
 
         return vecs
+
+    def fourier_weights(self, k: ArrayLike, alpha: Optional[int] = 0,
+                        distidx: Optional[int] = 0) -> np.ndarray:
+        """Returns the Fourier-weight for a given vector.
+
+        Parameters
+        ----------
+        k: array_like
+            The wavevector to compute the lattice Fourier-weights.
+        alpha : int, optional
+            Index of the base atom. The default is the first atom in the unit cell.
+        distidx : int, default
+            Index of distance to neighbours, default is 0 (nearest neighbours).
+
+        Returns
+        -------
+        weight: np.ndarray
+        """
+        vecs = self.get_neighbour_vectors(alpha=alpha, distidx=distidx)
+        # weights = np.sum([np.exp(1j * np.dot(k, v)) for v in vecs])
+        weights = np.sum(np.exp(1j * np.inner(k, vecs)))
+        return weights
 
     def get_base_atom_dict(self, atleast2d: Optional[bool] = True) \
             -> Dict[Any, List[Union[np.ndarray, Any]]]:

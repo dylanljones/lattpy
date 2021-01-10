@@ -66,32 +66,37 @@ class DataMap:
         """The number of bytes stored in the datamap."""
         return self._map.nbytes + self._indices.nbytes
 
-    def onsite(self, alpha: int) -> np.ndarray:
+    def onsite(self, alpha: Optional[int] = None) -> np.ndarray:
         """Creates a mask of the site elements for the atoms with the given index.
 
         Parameters
         ----------
-        alpha : int
-            Index of the atom in the unitcell.
+        alpha : int, optional
+            Index of the atom in the unitcell. If `None`a mask for all atoms is returned.
+            The default is `None`.
 
         Returns
         -------
         mask : np.ndarray
         """
+        if alpha is None:
+            return self._map < 0
         return self._map == -alpha-1
 
-    def hopping(self, distidx) -> np.ndarray:
+    def hopping(self, distidx: Optional[int] = None) -> np.ndarray:
         """Creates a mask of the site-pair elements with the given distance index.
 
         Parameters
         ----------
-        distidx : int, default
+        distidx : int, optional
             Index of distance to neighbouring sites, default is 0 (nearest neighbours).
-
+            If `None` a mask for neighbour-connections is returned. The default is `None`.
         Returns
         -------
         mask : np.ndarray
         """
+        if distidx is None:
+            return self._map >= 0
         return self._map == distidx
 
     def fill(self, array: np.ndarray, hop: ArrayLike,
@@ -143,6 +148,7 @@ class LatticeData:
         self.positions = np.array([])
         self.neighbours = np.array([])
         self.distances = np.array([])
+
         self.distvals = np.array([])
         self.paxes = np.array([])
 

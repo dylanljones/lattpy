@@ -13,11 +13,11 @@ NOTE: This project is still under development and may change significantly!
 Installation
 ------------
 
-Download package and install via pip
+Install via pip
 ````commandline
-pip install -e <folder path>
+pip install lattpy
 ````
-or the setup.py script
+or by downloading from GitHub and running
 ````commandline
 python setup.py install
 ````

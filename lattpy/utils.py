@@ -17,7 +17,7 @@ import numpy as np
 
 __all__ = [
     "ArrayLike", "logger", "LatticeError", "ConfigurationError", "SiteOccupiedError",
-    "NoAtomsError", "NoBaseNeighboursError", "NotBuiltError", "Timer",
+    "NoAtomsError", "NoBaseNeighborsError", "NotBuiltError", "Timer",
     "min_dtype", "chain", "create_lookup_table", "frmt_num", "frmt_bytes", "frmt_time",
 ]
 
@@ -75,12 +75,12 @@ class NoAtomsError(ConfigurationError):
                          "use 'add_atom' to add an 'Atom'-object")
 
 
-class NoBaseNeighboursError(ConfigurationError):
+class NoBaseNeighborsError(ConfigurationError):
 
     def __init__(self):
-        msg = "base neighbours not configured"
+        msg = "base neighbors not configured"
         hint = "call 'calculate_distances' after adding atoms or " \
-               "use the 'neighbours' keyword of 'add_atom'"
+               "use the 'neighbors' keyword of 'add_atom'"
         super().__init__(msg, hint)
 
 

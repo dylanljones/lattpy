@@ -22,7 +22,7 @@ from .plotting import draw_points, draw_vectors, draw_lines, draw_surfaces
 
 __all__ = [
     "distance", "interweave", "vindices", "vrange", "cell_size", "cell_volume",
-    "compute_vectors", "compute_neighbours", "KDTree", "VoronoiTree", "WignerSeitzCell",
+    "compute_vectors", "compute_neighbors", "KDTree", "VoronoiTree", "WignerSeitzCell",
     "rx", "ry", "rz", "rotate2d", "rotate3d"
 ]
 
@@ -282,18 +282,18 @@ class KDTree(cKDTree):
         return super().query(x, k, eps, p, bound, n_jobs)
 
 
-def compute_neighbours(positions, x=None, k=20, max_dist=np.inf, eps=0., num_jobs=1,
-                       include_zero=False):
+def compute_neighbors(positions, x=None, k=20, max_dist=np.inf, eps=0., num_jobs=1,
+                      include_zero=False):
     x = positions if x is None else x
     tree = KDTree(positions, k=k, distance_bound=max_dist * 1.1, eps=eps)
-    distances, neighbours = tree.query(x, n_jobs=num_jobs)
+    distances, neighbors = tree.query(x, n_jobs=num_jobs)
     if not include_zero and np.all(distances[:, 0] == 0):
         distances = distances[:, 1:]
-        neighbours = neighbours[:, 1:]
+        neighbors = neighbors[:, 1:]
     invalid = distances > max_dist
-    neighbours[invalid] = tree.n  # noqa
+    neighbors[invalid] = tree.n  # noqa
     distances[invalid] = np.inf
-    return neighbours, distances
+    return neighbors, distances
 
 
 class VoronoiTree:

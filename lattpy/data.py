@@ -43,7 +43,7 @@ class DataMap:
 
     @property
     def size(self) -> int:
-        """The number of the data points (sites + neighbour pairs)"""
+        """The number of the data points (sites + neighbor pairs)"""
         return len(self._indices)
 
     @property
@@ -89,8 +89,8 @@ class DataMap:
         Parameters
         ----------
         distidx : int, optional
-            Index of distance to neighbouring sites, default is 0 (nearest neighbours).
-            If `None` a mask for neighbour-connections is returned. The default is `None`.
+            Index of distance to neighboring sites, default is 0 (nearest neighbors).
+            If `None` a mask for neighbor-connections is returned. The default is `None`.
         Returns
         -------
         mask : np.ndarray
@@ -110,7 +110,7 @@ class DataMap:
             size of the `DataMap`-instance.
         hop : array_like
             The values are used for the site-pairs. The first value corresponds to
-            nearest neighbour hopping, the second to next-nearest neighbours and so on.
+            nearest neighbor hopping, the second to next-nearest neighbors and so on.
         eps : array_like, optional
             The onsite values used for the lattice sites. If there are multiple atoms
             in the unitcell the length of the values must match. The default is 0.
@@ -129,7 +129,7 @@ class DataMap:
 
 
 class LatticeData:
-    """Object for storing the indices, positions and neighbours of lattice sites.
+    """Object for storing the indices, positions and neighbors of lattice sites.
 
     Parameters
     ----------
@@ -137,16 +137,16 @@ class LatticeData:
         The lattice indices of the sites.
     positions : array_like of iterable of int
         The positions of the sites.
-    neighbours : iterable of iterable of of int
-        The neighbours of the sites.
+    neighbors : iterable of iterable of of int
+        The neighbors of the sites.
     distances : iterabe of iterable of int
-        The distances of the neighbours.
+        The distances of the neighbors.
     """
 
     def __init__(self, *args):
         self.indices = np.array([])
         self.positions = np.array([])
-        self.neighbours = np.array([])
+        self.neighbors = np.array([])
         self.distances = np.array([])
 
         self.distvals = np.array([])
@@ -171,14 +171,14 @@ class LatticeData:
 
     @property
     def num_distances(self) -> int:
-        """The number of distances of the neighbour data."""
+        """The number of distances of the neighbor data."""
         return len(np.unique(self.distances[np.isfinite(self.distances)]))
 
     @property
     def nbytes(self):
         """Returns the number of bytes stored."""
         size = self.indices.nbytes + self.positions.nbytes
-        size += self.neighbours.nbytes + self.distances.nbytes
+        size += self.neighbors.nbytes + self.distances.nbytes
         size += self.distvals.nbytes + self.paxes.nbytes
         return size
 
@@ -190,7 +190,7 @@ class LatticeData:
         """Resets the `LatticeData` instance."""
         self.indices = np.array([])
         self.positions = np.array([])
-        self.neighbours = np.array([])
+        self.neighbors = np.array([])
         self.distances = np.array([])
         self.distvals = np.array([])
         self.paxes = np.array([])
@@ -200,7 +200,7 @@ class LatticeData:
 
     def set(self, indices: Sequence[Iterable[int]],
             positions: Sequence[Iterable[float]],
-            neighbours: Iterable[Iterable[Iterable[int]]],
+            neighbors: Iterable[Iterable[Iterable[int]]],
             distances: Iterable[Iterable[Iterable[float]]]) -> None:
         """Sets the data of the `LatticeData` instance.
 
@@ -210,17 +210,17 @@ class LatticeData:
             The lattice indices of the sites.
         positions: array_like of iterable of int
             The positions of the sites.
-        neighbours: iterable of iterable of of int
-            The neighbours of the sites.
+        neighbors: iterable of iterable of of int
+            The neighbors of the sites.
         distances: iterabe of iterable of int
-            The distances of the neighbours.
+            The distances of the neighbors.
         """
         logger.debug("Setting data")
         distvals, distidx = create_lookup_table(distances)
 
         self.indices = indices
         self.positions = positions
-        self.neighbours = neighbours
+        self.neighbors = neighbors
         self.distances = distidx
         self.distvals = distvals
         self.paxes = np.ones_like(self.distances) * self.dim
@@ -259,10 +259,10 @@ class LatticeData:
         """
         return self.get_index_limits()[:, :-1]
 
-    def neighbour_mask(self, site: int, distidx: Optional[int] = None,
-                       periodic: Optional[bool] = None,
-                       unique: Optional[bool] = False) -> np.ndarray:
-        """Creates a mask for the valid neighbours of a specific site.
+    def neighbor_mask(self, site: int, distidx: Optional[int] = None,
+                      periodic: Optional[bool] = None,
+                      unique: Optional[bool] = False) -> np.ndarray:
+        """Creates a mask for the valid neighbors of a specific site.
 
         Parameters
         ----------
@@ -270,11 +270,11 @@ class LatticeData:
             The index of the site.
         distidx: int, optional
             The index of the distance. If ``None`` the data for all distances is returned.
-            The default is `None` (all neighbours).
+            The default is `None` (all neighbors).
         periodic: bool, optional
-            Periodic neighbour flag. If ``None`` the data for all neighbours is returned.
-            If a bool is passed either the periodic or non-periodic neighbours are masked.
-            The default is ``None`` (all neighbours).
+            Periodic neighbor flag. If ``None`` the data for all neighbors is returned.
+            If a bool is passed either the periodic or non-periodic neighbors are masked.
+            The default is ``None`` (all neighbors).
         unique: bool, optional
             If 'True', each unique pair is only return once. The defualt is ``False``.
 
@@ -287,7 +287,7 @@ class LatticeData:
         else:
             mask = self.distances[site] == distidx
         if unique:
-            mask &= self.neighbours[site] > site
+            mask &= self.neighbors[site] > site
 
         if periodic is not None:
             if periodic:
@@ -297,28 +297,28 @@ class LatticeData:
         return mask
 
     def set_periodic(self, indices: dict, distances: dict, axes: dict) -> None:
-        """ Adds periodic neighbours to the invalid slots of the neighbour data
+        """ Adds periodic neighbors to the invalid slots of the neighbor data
 
         Parameters
         ----------
         indices: dict
-            Indices of the periodic neighbours.
+            Indices of the periodic neighbors.
         distances: dict
-            The distances of the periodic neighbours.
+            The distances of the periodic neighbors.
         axes: dict
-            Index of the translation axis of the periodic neighbours.
+            Index of the translation axis of the periodic neighbors.
         """
         for i, pidx in indices.items():
             # compute invalid slots of normal data
-            # and remove previous periodic neighbours
-            i0 = len(self.get_neighbours(i, periodic=False))
+            # and remove previous periodic neighbors
+            i0 = len(self.get_neighbors(i, periodic=False))
             i1 = i0 + len(pidx)
             self.paxes[i, i0:] = self.dim
             # translate distances to indices
             dists = distances[i]
             distidx = [np.searchsorted(self.distvals, d) for d in dists]
             # add periodic data
-            self.neighbours[i, i0:i1] = pidx
+            self.neighbors[i, i0:i1] = pidx
             self.distances[i, i0:i1] = distidx
             self.paxes[i, i0:i1] = axes[i]
 
@@ -327,48 +327,48 @@ class LatticeData:
         mask = self.indices[:, -1] == alpha
         return self.positions[mask]
 
-    def get_neighbours(self, site: int, distidx: Optional[int] = None,
-                       periodic: Optional[bool] = None,
-                       unique: Optional[bool] = False) -> np.ndarray:
-        """Returns all neighbours or the neighbours for a certain distance of a lattice site.
+    def get_neighbors(self, site: int, distidx: Optional[int] = None,
+                      periodic: Optional[bool] = None,
+                      unique: Optional[bool] = False) -> np.ndarray:
+        """Returns all neighbors or the neighbors for a certain distance of a lattice site.
 
-        See the `neighbour_mask`-method for more information on parameters
-
-        Returns
-        -------
-        neighbours: np.ndarray
-            The indices of the neighbours.
-        """
-        mask = self.neighbour_mask(site, distidx, periodic, unique)
-        return self.neighbours[site, mask]
-
-    def get_neighbour_pos(self, site: int, distidx: Optional[int] = None,
-                          periodic: Optional[bool] = None,
-                          unique: Optional[bool] = False) -> np.ndarray:
-        """Returns the neighbour positions of a lattice site.
-
-        See the `neighbour_mask`-method for more information on parameters
+        See the `neighbor_mask`-method for more information on parameters
 
         Returns
         -------
-        neighbour_positions: np.ndarray
-            The positions of the neighbours.
+        neighbors: np.ndarray
+            The indices of the neighbors.
         """
-        return self.positions[self.get_neighbours(site, distidx, periodic, unique)]
+        mask = self.neighbor_mask(site, distidx, periodic, unique)
+        return self.neighbors[site, mask]
 
-    def iter_neighbours(self, site: int, unique: Optional[bool] = False) -> np.ndarray:
-        """Iterates over the neighbours of all distance levels.
+    def get_neighbor_pos(self, site: int, distidx: Optional[int] = None,
+                         periodic: Optional[bool] = None,
+                         unique: Optional[bool] = False) -> np.ndarray:
+        """Returns the neighbor positions of a lattice site.
 
-        See the `neighbour_mask`-method for more information on parameters
+        See the `neighbor_mask`-method for more information on parameters
+
+        Returns
+        -------
+        neighbor_positions: np.ndarray
+            The positions of the neighbors.
+        """
+        return self.positions[self.get_neighbors(site, distidx, periodic, unique)]
+
+    def iter_neighbors(self, site: int, unique: Optional[bool] = False) -> np.ndarray:
+        """Iterates over the neighbors of all distance levels.
+
+        See the `neighbor_mask`-method for more information on parameters
 
         Yields
         -------
         distidx: int
-        neighbours: np.ndarray
+        neighbors: np.ndarray
         """
         for distidx in np.unique(self.distances[site]):
             if distidx != self.invalid_distidx:
-                yield distidx, self.get_neighbours(site, distidx, unique=unique)
+                yield distidx, self.get_neighbors(site, distidx, unique=unique)
 
     def map(self) -> DataMap:
         """ Builds a map containing the atom-indices, site-pairs and corresponding distances.
@@ -382,8 +382,8 @@ class LatticeData:
             # Build index pairs and corresponding distance array
             dtype = np.min_scalar_type(self.num_sites)
             sites = np.arange(self.num_sites, dtype=dtype)
-            sites_t = np.tile(sites, (self.neighbours.shape[1], 1)).T
-            pairs = np.reshape([sites_t, self.neighbours], newshape=(2, -1)).T
+            sites_t = np.tile(sites, (self.neighbors.shape[1], 1)).T
+            pairs = np.reshape([sites_t, self.neighbors], newshape=(2, -1)).T
             distindices = self.distances.flatten()
             # Filter pairs with invalid indices
             mask = distindices != self.invalid_distidx
@@ -487,6 +487,6 @@ class LatticeData:
         for site in range(self.num_sites):
             pos = "[" + ", ".join(f"{x:.1f}" for x in self.positions[site]) + "]"
             idx = str(self.indices[site])
-            neighbours = str(self.neighbours[site])
-            lines.append(f"{idx:<{widths[0]}}{delim}{pos:<{widths[1]}}{delim}{neighbours}")
+            neighbors = str(self.neighbors[site])
+            lines.append(f"{idx:<{widths[0]}}{delim}{pos:<{widths[1]}}{delim}{neighbors}")
         return "\n".join(lines)

@@ -35,14 +35,14 @@ A new instance of a lattice model is initialized using the unit-vectors of the B
 After the initialization the atoms of the unit-cell need to be added. To finish the configuration
 the number of distances in the lattice need to be set. This computes the nearest distances between
 all atoms of the unit-cells. If only the nearest distance is computed the lattice will be set to 
-nearest neighbours.
+nearest neighbors.
 ````python
 import numpy as np
 from lattpy import Lattice
 
 latt = Lattice(np.eye(2))       # Construct a Bravais lattice with square unit-vectors
 latt.add_atom(pos=[0.0, 0.0])   # Add an Atom to the unit cell of the lattice
-latt.set_num_neighbours(1)      # Set the maximum number of distances in the configuration.
+latt.set_num_neighbors(1)       # Set the maximum number of distances in the configuration.
 ````
 
 To speed up the configuration prefabs of common lattices are included. The previous lattice 
@@ -50,7 +50,7 @@ can also be created with
 ````python
 from lattpy import simple_square
 
-latt = simple_square(a=1.0, neighbours=1)  # Initializes a square lattice with one atom in the unit-cell
+latt = simple_square(a=1.0, neighbors=1)  # Initializes a square lattice with one atom in the unit-cell
 ````
 
 So far only the lattice structure has been configured. To actually construct a (finite) model of the lattice
@@ -58,7 +58,7 @@ the model has to be built:
 ````python
 latt.build(shape=(5, 3))
 ````
-This will compute the indices and neighbours of all sites in the given shape and store the data.
+This will compute the indices and neighbors of all sites in the given shape and store the data.
 
 After building the lattice periodic boundary conditions can be set along one or multiple axes:
 ````python
@@ -69,7 +69,7 @@ To view the built lattice the `plot`-method can be used:
 ````python
 from lattpy import simple_square
 
-latt = simple_square(a=1.0, neighbours=1)
+latt = simple_square(a=1.0, neighbors=1)
 latt.build((5, 3), periodic=0)
 latt.plot()
 ````
@@ -82,8 +82,8 @@ General lattice attributes
 After configuring the lattice the attributes are available. 
 Even without building a (finite) lattice structure all attributes can be computed on the fly for a given lattice vector, 
 consisting of the translation vector `n` and the atom index `alpha`. For computing the (translated) atom positions 
-the `get_position` method is used. Also, the neighbours and the vectors to these neighbours can be calculated. 
-The `dist_idx`-parameter specifies the distance of the neighbours (0 for nearest neighbours, 1 for next nearest neighbours, ...):
+the `get_position` method is used. Also, the neighbors and the vectors to these neighbors can be calculated. 
+The `dist_idx`-parameter specifies the distance of the neighbors (0 for nearest neighbors, 1 for next nearest neighbors, ...):
 ````python
 from lattpy import simple_square
 
@@ -92,11 +92,11 @@ latt = simple_square()
 # Get position of atom alpha=0 in the translated unit-cell
 positions = latt.get_position(n=[0, 0], alpha=0)
 
-# Get lattice-indices of the nearest neighbours of atom alpha=0 in the translated unit-cell
-neighbour_indices = latt.get_neighbours(n=[0, 0], alpha=0, distidx=0)
+# Get lattice-indices of the nearest neighbors of atom alpha=0 in the translated unit-cell
+neighbor_indices = latt.get_neighbors(n=[0, 0], alpha=0, distidx=0)
 
-# Get vectors to the nearest neighbours of atom alpha=0 in the translated unit-cell  
-neighbour_vectors = latt.get_neighbour_vectors(alpha=0, distidx=0)
+# Get vectors to the nearest neighbors of atom alpha=0 in the translated unit-cell  
+neighbor_vectors = latt.get_neighbor_vectors(alpha=0, distidx=0)
 ```` 
 
 Also, the reciprocal lattice vectors can be computed
@@ -137,11 +137,11 @@ idx = 2
 # Get position of the atom with index i=2
 positions = latt.position(idx)
 
-# Get the atom indices of the nearest neighbours of the atom with index i=2
-neighbour_indices = latt.neighbours(idx, distidx=0)
+# Get the atom indices of the nearest neighbors of the atom with index i=2
+neighbor_indices = latt.neighbors(idx, distidx=0)
 
-# the nearest neighbours can also be found by calling (equivalent to dist_idx=0)
-neighbour_indices = latt.nearest_neighbours(idx)
+# the nearest neighbors can also be found by calling (equivalent to dist_idx=0)
+neighbor_indices = latt.nearest_neighbors(idx)
 
 ````
 
@@ -155,7 +155,7 @@ are shown in the following plot:
 
 <img src="examples/benchmark.png" width="400">
 
-Note that the overhead of the multi-thread neighbour search results in a slight 
+Note that the overhead of the multi-thread neighbor search results in a slight 
 increase of the build time for small systems. By using `num_jobs=1` in the `build`-method
 this overhead can be eliminated for small systems. By passing `num_jobs=-1` all cores
 of the system is used.
@@ -181,7 +181,7 @@ eps, t = 0., 1.
 ham = np.zeros((n, n))
 for i in range(n):
     ham[i, i] = eps
-    for j in latt.nearest_neighbours(i):
+    for j in latt.nearest_neighbors(i):
         ham[i, j] = t
 ````
 
@@ -189,7 +189,7 @@ for i in range(n):
 Since we loop over all sites of the lattice the construction of the hamiltonian is slow. 
 An alternative way of mapping the lattice data to the hamiltonian is using the `DataMap`
 object returned by the `map()` method of the lattice data. This stores the atom-types, 
-neighbour-pairs and corresponding distances of the lattice sites. Using the built-in 
+neighbor-pairs and corresponding distances of the lattice sites. Using the built-in 
 masks the construction of the hamiltonian-data can be vectorized:
 ````python
 import numpy as np

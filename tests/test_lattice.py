@@ -267,7 +267,7 @@ def test_get_position():
 # =========================================================================
 
 def test_simple_chain():
-    latt = lp.simple_chain(a=1, neighbours=1)
+    latt = lp.simple_chain(a=1, neighbors=1)
     latt.build(3)
 
     # Check correct building
@@ -277,9 +277,9 @@ def test_simple_chain():
     actual = latt.all_positions()
     assert_array_equal(expected, actual)
 
-    latt = lp.simple_chain(a=1, neighbours=1)
+    latt = lp.simple_chain(a=1, neighbors=1)
     latt.build(3)
-    # Check neighbours
+    # Check neighbors
     expected = [1]
     actual = latt.nearest_neighbors(0)
     assert_array_equal(expected, actual)
@@ -294,7 +294,7 @@ def test_simple_chain():
     actual = latt.nearest_neighbors(0)
     assert_array_equal(expected, sorted(actual))
 
-    latt = lp.simple_chain(a=1, neighbours=2)
+    latt = lp.simple_chain(a=1, neighbors=2)
     latt.build(6)
     expected = [0, 2, 3]
     actual = latt.neighbors(1)
@@ -306,13 +306,13 @@ def test_simple_chain():
 
 
 def test_simple_square():
-    latt = lp.simple_square(a=1, neighbours=1)
+    latt = lp.simple_square(a=1, neighbors=1)
     latt.build((2, 2))
 
     # Check correct building
     assert latt.num_sites == 9
 
-    # Check nearest neighbours
+    # Check nearest neighbors
     expected = [1, 3, 5, 7]
     actual = latt.nearest_neighbors(4)
     assert_array_equal(expected, sorted(actual))
@@ -332,8 +332,8 @@ def test_simple_square():
     actual = latt.nearest_neighbors(0)
     assert_array_equal(expected, sorted(actual))
 
-    # Check next nearest neighbours
-    latt = lp.simple_square(a=1, neighbours=2)
+    # Check next nearest neighbors
+    latt = lp.simple_square(a=1, neighbors=2)
     latt.build((2, 2))
 
     expected = [0, 2, 6, 8]
@@ -342,13 +342,13 @@ def test_simple_square():
 
 
 def test_simple_cubic():
-    latt = lp.simple_cubic(a=1, neighbours=1)
+    latt = lp.simple_cubic(a=1, neighbors=1)
     latt.build((2, 2, 2))
 
     # Check correct building
     assert latt.num_sites == 27
 
-    # Check nearest neighbours
+    # Check nearest neighbors
     expected = [4, 10, 12, 14, 16, 22]
     actual = latt.nearest_neighbors(13)
     assert_array_equal(expected, sorted(actual))
@@ -383,8 +383,8 @@ def test_simple_cubic():
     actual = latt.nearest_neighbors(0)
     assert_array_equal(expected, sorted(actual))
 
-    # Check next nearest neighbours
-    latt = lp.simple_cubic(a=1, neighbours=2)
+    # Check next nearest neighbors
+    latt = lp.simple_cubic(a=1, neighbors=2)
     latt.build((2, 2, 2))
 
     expected = [1, 3, 5, 7, 9, 11, 15, 17, 19, 21, 23, 25]

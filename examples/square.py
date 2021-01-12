@@ -14,8 +14,8 @@ import matplotlib.pyplot as plt
 # Construct a square lattice structure
 latt = Lattice.square(a=1.0)
 
-# Add an Atom to the unitcell of the lattice and set nearest neighbours
-latt.add_atom(pos=[0, 0], neighbours=1)
+# Add an Atom to the unitcell of the lattice and set nearest neighbors
+latt.add_atom(pos=[0, 0], neighbors=1)
 
 # Build the lattice
 latt.build((5, 3))

@@ -267,7 +267,7 @@ def test_get_position():
 # =========================================================================
 
 def test_simple_chain():
-    latt = lp.simple_chain(a=1, neighbours=1)
+    latt = lp.simple_chain(a=1, neighbors=1)
     latt.build(3)
 
     # Check correct building
@@ -277,116 +277,116 @@ def test_simple_chain():
     actual = latt.all_positions()
     assert_array_equal(expected, actual)
 
-    latt = lp.simple_chain(a=1, neighbours=1)
+    latt = lp.simple_chain(a=1, neighbors=1)
     latt.build(3)
-    # Check neighbours
+    # Check neighbors
     expected = [1]
-    actual = latt.nearest_neighbours(0)
+    actual = latt.nearest_neighbors(0)
     assert_array_equal(expected, actual)
 
     expected = [0, 2]
-    actual = latt.nearest_neighbours(1)
+    actual = latt.nearest_neighbors(1)
     assert_array_equal(expected, sorted(actual))
 
     # Check periodic boundary conditions
     latt.set_periodic(0)
     expected = [1, 3]
-    actual = latt.nearest_neighbours(0)
+    actual = latt.nearest_neighbors(0)
     assert_array_equal(expected, sorted(actual))
 
-    latt = lp.simple_chain(a=1, neighbours=2)
+    latt = lp.simple_chain(a=1, neighbors=2)
     latt.build(6)
     expected = [0, 2, 3]
-    actual = latt.neighbours(1)
+    actual = latt.neighbors(1)
     assert_array_equal(expected, sorted(actual))
 
     expected = [0, 1, 3, 4]
-    actual = latt.neighbours(2)
+    actual = latt.neighbors(2)
     assert_array_equal(expected, sorted(actual))
 
 
 def test_simple_square():
-    latt = lp.simple_square(a=1, neighbours=1)
+    latt = lp.simple_square(a=1, neighbors=1)
     latt.build((2, 2))
 
     # Check correct building
     assert latt.num_sites == 9
 
-    # Check nearest neighbours
+    # Check nearest neighbors
     expected = [1, 3, 5, 7]
-    actual = latt.nearest_neighbours(4)
+    actual = latt.nearest_neighbors(4)
     assert_array_equal(expected, sorted(actual))
 
     # Check periodic boundary conditions
     latt.set_periodic(0)
     expected = [1, 3, 6]
-    actual = latt.nearest_neighbours(0)
+    actual = latt.nearest_neighbors(0)
     assert_array_equal(expected, sorted(actual))
 
     expected = [0, 2, 4, 7]
-    actual = latt.nearest_neighbours(1)
+    actual = latt.nearest_neighbors(1)
     assert_array_equal(expected, sorted(actual))
 
     latt.set_periodic(1)
     expected = [1, 2, 3]
-    actual = latt.nearest_neighbours(0)
+    actual = latt.nearest_neighbors(0)
     assert_array_equal(expected, sorted(actual))
 
-    # Check next nearest neighbours
-    latt = lp.simple_square(a=1, neighbours=2)
+    # Check next nearest neighbors
+    latt = lp.simple_square(a=1, neighbors=2)
     latt.build((2, 2))
 
     expected = [0, 2, 6, 8]
-    actual = latt.neighbours(4, distidx=1)
+    actual = latt.neighbors(4, distidx=1)
     assert_array_equal(expected, sorted(actual))
 
 
 def test_simple_cubic():
-    latt = lp.simple_cubic(a=1, neighbours=1)
+    latt = lp.simple_cubic(a=1, neighbors=1)
     latt.build((2, 2, 2))
 
     # Check correct building
     assert latt.num_sites == 27
 
-    # Check nearest neighbours
+    # Check nearest neighbors
     expected = [4, 10, 12, 14, 16, 22]
-    actual = latt.nearest_neighbours(13)
+    actual = latt.nearest_neighbors(13)
     assert_array_equal(expected, sorted(actual))
 
     expected = [1, 3, 9]
-    actual = latt.nearest_neighbours(0)
+    actual = latt.nearest_neighbors(0)
     assert_array_equal(expected, sorted(actual))
 
     # Check periodic boundary conditions
     latt.set_periodic(0)
     expected = [1, 3, 9, 18]
-    actual = latt.nearest_neighbours(0)
+    actual = latt.nearest_neighbors(0)
     assert_array_equal(expected, sorted(actual))
 
     latt.set_periodic(1)
     expected = [1, 3, 6, 9]
-    actual = latt.nearest_neighbours(0)
+    actual = latt.nearest_neighbors(0)
     assert_array_equal(expected, sorted(actual))
 
     latt.set_periodic(2)
     expected = [1, 2, 3, 9]
-    actual = latt.nearest_neighbours(0)
+    actual = latt.nearest_neighbors(0)
     assert_array_equal(expected, sorted(actual))
 
     latt.set_periodic([0, 1])
     expected = [1, 3, 6, 9, 18]
-    actual = latt.nearest_neighbours(0)
+    actual = latt.nearest_neighbors(0)
     assert_array_equal(expected, sorted(actual))
 
     latt.set_periodic([1, 2])
     expected = [1, 2, 3, 6, 9]
-    actual = latt.nearest_neighbours(0)
+    actual = latt.nearest_neighbors(0)
     assert_array_equal(expected, sorted(actual))
 
-    # Check next nearest neighbours
-    latt = lp.simple_cubic(a=1, neighbours=2)
+    # Check next nearest neighbors
+    latt = lp.simple_cubic(a=1, neighbors=2)
     latt.build((2, 2, 2))
 
     expected = [1, 3, 5, 7, 9, 11, 15, 17, 19, 21, 23, 25]
-    actual = latt.neighbours(13, distidx=1)
+    actual = latt.neighbors(13, distidx=1)
     assert_array_equal(expected, sorted(actual))

@@ -8,39 +8,44 @@
 # LICENSE file in the root directory and this permission notice shall
 # be included in all copies or substantial portions of the Software.
 
+"""Contains miscellaneous utility methods."""
+
+import logging
+from typing import Iterable, List, Sequence, Optional, Union, Tuple
 import time
 import numpy as np
-from typing import Iterable, List, Sequence, Optional, Union
-import logging
+
+__all__ = [
+    "ArrayLike", "logger", "LatticeError", "ConfigurationError", "SiteOccupiedError",
+    "NoAtomsError", "NoBaseNeighborsError", "NotBuiltError", "Timer",
+    "min_dtype", "chain", "create_lookup_table", "frmt_num", "frmt_bytes", "frmt_time",
+]
+
+# define type for numpy `array_like` types
+ArrayLike = Union[int, float, Iterable, np.ndarray]
+
 
 # Configure package logger
-
 logger = logging.getLogger("lattpy")
 
-# create console handler and set level to debug
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
+_CH = logging.StreamHandler()
+_CH.setLevel(logging.DEBUG)
 
-# create formatter
-frmt = "[%(asctime)s] %(levelname)-8s - %(name)-15s - %(funcName)-25s -  %(message)s"
-formatter = logging.Formatter(frmt, datefmt='%H:%M:%S')
+_FRMT_STR = "[%(asctime)s] %(levelname)-8s - %(name)-15s - %(funcName)-25s -  %(message)s"
+_FRMT = logging.Formatter(_FRMT_STR, datefmt='%H:%M:%S')
 
-# add formatter to ch
-ch.setFormatter(formatter)
+_CH.setFormatter(_FRMT)             # Add formatter to stream handler
+logger.addHandler(_CH)              # Add stream handler to package logger
 
-# add ch to logger
-logger.addHandler(ch)
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.WARNING)    # Set initial logging level
 
 
 class LatticeError(Exception):
+
     pass
 
 
 class ConfigurationError(LatticeError):
-
-    def __init__(self, msg="", hint=""):
-        super().__init__(msg, hint)
 
     @property
     def msg(self):
@@ -70,12 +75,12 @@ class NoAtomsError(ConfigurationError):
                          "use 'add_atom' to add an 'Atom'-object")
 
 
-class NoBaseNeighboursError(ConfigurationError):
+class NoBaseNeighborsError(ConfigurationError):
 
     def __init__(self):
-        msg = "base neighbours not configured"
+        msg = "base neighbors not configured"
         hint = "call 'calculate_distances' after adding atoms or " \
-               "use the 'neighbours' keyword of 'add_atom'"
+               "use the 'neighbors' keyword of 'add_atom'"
         super().__init__(msg, hint)
 
 
@@ -87,8 +92,31 @@ class NotBuiltError(ConfigurationError):
         super().__init__(msg, hint)
 
 
-def split_index(index):
-    return index[:-1], index[-1]
+def create_lookup_table(array: ArrayLike, dtype: Optional[Union[str, np.dtype]] = np.uint8) \
+        -> Tuple[np.ndarray, np.ndarray]:
+    """Converts the given array to an array of indices linked to the unique values.
+
+    Parameters
+    ----------
+    array : array_like
+    dtype : int or np.dtype, optional
+            Optional data-type for storing the indices of the unique values.
+            By default `np.uint8` is used, since it is assumed that the
+            input-array has only a few unique values.
+
+    Returns
+    -------
+    values : np.ndarray
+        The unique values occuring in the input-array.
+    indices : np.ndarray
+        The corresponding indices in the same shape as the input-array.
+    """
+    values = np.sort(np.unique(array))
+    indices = np.zeros_like(array, dtype=dtype)
+    for i, x in enumerate(values):
+        mask = array == x
+        indices[mask] = i
+    return values, indices
 
 
 def min_dtype(a: Union[int, float, np.ndarray, Iterable],
@@ -119,140 +147,14 @@ def min_dtype(a: Union[int, float, np.ndarray, Iterable],
     return np.dtype(np.min_scalar_type(a))
 
 
-def interweave(arrays: Sequence[np.ndarray]) -> np.ndarray:
-    """ Interweaves multiple arrays along the first axis
-
-    Example
-    -------
-    >>> arr1 = np.array([[1, 1], [3, 3], [5, 5]])
-    >>> arr2 = np.array([[2, 2], [4, 4], [6, 6]])
-    >>> interweave([arr1, arr2])
-    array([[1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6]])
-
-    Parameters
-    ----------
-    arrays: (M) Sequence of (N, ...) array_like
-        The input arrays to interwave. The shape of all arrays must match.
-
-    Returns
-    -------
-    interweaved: (M*N, ....) np.ndarray
-    """
-    shape = list(arrays[0].shape)
-    shape[0] = sum(x.shape[0] for x in arrays)
-    result = np.empty(shape, dtype=arrays[0].dtype)
-    n = len(arrays)
-    for i, arr in enumerate(arrays):
-        result[i::n] = arr
-    return result
-
-
-def vindices(limits: Iterable[Sequence[int]], sort_axis: Optional[int] = 0,
-             dtype: Optional[Union[int, str, np.dtype]] = None) -> np.ndarray:
-    """ Return an array representing the indices of a d-dimensional grid.
-
-    Parameters
-    ----------
-    limits: (D, 2) array_like
-        The limits of the indices for each axis.
-    sort_axis: int, optional
-        Optional axis that is used to sort indices.
-    dtype: int or str or np.dtype, optional
-        Optional data-type for storing the lattice indices. By default the given limits
-        are checked to determine the smallest possible data-type.
-
-    Returns
-    -------
-    vectors: (N, D) np.ndarray
-    """
-    if dtype is None:
-        dtype = min_dtype(limits, signed=True)
-    limits = np.asarray(limits)
-    dim = limits.shape[0]
-
-    # Create meshgrid reshape grid to array of indices
-
-    # version 1:
-    # axis = np.meshgrid(*(np.arange(*lim, dtype=dtype) for lim in limits))
-    # nvecs = np.asarray([np.asarray(a).flatten("F") for a in axis]).T
-
-    # version 2:
-    # slices = [slice(lim[0], lim[1], 1) for lim in limits]
-    # nvecs = np.mgrid[slices].astype(dtype).reshape(dim, -1).T
-
-    # version 3:
-    size = limits[:, 1] - limits[:, 0]
-    nvecs = np.indices(size, dtype=dtype).reshape(dim, -1).T + limits[:, 0]
-
-    # Optionally sort indices along given axis
-    if sort_axis is not None:
-        nvecs = nvecs[np.lexsort(nvecs.T[[sort_axis]])]
-
-    return nvecs
-
-
-def vrange(start=None, *args,
-           dtype: Optional[Union[int, str, np.dtype]] = None,
-           sort_axis: Optional[int] = 0, **kwargs) -> np.ndarray:
-    """ Return evenly spaced vectors within a given interval.
-
-    Parameters
-    ----------
-    start: array_like, optional
-        The starting value of the interval. The interval includes this value.
-        The default start value is 0.
-    stop: array_like
-        The end value of the interval.
-    step: array_like, optional
-        Spacing between values. If `start` and `stop` are sequences and the `step`
-        is a scalar the given step size is used for all dimensions of the vectors.
-        The default step size is 1.
-    sort_axis: int, optional
-        Optional axis that is used to sort indices.
-    dtype: dtype, optional
-        The type of the output array.  If `dtype` is not given, infer the data
-        type from the other input arguments.
-
-    Returns
-    -------
-    vectors: (N, D) np.ndarray
-    """
-    # parse arguments
-    if len(args) == 0:
-        stop = start
-        start = np.zeros_like(stop)
-        step = kwargs.get("step", 1.0)
-    elif len(args) == 1:
-        stop = args[0]
-        step = kwargs.get("step", 1.0)
-    else:
-        stop, step = args
-
-    start = np.atleast_1d(start)
-    stop = np.atleast_1d(stop)
-    if step is None:
-        step = np.ones_like(start)
-    elif not hasattr(step, "__len__"):
-        step = np.ones_like(start) * step
-
-    # Create grid and reshape to array of vectors
-    slices = [slice(i, f, s) for i, f, s in zip(start, stop, step)]
-    array = np.mgrid[slices].reshape(len(slices), -1).T
-    # Optionally sort array along given axis
-    if sort_axis is not None:
-        array = array[np.lexsort(array.T[[sort_axis]])]
-
-    return array if dtype is None else array.astype(dtype)
-
-
 def chain(items: Sequence, cycle: bool = False) -> List:
-    """Create chain between items
+    """Creates a chain between items
 
     Parameters
     ----------
-    items: array_like
+    items : Sequence
         items to join to chain
-    cycle: bool, optional
+    cycle : bool, optional
         cycle to the start of the chain if True, default: False
 
     Returns
@@ -276,19 +178,20 @@ def chain(items: Sequence, cycle: bool = False) -> List:
     return result
 
 
-def frmt_num(num, dec=1, unit='', div=1000.) -> str:
-    """Returns a formatted string of a number
+def frmt_num(num: float, dec: Optional[int] = 1, unit: Optional[str] = '',
+             div: Optional[float] = 1000.) -> str:
+    """Returns a formatted string of a number.
 
     Parameters
     ----------
-    num: float
+    num : float
         The number to format.
-    dec: int
-        Number of decimals.
-    unit: str, optional
-        Optional unit suffix.
-    div: float, optional
-        The divider used for units. The default is `1000`.
+    dec : int, optional
+        Number of decimals. The default is 1.
+    unit : str, optional
+        Optional unit suffix. By default no unit-strinmg is used.
+    div : float, optional
+        The divider used for units. The default is 1000.
 
     Returns
     -------
@@ -301,7 +204,7 @@ def frmt_num(num, dec=1, unit='', div=1000.) -> str:
     return f"{num:.{dec}f}Y{unit}"
 
 
-def frmt_bytes(num, dec=1) -> str:
+def frmt_bytes(num: float, dec: Optional[int] = 1) -> str:
     """Returns a formatted string of the number of bytes."""
     return frmt_num(num, dec, unit="iB", div=1024)
 
@@ -311,12 +214,12 @@ def frmt_time(seconds: float, short: bool = False, width: int = 0) -> str:
 
     Parameters
     ----------
-    seconds: float
+    seconds : float
         Time value to format
-    short: bool, optional
+    short : bool, optional
         Flag if short representation should be used.
-    width: int, optional
-        Optional minimum length of the returned string
+    width : int, optional
+        Optional minimum length of the returned string.
 
     Returns
     -------
@@ -358,40 +261,53 @@ def frmt_time(seconds: float, short: bool = False, width: int = 0) -> str:
 
 
 class Timer:
+    """Timer object for easy time measuring."""
 
     __slots__ = ["_time", "_t0"]
 
-    def __init__(self, method=time.perf_counter):
-        self._time = method
+    def __init__(self, method=None):
+        self._time = method or time.perf_counter
         self._t0 = 0
         self.start()
 
     @property
-    def seconds(self):
+    def seconds(self) -> float:
+        """Returns the time since the timer has been started in seconds."""
         return self.time() - self._t0
 
     @property
-    def millis(self):
+    def millis(self) -> float:
+        """Returns the time since the timer has been started in milliseconds."""
         return 1000 * (self.time() - self._t0)
 
-    def time(self):
+    def time(self) -> float:
+        """Returns the current time as a timestamp."""
         return self._time()
 
-    def start(self):
+    def start(self) -> None:
+        """Start the timer."""
         self._t0 = self._time()
 
     def eta(self, progress: float) -> float:
+        """Approximates the time left for a task.
+
+        Parameters
+        ----------
+        progress: float
+            Progress fraction of task.
+
+        Returns
+        -------
+        eta: float
+            Approximation of time left.
+        """
         if not progress:
             return 0.0
-        else:
-            return (1 / progress - 1) * self.time()
+        return (1 / progress - 1) * self.time()
 
     def strfrmt(self, short: bool = False, width: int = 0) -> str:
+        """Formats the time since the timer has been started."""
         return frmt_time(self.seconds, short, width)
-
-    @staticmethod
-    def sleep(t):
-        time.sleep(t)
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self.strfrmt(short=True)})'

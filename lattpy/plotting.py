@@ -8,12 +8,19 @@
 # LICENSE file in the root directory and this permission notice shall
 # be included in all copies or substantial portions of the Software.
 
+"""Contains plotting tools for the lattice and other related objects."""
+
 import itertools
 import numpy as np
 from collections.abc import Iterable
 from matplotlib.lines import Line2D
 from matplotlib.collections import LineCollection
 from mpl_toolkits.mplot3d.art3d import Line3DCollection, Line3D, Poly3DCollection
+
+__all__ = [
+    "set_margins", "set_padding", "set_limits", "draw_line", "draw_lines", "draw_arrows",
+    "draw_vectors", "draw_points", "draw_indices", "draw_cell", "draw_surfaces"
+]
 
 # Golden ratio as standard ratio for plot-figures
 GOLDEN_RATIO = (np.sqrt(5) - 1.0) / 2.0

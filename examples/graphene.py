@@ -15,7 +15,7 @@ A = 1.0
 ATOM_1 = Atom("C_1", color="C0")
 ATOM_2 = Atom("C_2", color="C0")
 
-# Construct graphene lattice with nearest neighbours
+# Construct graphene lattice with nearest neighbors
 latt = Lattice.hexagonal(A)
 latt.add_atom([0, 0], atom=ATOM_1)
 latt.add_atom([A, 0], atom=ATOM_2)

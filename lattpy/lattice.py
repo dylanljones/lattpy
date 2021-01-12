@@ -1369,8 +1369,7 @@ class Lattice:
         periodic_axes = dict()
         for ax in np.atleast_1d(ax):
             nvec, indices2, positions2 = self._build_periodic_segment(indices, ax)
-            neighbors, distances = compute_neighbors(positions2, positions, k, max_dist,
-                                                      num_jobs=1)
+            neighbors, distances = compute_neighbors(positions2, positions, k, max_dist, num_jobs=1)
             distances = np.round(distances, decimals=self.DIST_DECIMALS)
             idx = np.where(np.isfinite(distances).any(axis=1))[0]
             distances = distances[idx]

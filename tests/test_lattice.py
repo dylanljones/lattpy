@@ -274,7 +274,7 @@ def test_simple_chain():
     assert latt.num_sites == 4
 
     expected = np.atleast_2d([0.0, 1.0, 2.0, 3.0]).T
-    actual = latt.all_positions()
+    actual = latt.data.positions
     assert_array_equal(expected, actual)
 
     latt = lp.simple_chain(a=1, neighbors=1)

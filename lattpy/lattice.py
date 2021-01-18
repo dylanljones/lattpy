@@ -12,6 +12,7 @@
 
 import pickle
 import logging
+import warnings
 import itertools
 import collections
 import numpy as np
@@ -34,8 +35,7 @@ from .spatial import (
     cell_size,
     cell_volume,
     WignerSeitzCell,
-    KDTree,
-    compute_neighbors
+    KDTree
 )
 from .plotting import (
     draw_points,
@@ -49,6 +49,8 @@ from .data import LatticeData
 __all__ = ["Lattice"]
 
 logger = logging.getLogger(__name__)
+
+logging.captureWarnings(True)
 
 
 class Lattice:
@@ -78,10 +80,16 @@ class Lattice:
         self._atoms = list()
         self._positions = list()
 
+        # Raw neighbor data without including connections
+        self._raw_base_neighbors = None
+        self._raw_distance_matrix = None
+        self._raw_num_neighbors = None
+
         # Neighbour data
-        self._num_distances = 0
-        self._num_neighbors = None
+        self._connections = None
         self._base_neighbors = None
+        self._num_neighbors = None
+        self._distance_matrix = None
         self._distances = None
 
         # Lattice Cache
@@ -187,9 +195,9 @@ class Lattice:
         return self._positions
 
     @property
-    def num_distances(self):
-        """The number of distances between the lattice sites."""
-        return self._num_distances
+    def max_num_distances(self) -> int:
+        """The maximal number of distances between the lattice sites."""
+        return int(np.max(self._connections))
 
     @property
     def num_neighbors(self):
@@ -202,7 +210,7 @@ class Lattice:
         return self._base_neighbors
 
     @property
-    def distances(self) -> List[float]:
+    def distances(self) -> np.ndarray:
         """List of distances between the lattice sites."""
         return self._distances
 
@@ -523,13 +531,105 @@ class Lattice:
         self._positions.append(np.asarray(pos))
 
         # Update number of base atoms if data is valid
-        assert len(self._atoms) == len(self._positions)
-        self._num_base = len(self._positions)
+        num_base = len(self._atoms)
+        assert num_base == len(self._positions)
+        self._num_base = num_base
         logger.debug("Added atom %s at %s", atom, pos)
 
+        # Initial array for number of neighbour distances
+        # for current number of atoms in the unitcell
+        self._connections = np.zeros((num_base, num_base), dtype=np.int)
+
         if neighbors:
-            self.set_num_neighbors(neighbors)
+            self.add_connections(neighbors)
         return atom
+
+    def get_alpha(self, atom: Union[int, str, Atom]) -> Union[int, List[int]]:
+        """Returns the index of the atom in the unit-cell.
+
+        Parameters
+        ----------
+        atom: int or str or Atom
+            The argument for getting the atom. If a ``int`` is passed
+            it is interpreted as the index, if a ``str`` is passed as
+            the name of an atom.
+
+        Returns
+        -------
+        alpha: int or list of int
+        """
+        if isinstance(atom, Atom):
+            return self._atoms.index(atom)
+        elif isinstance(atom, str):
+            return [i for i, at in enumerate(self._atoms) if atom == at.name]
+        return atom
+
+    def get_atom(self, atom: Union[int, str, Atom]) -> Atom:
+        """ Returns the Atom object of the given atom in the unit cell
+
+        Parameters
+        ----------
+        atom: int or str or Atom
+            The argument for getting the atom. If a ``int`` is passed
+            it is interpreted as the index, if a ``str`` is passed as
+            the name of an atom.
+
+        Returns
+        -------
+        atom: Atom
+        """
+        if isinstance(atom, Atom):
+            return atom
+        elif isinstance(atom, int):
+            return self._atoms[atom]
+        else:
+            for at in self._atoms:
+                if atom == at.name:
+                    return at
+            raise ValueError(f"No Atom with the name '{atom}' found!")
+
+    def add_connection(self, atom1: Union[int, str, Atom], atom2: Union[int, str, Atom],
+                       num_distances=1, analyze: bool = False) -> None:
+        """Sets the number of distances for a specific connection between two atoms.
+
+        Parameters
+        ----------
+        atom1 : int or str or Atom
+            The first atom of the connected pair.
+        atom2 : int or str or Atom
+            The second atom of the connected pair.
+        num_distances : int, optional
+            The number of neighbor-distance levels, e.g. setting to ``1`` means
+            only nearest neighbors. The default are nearest neighbor connections.
+        analyze : bool
+            If ``True`` the lattice basis is analyzed after adding connections.
+            If ``False`` the ``analyze``-method needs to be called manually.
+            The default is ``False``.
+        """
+        alpha1 = np.atleast_1d(self.get_alpha(atom1))
+        alpha2 = np.atleast_1d(self.get_alpha(atom2))
+        for i, j in itertools.product(alpha1, alpha2):
+            self._connections[i, j] = num_distances
+            self._connections[j, i] = num_distances
+        if analyze:
+            self.analyze()
+
+    def add_connections(self, num_distances=1, analyze: bool = True) -> None:
+        """ Sets the number of distances for all possible atom-pairs of the unitcell.
+
+        Parameters
+        ----------
+        num_distances : int, optional
+            The number of neighbor-distance levels, e.g. setting to ``1`` means
+            only nearest neighbors. The default are nearest neighbor connections.
+        analyze : bool
+            If ``True`` the lattice basis is analyzed after adding connections.
+            If ``False`` the ``analyze``-method needs to be called manually.
+            The default is ``True``.
+        """
+        self._connections.fill(num_distances)
+        if analyze:
+            self.analyze()
 
     def set_num_neighbors(self, num_neighbors: int = 1, analyze: bool = True) -> None:
         """ Sets the maximal neighbor distance of the lattice.
@@ -543,17 +643,22 @@ class Lattice:
             Flag if lattice base is analyzed. If `False` the `analyze`-method
             needs to be called manually. The default is `True`.
         """
-        self._num_distances = num_neighbors
-        if analyze:
-            self.analyze()
+        # self._num_distances = num_neighbors
+        # if analyze:
+        #     self.analyze()
+        warnings.warn("Configuring neighbors with 'set_num_neighbors' is deprecated and "
+                      "will be removed in a future version. Use the 'add_connections' instead.",
+                      DeprecationWarning)
+        self.add_connections(num_neighbors, analyze)
 
     def _compute_base_neighbors(self, max_distidx, num_jobs=1):
-        # save positions as np.ndarray
-        self._positions = np.asarray(self._positions)
         logger.debug("Building indices of neighbor-cells")
+
         # Build indices of neighbor-cells
+        self._positions = np.asarray(self._positions)
         cell_range = 2 * max_distidx
         logger.debug("Max. distidx: %i, Cell-range: %i", max_distidx, cell_range)
+
         nvecs = self.get_neighbor_cells(cell_range, include_origin=True, comparison=np.less_equal)
         arrays = [np.c_[nvecs, i * np.ones(nvecs.shape[0])] for i in range(self.num_base)]
         cols = self.dim + 1
@@ -565,34 +670,54 @@ class Lattice:
         positions = self.translate(nvecs, np.array(self.atom_positions)[alphas])
         tree = KDTree(positions, k=len(positions))
 
-        # Compute neighbors for each distance level
-        base_neighbors = list()
-        for alpha in range(self.num_base):
-            pos = self.atom_positions[alpha]
-            dists, idx = tree.query(pos, n_jobs=num_jobs)
-            dists = np.round(dists, decimals=self.DIST_DECIMALS)
-            neighbor_indices = indices[idx]
-            # Store neighbors of certain distance
-            neighbors = collections.OrderedDict()
-            for dist, idx in zip(dists, neighbor_indices):
+        # Compute neighbors for each distance level in the cell range
+        n = self.num_base
+        neighbor_array = [[collections.OrderedDict() for _ in range(n)] for _ in range(n)]
+        for a1 in range(self.num_base):
+            pos = self.atom_positions[a1]
+            neighbors, distances = tree.query(pos, num_jobs, self.DIST_DECIMALS,
+                                              include_zero=True, compact=False)
+            neighbor_indices = indices[neighbors]
+            # Store neighbors of certain distance for each atom pair in the unit cell
+            for dist, idx in zip(distances, neighbor_indices):
+                a2 = idx[-1]
                 if dist:
-                    neighbors.setdefault(dist, list()).append(idx)
-            base_neighbors.append(neighbors)
+                    neighbor_array[a1][a2].setdefault(dist, list()).append(idx)
 
-        # Cleanup data and convert to np.ndarray
-        for alpha in range(self.num_base):
-            neighbors = base_neighbors[alpha]
-            dists = list(neighbors.keys())
-            max_distidx = self.num_distances  # self._num_distances[alpha]
+        # Remove extra neighbors
+        for a1, a2 in itertools.product(range(n), repeat=2):
+            neighbors = neighbor_array[a1][a2]
+            dists = list(sorted(neighbors.keys()))
             for dist in dists[:max_distidx]:
-                base_neighbors[alpha][dist] = np.asarray(neighbors[dist])
+                neighbor_array[a1][a2][dist] = np.array(neighbors[dist])
             for dist in dists[max_distidx:]:
-                del base_neighbors[alpha][dist]
+                del neighbor_array[a1][a2][dist]
 
-        return base_neighbors
+        return neighbor_array
 
-    def analyze(self, num_distances: Optional[int] = None) -> None:
-        """ Analyzes the strucutre of the lattice and stores neighbor data of the unitcell.
+    def _analyze_raw(self, max_distidx):
+        """Analyzes the structure of the raw lattice (without connections)."""
+        n = self.num_base
+        # Compute raw neighbors of unitcell
+        neighbor_array = self._compute_base_neighbors(max_distidx)
+
+        # Compute the raw distance matrix and the raw number of neighbors
+        raw_distance_matrix = [[list() for _ in range(n)] for _ in range(n)]
+        raw_num_neighbors = np.zeros((n, n), dtype=np.int)
+        for a1, a2 in itertools.product(range(n), repeat=2):
+            neighbors = neighbor_array[a1][a2]
+            raw_distance_matrix[a1][a2] += list(neighbors.keys())
+            raw_num_neighbors[a1, a2] = sum(len(x) for x in neighbors.values())
+
+        # Save raw neighbor data of the unitcell
+        self._raw_base_neighbors = neighbor_array
+        self._raw_distance_matrix = raw_distance_matrix
+        self._raw_num_neighbors = raw_num_neighbors
+        logger.debug("Number of raw neighbors:\n%s", raw_num_neighbors)
+        logger.debug("Raw distance-matrix:\n%s", raw_distance_matrix)
+
+    def analyze(self) -> None:
+        """Analyzes the structure of the lattice and stores neighbor data of the unitcell.
 
         Checks distances between all sites of the bravais lattice and saves n lowest values.
         The neighbor lattice-indices of the unit-cell are also stored for later use.
@@ -603,55 +728,56 @@ class Lattice:
         NoAtomsError
             Raised if no atoms where added to the lattice. The atoms in the unit cell are needed
             for computing the neighbors and distances of the lattice.
-
-        Parameters
-        ----------
-        num_distances: int, optional
-            Number of nearest distances of the lattice structure to calculate.
-            By default the previously set number of distances is used.
-
         """
         logger.debug("Analyzing lattice")
 
         if len(self._atoms) == 0:
             raise NoAtomsError()
 
-        if num_distances is None:
-            num_distances = self.num_distances
-        else:
-            num_distances = max(num_distances, self.num_distances)
+        max_distidx = int(np.max(self._connections))
+        n = self.num_base
 
-        # Compute neighbors of unitcell
-        base_neighbors = self._compute_base_neighbors(num_distances)
+        # Analyze the raw lattice
+        self._analyze_raw(max_distidx)
+
+        # Filter base neighbor data for configured connections and
+        # store neighbors and distances as list for each atom
+        base_neighbors = [collections.OrderedDict() for _ in range(n)]
+        base_distance_matrix = [[list() for _ in range(n)] for _ in range(n)]
+        unique_distances = set()
+        for a1, a2 in itertools.product(range(n), repeat=2):
+            neighbors = self._raw_base_neighbors[a1][a2]
+            dists = list(neighbors.keys())
+            max_dist = self._connections[a1, a2]
+            for distidx, dist in enumerate(dists[:max_dist]):
+                unique_distances.add(dist)
+                base_neighbors[a1].setdefault(dist, list()).extend(neighbors[dist])
+                base_distance_matrix[a1][a2].append(dist)
+            base_distance_matrix[a1][a2] = list(sorted(base_distance_matrix[a1][a2]))
+
+        max_num_distances = len(unique_distances)
 
         # Compute number of neighbors for each atom in the unit cell
         num_neighbors = np.zeros(self.num_base, dtype=np.int8)
         for i, neighbors in enumerate(base_neighbors):
             num_neighbors[i] = sum(len(indices) for indices in neighbors.values())
-        logger.debug("Number of neighbors: %s", num_neighbors)
 
         # store distance values / keys:
-        distances = np.zeros((self.num_base, self.num_distances))  # max(self.num_distances)))
+        distances = np.zeros((self.num_base, max_num_distances))
         for alpha in range(self.num_base):
             try:
                 dists = list(base_neighbors[alpha].keys())
             except ValueError:
                 dists = list()
-            distances[alpha, :len(dists)] = dists
-        logger.debug("Distances:            %s", distances)
+            distances[alpha, :len(dists)] = sorted(dists)
 
         self._base_neighbors = base_neighbors
+        self._distance_matrix = base_distance_matrix
         self._num_neighbors = num_neighbors
         self._distances = distances
-
-    def calculate_distances(self, num_dist: Optional[int] = 1) -> None:
-        """ Calculates the ´n´ lowest distances between sites and the neighbors of the cell.
-
-        Notes
-        -----
-        Deprecated: Use `set_num_neighbors` instead.
-        """
-        self.set_num_neighbors(num_dist, analyze=True)
+        logger.debug("Number of neighbors:\n%s", num_neighbors)
+        logger.debug("Distance-matrix:\n%s", base_distance_matrix)
+        logger.debug("Distances:\n%s", distances)
 
     def get_position(self, nvec: Optional[Union[int, Sequence[int]]] = None,
                      alpha: Optional[int] = 0) -> np.ndarray:
@@ -687,74 +813,6 @@ class Lattice:
         """
         nvecs, alphas = indices[:, :-1], indices[:, -1]
         return self.translate(nvecs, np.array(self.atom_positions)[alphas])
-
-    def get_alpha(self, atom: Union[int, str, Atom]) -> int:
-        """Returns the index of the atom in the unit-cell.
-
-        Parameters
-        ----------
-        atom: int or str or Atom
-            The argument for getting the atom. If a ``int`` is passed
-            it is interpreted as the index, if a ``str`` is passed as
-            the name of an atom.
-
-        Returns
-        -------
-        alpha: int
-        """
-        if isinstance(atom, Atom):
-            return self._atoms.index(atom)
-        elif isinstance(atom, str):
-            for i, at in enumerate(self._atoms):
-                if atom == at.name:
-                    return i
-        return atom
-
-    def get_atom(self, atom: Union[int, str, Atom]) -> Atom:
-        """ Returns the Atom object of the given atom in the unit cell
-
-        Parameters
-        ----------
-        atom: int or str or Atom
-            The argument for getting the atom. If a ``int`` is passed
-            it is interpreted as the index, if a ``str`` is passed as
-            the name of an atom.
-
-        Returns
-        -------
-        atom: Atom
-        """
-        if isinstance(atom, Atom):
-            return atom
-        elif isinstance(atom, int):
-            return self._atoms[atom]
-        else:
-            for at in self._atoms:
-                if atom == at.name:
-                    return at
-            raise ValueError(f"No Atom with the name '{atom}' found!")
-
-    def get_atom_attrib(self, atom: Union[int, str, Atom], attrib: str,
-                        default: Optional[Any] = None) -> Any:
-        """ Returns an attribute of a specific atom in the unit cell.
-
-        Parameters
-        ----------
-        atom: int or str or Atom
-            The argument for getting the atom. If a ``int`` is passed
-            it is interpreted as the index, if a ``str`` is passed as
-            the name of an atom.
-        attrib: str
-            Name of the atom attribute.
-        default: str or int or float or object, optional
-            Default value used if the attribute couln't be found in the Atom dictionary.
-
-        Returns
-        -------
-        attrib: str or int or float or object
-        """
-        atom = self.get_atom(atom)
-        return atom.get(attrib, default)
 
     def estimate_index(self, pos: Union[float, Sequence[float]]) -> np.ndarray:
         """ Returns the nearest matching lattice index (n, alpha) for global position.
@@ -1121,15 +1179,53 @@ class Lattice:
         logger.debug("Created %i lattice sites", len(indices))
         return indices, positions if return_pos else indices
 
-    def compute_neighbors(self, positions: Union[Sequence[float], Sequence[Sequence[float]]],
+    def _filter_neighbors(self, indices, neighbors, distances, x_ind=None):
+        logger.debug("Filtering neighbors")
+
+        x_ind = indices if x_ind is None else x_ind
+
+        # Add dummy index for invalid index
+        invalid_ind = len(indices)
+        indices_padded = np.append(indices, -np.ones((1, indices.shape[1])), axis=0)
+        alphas = indices_padded[neighbors, -1]
+
+        # Remove not connected neighbors
+        dist_matrix = self._distance_matrix
+        num_base = len(dist_matrix)
+        for a1 in range(num_base):
+            mask1 = (x_ind[:, -1] == a1)[:, None]
+            for a2 in range(num_base):
+                connected = np.isin(distances, dist_matrix[a1][a2])
+                mask = mask1 & (alphas == a2) & (~connected)
+                neighbors[mask] = invalid_ind
+                distances[mask] = np.inf
+
+        logger.debug("Re-sorting and cleaning up neighbors")
+
+        # Resort neighbors
+        i = np.arange(len(distances))[:, np.newaxis]
+        j = np.argsort(distances, axis=1)
+        distances = distances[i, j]
+        neighbors = neighbors[i, j]
+
+        # Remove columns containing only invalid data
+        all_valid = np.any(distances != np.inf, axis=0)
+        distances = distances[:, all_valid]
+        neighbors = neighbors[:, all_valid]
+
+        return neighbors, distances
+
+    def compute_neighbors(self, indices: ArrayLike, positions: ArrayLike,
                           num_jobs: Optional[int] = 1) -> Tuple[np.ndarray, np.ndarray]:
         """ Computes the neighbors for the given points.
 
         Parameters
         ----------
-        positions: array_like
-            An array of points to compute the neighbors.
-        num_jobs: int, optional
+        indices : array_like
+            The lattice indices of the sites in the format .math:`(n_1, .. n_d, \alpha)`.
+        positions : array_like
+            The positions of the sites in cartesian coordinates.
+        num_jobs : int, optional
             Number of jobs to schedule for parallel processing.
             If -1 is given all processors are used. The default is ``1``.
 
@@ -1140,12 +1236,21 @@ class Lattice:
         distances: (..., M) np.ndarray
             The corresponding distances of the neighbors.
         """
-        logger.debug("Computing neighbors of %i points", len(positions))
-        max_dist = np.max(self.distances) + 0.1 * np.min(self.distances)
-        k = np.max(self.num_neighbors) + 1
-        idx, dists = compute_neighbors(positions, k=k, max_dist=max_dist, num_jobs=num_jobs)
-        dists = np.round(dists, decimals=self.DIST_DECIMALS)
-        return idx, dists
+
+        logger.debug("Querying neighbors of %i points", len(positions))
+
+        # Set neighbor query parameters and build tree
+        k = np.sum(np.sum(self._raw_num_neighbors, axis=1)) + 1
+        max_dist = np.max(self.distances) + 0.1 * np.min(self._raw_distance_matrix)
+        tree = KDTree(positions, k=k, max_dist=max_dist)
+        logger.debug("Max. number of neighbors: %i", k)
+        logger.debug("Max. neighbor distance:   %f", max_dist)
+
+        # Query and filter neighbors
+        neighbors, distances = tree.query(num_jobs=num_jobs, decimals=self.DIST_DECIMALS)
+        neighbors, distances = self._filter_neighbors(indices, neighbors, distances)
+
+        return neighbors, distances
 
     # ==============================================================================================
     # Cached lattice
@@ -1265,7 +1370,7 @@ class Lattice:
         -------
         distidx: int or None
         """
-        for distidx in range(self.num_distances):
+        for distidx in range(self.max_num_distances):
             if idx1 in self.neighbors(idx0, distidx):
                 return distidx
         return None
@@ -1325,76 +1430,84 @@ class Lattice:
         indices, positions = self.build_indices(shape, relative, pos, callback, dtype, True)
 
         # Compute the neighbors and distances between the sites
-        neighbors, distances = self.compute_neighbors(positions, num_jobs=num_jobs)
+        neighbors, distances = self.compute_neighbors(indices, positions, num_jobs=num_jobs)
 
-        # Set data of the lattice and compute shape
+        # Set data of the lattice and update shape
         self.data.set(indices, positions, neighbors, distances)
         limits = self.data.get_limits()
         self.shape = limits[1] - limits[0]
-        logger.debug("Lattice shape: %s (%s)", self.shape,
-                     frmt_num(self.data.nbytes, unit="iB", div=1024))
 
         if periodic is not None:
             self.set_periodic(periodic)
+
+        logger.debug("Lattice shape: %s (%s)", self.shape,
+                     frmt_num(self.data.nbytes, unit="iB", div=1024))
         return self.data
 
-    def _build_periodic_segment(self, indices, ax):
+    def _build_periodic_segment(self, indices, positions, axs, out_ind=None, out_pos=None):
         limits = np.array([np.min(indices, axis=0), np.max(indices, axis=0)])
         idx_size = (limits[1] - limits[0])[:-1]
         nvec = np.zeros_like(idx_size, dtype=np.int)
-        nvec[ax] = np.floor(idx_size[ax]) + 1
+        for ax in np.atleast_1d(axs):
+            nvec[ax] = np.floor(idx_size[ax]) + 1
 
-        delta = self.num_distances  # self.max_distidx
-        idx_size[ax] = delta
+        delta_pos = self.translate(nvec)
+        delta_idx = np.append(nvec, 0)
+        if out_ind is not None and out_pos is not None:
+            out_ind[:] = indices + delta_idx
+            out_pos[:] = positions + delta_pos
+            return nvec
 
-        nvec1 = nvec + idx_size
-        limits = [[nvec[d], nvec1[d] + 1] for d in range(self.dim)]
-        nvecs = vindices(limits)
-        # ranges = [(range(nvec[d], nvec1[d] + 1)) for d in range(self.dim)]
-        # nvecs = np.array(vrange(ranges))
+        out_ind = indices + delta_idx
+        out_pos = positions + delta_pos
+        return nvec, out_ind, out_pos
 
-        arrays = [np.c_[nvecs, i * np.ones(nvecs.shape[0])] for i in range(self.num_base)]
-        cols = self.dim + 1
-        indices2 = np.ravel(arrays, order="F").astype(np.int)
-        indices2 = indices2.reshape(cols, int(indices2.shape[0] / cols)).T
-        positions2 = self.get_positions(indices2)
-        return nvec, indices2, positions2
+    def _compute_periodic_neighbors(self, indices, positions, axis, num_jobs=-1):
+        axis = np.atleast_1d(axis)
+        invald_idx = len(indices)
 
-    def _compute_periodic_neighbors(self, indices, positions, ax):
-        max_dist = np.max(self.distances)
-        k = np.max(self.num_neighbors) + 3
+        # Build tree
+        k = np.sum(np.sum(self._raw_num_neighbors, axis=1)) + 1
+        max_dist = np.max(self.distances) + 0.1 * np.min(self._raw_distance_matrix)
+        tree = KDTree(positions, k, max_dist)
 
-        periodic_neighbors = dict()
-        periodic_distances = dict()
-        periodic_axes = dict()
-        for ax in np.atleast_1d(ax):
-            nvec, indices2, positions2 = self._build_periodic_segment(indices, ax)
-            neighbors, distances = compute_neighbors(positions2, positions, k, max_dist, num_jobs=1)
-            distances = np.round(distances, decimals=self.DIST_DECIMALS)
+        # Initialize arrays
+        ind_t = np.zeros_like(indices)
+        pos_t = np.zeros_like(positions)
+
+        pidx, pdists, paxs = dict(), dict(), dict()
+        for ax in axis:
+            # Translate positions along periodic axis
+            self._build_periodic_segment(indices, positions, ax, out_ind=ind_t, out_pos=pos_t)
+
+            # Query neighbors with translated points and filter
+            neighbors, distances = tree.query(pos_t, num_jobs, self.DIST_DECIMALS)
+            neighbors, distances = self._filter_neighbors(indices, neighbors, distances, ind_t)
+
+            # Convert to dict
             idx = np.where(np.isfinite(distances).any(axis=1))[0]
             distances = distances[idx]
             neighbors = neighbors[idx]
-            periodic_indices = indices[idx]
-            periodic_indices[:, ax] -= nvec[ax] - 1
-
-            num_points = len(positions2)
             for i, site in enumerate(idx):
-                mask = neighbors[i] < num_points  # noqa
-                dists = distances[i][mask]
-                neighbor_indices = indices2[neighbors[i][mask]]  # noqa
-                neighbor_indices[:, :-1] -= nvec
-                sites2 = [np.where(np.array(indices == x).all(axis=1))[0][0] for x in
-                          neighbor_indices]
+                mask = i, neighbors[i] < invald_idx
+                inds = neighbors[mask]
+                dists = distances[mask]
 
-                periodic_neighbors.setdefault(site, list()).extend(sites2)
-                periodic_distances.setdefault(site, list()).extend(dists)
-                periodic_axes.setdefault(site, list()).append(ax)
-                for j, d in zip(sites2, dists):
-                    periodic_neighbors.setdefault(j, list()).append(site)
-                    periodic_distances.setdefault(j, list()).append(d)
-                    periodic_axes.setdefault(j, list()).append(ax)
+                pidx.setdefault(site, list()).extend(inds)  # noqa
+                pdists.setdefault(site, list()).extend(dists)
+                paxs.setdefault(site, list()).extend([ax] * len(inds))
+                for j, d in zip(inds, dists):
+                    pidx.setdefault(j, list()).append(site)  # noqa
+                    pdists.setdefault(j, list()).append(d)
+                    paxs.setdefault(j, list()).append(ax)
 
-        return periodic_neighbors, periodic_distances, periodic_axes
+        for k in pidx.keys():
+            vals, ind = np.unique(pidx[k], return_index=True)
+            pidx[k] = np.array(vals)
+            pdists[k] = np.array(pdists[k])[ind]
+            paxs[k] = np.array(paxs[k])[ind]
+
+        return pidx, pdists, paxs
 
     def set_periodic(self, axis: Optional[Union[int, Sequence[int]]] = 0):
         """ Sets periodic boundary conditions along the given axis.
@@ -1416,6 +1529,7 @@ class Lattice:
             The default is the x-direction. If the axis is `None` the perodic boundary
             conditions will be removed.
         """
+        logger.debug("Computing periodic neighbors along axis %s", axis)
         if self.shape is None:
             raise NotBuiltError()
         axis = np.atleast_1d(axis)
@@ -1426,174 +1540,6 @@ class Lattice:
 
         self.data.set_periodic(pidx, pdists, paxs)
         self.periodic_axes = axis
-
-    def transform_periodic(self, pos: Union[Union[float, Sequence[float]]],
-                           ax: Union[int, Sequence[int]],
-                           cell_offset: Optional[float] = 0.0) -> np.ndarray:
-        """ Transforms the position along the given axis by the shape of the lattice.
-
-        Raises
-        ------
-        NotBuiltError
-            Raised if the lattice hasn't been built yet.
-
-        Parameters
-        ----------
-        pos: array_like
-            Position coordinates to tranform.
-        ax: int or array_like
-            The axis that the position will be transformed along.
-        cell_offset: float, optional
-            Optional offset in units of the cell size.
-
-        Returns
-        -------
-        transformed: np.ndarray
-        """
-        if self.shape is None:
-            raise NotBuiltError()
-        pos = np.atleast_1d(pos)
-        delta = np.zeros(self.dim, dtype="float")
-        # Get cell offset along axis
-        delta[ax] = self.cell_size[ax] * cell_offset
-        # Get translation along axis
-        delta[ax] += self.shape[ax]
-        # Get transformation direction (to nearest periodic cell)
-        sign = -1 if pos[ax] > self.shape[ax] / 2 else +1
-        return pos + sign * delta
-
-    def atom_positions_dict(self, indices: Optional[Sequence[Sequence[int]]] = None,
-                            atleast2d: Optional[bool] = True) -> Dict[Atom, List[np.ndarray]]:
-        """ Returns a dictionary containing the positions for each type of the atoms.
-
-        Raises
-        ------
-        NotBuiltError
-            Raised if the lattice hasn't been built yet.
-
-        Parameters
-        ----------
-        indices: array_like, optional
-            Optional indices to use. If 'None' the stored indices are used.
-        atleast2d: bool, optional
-            If 'True', one-dimensional coordinates will be casted to 2D vectors.
-        Returns
-        -------
-        atom_pos: dict
-        """
-        if self.shape is None:
-            raise NotBuiltError()
-
-        indices = self.data.indices if indices is None else indices
-        atom_pos = dict()
-        for idx in indices:
-            n, alpha = idx[:-1], idx[-1]
-            atom = self._atoms[alpha]
-            pos = self.get_position(n, alpha)
-            if atleast2d and self.dim == 1:
-                pos = np.array([pos, 0])
-
-            if atom.name in atom_pos.keys():
-                atom_pos[atom].append(pos)
-            else:
-                atom_pos[atom] = [pos]
-        return atom_pos
-
-    def all_positions(self) -> np.ndarray:
-        """ Returns all positions, independent of the atom type, for the lattice.
-
-        Raises
-        ------
-        NotBuiltError
-            Raised if the lattice hasn't been built yet.
-
-        Returns
-        -------
-        positions: array_like
-        """
-        if self.shape is None:
-            raise NotBuiltError()
-        return np.asarray([self.position(i) for i in range(self.num_sites)])
-
-    def get_connections(self, atleast2d: Optional[bool] = True) -> np.ndarray:
-        """ Returns all pairs of neighbors in the lattice
-
-
-        Raises
-        ------
-        NotBuiltError
-            Raised if the lattice hasn't been built yet.
-
-        Parameters
-        ----------
-        atleast2d: bool, optional
-            If 'True', one-dimensional coordinates will be casted to 2D vectors.
-
-        Returns
-        -------
-        connections: array_like
-        """
-        if self.shape is None:
-            raise NotBuiltError()
-        conns = list()
-        for i in range(self.num_sites):
-            # neighbor_list = self.data.neighbors[i]
-            for distidx in range(self.num_distances):
-                # for j in neighbor_list[distidx]:
-                neighbors = self.data.get_neighbors(i, distidx, periodic=False)
-                for j in neighbors:
-                    if j > i:
-                        p1 = self.position(i)
-                        p2 = self.position(j)
-                        if atleast2d and self.dim == 1:
-                            p1 = np.array([p1, 0])
-                            p2 = np.array([p2, 0])
-                        conns.append([p1, p2])
-        return np.asarray(conns)
-
-    def get_periodic_segments(self, scale: Optional[float] = 1.0,
-                              atleast2d: Optional[bool] = True
-                              ) -> List[List[np.ndarray]]:
-        """ Returns all pairs of peridoic neighbors in the lattice
-
-        Raises
-        ------
-        NotBuiltError
-            Raised if the lattice hasn't been built yet.
-
-        Parameters
-        ----------
-        scale: float, optional
-        atleast2d: bool, optional
-            If 'True', one-dimensional coordinates will be casted to 2D vectors.
-
-        Returns
-        -------
-        connections: array_like
-        """
-        if self.shape is None:
-            raise NotBuiltError()
-        conns = list()
-        for i in range(int(self.num_sites)):
-            p1 = self.position(i)
-            for distidx in range(self.num_distances):
-                neighbors = self.data.get_neighbors(i, distidx, periodic=True)
-                # neighbors = self.data.periodic_neighbors[i][distidx]
-                if neighbors:
-                    for j in neighbors:
-                        p2_raw = self.position(j)
-                        # Find cycling axis
-                        ax = np.argmax(np.abs(p2_raw - p1))
-                        # Transform back
-                        p2 = self.transform_periodic(p2_raw, ax, cell_offset=1.0)
-                        # Scale vector and add to connections
-                        if atleast2d and self.dim == 1:
-                            p1 = np.array([p1, 0])
-                            p2 = np.array([p2, 0])
-                        v = p2 - p1
-                        p2 = p1 + scale * v / np.linalg.norm(v)
-                        conns.append([p1, p2])
-        return conns
 
     # ==============================================================================================
 
@@ -1683,20 +1629,26 @@ class Lattice:
             position_arr = [list() for _ in range(self.num_base)]
             for i in range(self.num_base):
                 pos = self.atom_positions[i]
-                for distidx in range(self.num_distances):
-                    indices = self.get_neighbors(alpha=i, distidx=distidx)
-                    positions = self.get_positions(indices)
-                    draw_vectors(ax, positions - pos, pos=pos, zorder=1, color=color, lw=lw)
-                    for idx, pos1 in zip(indices, positions):
-                        if np.any(idx[:-1]):
-                            a = idx[-1]
-                            position_arr[a].append(pos1)
+                for distidx in range(self.max_num_distances):
+                    try:
+                        indices = self.get_neighbors(alpha=i, distidx=distidx)
+                        positions = self.get_positions(indices)
+                        draw_vectors(ax, positions - pos, pos=pos, zorder=1, color=color, lw=lw)
+                        for idx, pos1 in zip(indices, positions):
+                            if np.any(idx[:-1]):
+                                a = idx[-1]
+                                position_arr[a].append(pos1)
+                    except IndexError:
+                        pass
+
             for i in range(self.num_base):
                 atom = self.get_atom(i)
-                pos = np.unique(position_arr[i], axis=0)
-                size = 0.6 * atom.size
-                col = colors[i]
-                draw_points(ax, pos, size=size, color=col, label=atom.name, alpha=alpha)
+                positions = position_arr[i]
+                if positions:
+                    pos = np.unique(positions, axis=0)
+                    size = 0.6 * atom.size
+                    col = colors[i]
+                    draw_points(ax, pos, size=size, color=col, label=atom.name, alpha=alpha)
 
         # Plot atoms in the unit cell
         for i in range(self.num_base):

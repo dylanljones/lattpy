@@ -223,7 +223,7 @@ class LatticeData:
         self.neighbors = neighbors
         self.distances = distidx
         self.distvals = distvals
-        self.paxes = np.ones_like(self.distances) * self.dim
+        self.paxes = np.full_like(self.distances, fill_value=self.dim)
 
         self.invalid_idx = self.num_sites
         self.invalid_distidx = np.max(self.distances)
@@ -322,6 +322,103 @@ class LatticeData:
             self.distances[i, i0:i1] = distidx
             self.paxes[i, i0:i1] = axes[i]
 
+    def sort(self, ax=None, indices=None, reverse=False):
+        if ax is not None:
+            indices = np.lexsort(self.indices.T[[ax]])
+        if reverse:
+            indices = indices[::-1]
+        # Reorder data
+        self.indices = self.indices[indices]
+        self.positions = self.positions[indices]
+        self.neighbors = self.neighbors[indices]
+        self.distances = self.distances[indices]
+        self.paxes = self.paxes[indices]
+        # Translate neighbor indices
+        old_neighbors = self.neighbors.copy()
+        for new, old in enumerate(indices):
+            mask = old_neighbors == old
+            self.neighbors[mask] = new
+
+    def remove_periodic(self):
+        mask = self.paxes != self.dim
+        self.neighbors[mask] = self.invalid_idx
+        self.distances[mask] = self.invalid_distidx
+        self.paxes.fill(self.dim)
+
+    def sort_neighbors(self):
+        distances = self.distvals[self.distances]
+        i = np.arange(len(distances))[:, np.newaxis]
+        j = np.argsort(distances, axis=1)
+        self.neighbors = self.neighbors[i, j]
+        self.distances = self.distances[i, j]
+        self.paxes = self.paxes[i, j]
+
+    def add_neighbors(self, site, neighbors, distances):
+        neighbors = np.atleast_2d(neighbors)
+        distances = np.atleast_2d(distances)
+        # compute invalid slots of normal data
+        i0 = len(self.distances[site, self.distances[site] != self.invalid_distidx])
+        i1 = i0 + len(neighbors)
+        # Translate distances to indices
+        distidx = [np.searchsorted(self.distvals, d) for d in distances]
+        # Add new neighbor data to unused slots
+        self.neighbors[site, i0:i1] = neighbors
+        self.distances[site, i0:i1] = distidx
+
+    def append(self, *args, copy=False):
+        neighbors1 = self.neighbors.copy()
+        distances1 = self.distvals[self.distances]
+        if len(args) == 1 and isinstance(args[0], LatticeData):
+            data = args[0]
+            indices2 = data.indices
+            positions2 = data.positions
+            neighbors2 = data.neighbors
+            distances2 = data.distvals[data.distances]
+        else:
+            indices2, positions2, neighbors2, distances2 = args
+
+        # Remove periodic neighbors
+        mask = self.paxes != self.dim
+        neighbors1[mask] = self.invalid_idx
+        distances1[mask] = self.invalid_distidx
+        self.paxes[:] = self.dim
+
+        # Convert invalid indices of neighbor data
+        invalid_idx = self.num_sites + len(indices2)
+        neighbors1[neighbors1 == self.invalid_idx] = invalid_idx
+        neighbors2[neighbors2 == len(indices2)] = invalid_idx
+
+        # Shift neighbor indices
+        neighbors2[neighbors2 != invalid_idx] += self.num_sites
+
+        # Pad neighbor data
+        cols1 = neighbors1.shape[1]
+        cols2 = neighbors2.shape[1]
+        cols = max(cols1, cols2)
+        if cols1 < cols:
+            widths = ((0, 0), (0, cols - cols1))
+            neighbors1 = np.pad(neighbors1, pad_width=widths, constant_values=invalid_idx)
+            distances1 = np.pad(distances1, pad_width=widths, constant_values=np.inf)
+        if cols2 < cols:
+            widths = ((0, 0), (0, cols - cols2))
+            neighbors2 = np.pad(neighbors2, pad_width=widths, constant_values=invalid_idx)
+            distances2 = np.pad(distances2, pad_width=widths, constant_values=np.inf)
+
+        # Join data
+        indices = np.append(self.indices, indices2, axis=0)
+        positions = np.append(self.positions, positions2, axis=0)
+        neighbors = np.append(neighbors1, neighbors2, axis=0)
+        distances = np.append(distances1, distances2, axis=0)
+
+        if copy:
+            data = LatticeData(indices, positions, neighbors, distances)
+            data.sort_neighbors()
+            return data
+
+        self.set(indices, positions, neighbors, distances)
+        self.sort_neighbors()
+        return self
+
     def get_positions(self, alpha):
         """Returns the atom positions of a sublattice."""
         mask = self.indices[:, -1] == alpha
@@ -354,7 +451,10 @@ class LatticeData:
         neighbor_positions: np.ndarray
             The positions of the neighbors.
         """
-        return self.positions[self.get_neighbors(site, distidx, periodic, unique)]
+        ind = self.get_neighbors(site, distidx, periodic, unique)
+        if np.all(ind == self.invalid_idx):
+            return np.array([])
+        return self.positions[ind]
 
     def iter_neighbors(self, site: int, unique: Optional[bool] = False) -> np.ndarray:
         """Iterates over the neighbors of all distance levels.

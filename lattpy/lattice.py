@@ -17,6 +17,7 @@ import itertools
 import collections
 import numpy as np
 from copy import deepcopy
+from scipy.spatial.distance import cdist
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from typing import Union, Optional, Tuple, List, Iterator, Sequence, Callable, Any, Dict
@@ -30,6 +31,7 @@ from .utils import (
     NotBuiltError
 )
 from .spatial import (
+    build_periodic_translation_vector,
     vindices,
     interweave,
     cell_size,
@@ -49,8 +51,6 @@ from .data import LatticeData
 __all__ = ["Lattice"]
 
 logger = logging.getLogger(__name__)
-
-logging.captureWarnings(True)
 
 
 class Lattice:
@@ -143,65 +143,61 @@ class Lattice:
 
     # ==============================================================================================
 
-    def copy(self) -> 'Lattice':
-        """ Creates a (deep) copy of the lattice instance"""
-        return deepcopy(self)
-
     @property
     def dim(self) -> int:
-        """The dimension of the vector basis."""
+        """int : The dimension of the vector basis."""
         return self._dim
 
     @property
     def vectors(self) -> np.ndarray:
-        """Array with basis vectors as rows"""
+        """np.ndarray : Array with basis vectors as rows."""
         return self._vectors.T
 
     @property
     def vectors3d(self) -> np.ndarray:
-        """Basis vectors expanded to three dimensions """
+        """np.ndarray : Basis vectors expanded to three dimensions."""
         vectors = np.eye(3)
         vectors[:self.dim, :self.dim] = self._vectors
         return vectors.T
 
     @property
-    def norms(self):
-        """Lengths of the basis-vectors"""
+    def norms(self) -> np.ndarray:
+        """np.ndarray : Lengths of the basis-vectors."""
         return np.linalg.norm(self._vectors, axis=0)
 
     @property
     def cell_size(self) -> np.ndarray:
-        """The shape of the box spawned by the given vectors."""
+        """np.ndarray : The shape of the box spawned by the given vectors."""
         return self._cell_size
 
     @property
     def cell_volume(self) -> float:
-        """The volume of the unit cell defined by the primitive vectors."""
+        """float : The volume of the unit cell defined by the primitive vectors."""
         return self._cell_volume
 
     @property
     def num_base(self) -> int:
-        """The number of atoms in the unitcell."""
+        """int : The number of atoms in the unitcell."""
         return self._num_base
 
     @property
     def atoms(self) -> List[Atom]:
-        """List of the atoms in the unitcell."""
+        """list of Atom : List of the atoms in the unitcell."""
         return self._atoms
 
     @property
     def atom_positions(self) -> List[np.ndarray]:
-        """List of corresponding positions of the atoms in the unitcell."""
+        """list of np.ndarray : List of corresponding positions of the atoms in the unitcell."""
         return self._positions
 
     @property
     def max_num_distances(self) -> int:
-        """The maximal number of distances between the lattice sites."""
+        """int : The maximal number of distances between the lattice sites."""
         return int(np.max(self._connections))
 
     @property
-    def num_neighbors(self):
-        """The number of neighbors of each atom in the unitcell."""
+    def num_neighbors(self) -> np.ndarray:
+        """np.ndarray : The number of neighbors of each atom in the unitcell."""
         return self._num_neighbors
 
     @property
@@ -216,30 +212,26 @@ class Lattice:
 
     @property
     def num_sites(self) -> int:
-        """Number of sites in lattice data (only available if lattice has been built)."""
+        """int : Number of sites in lattice data (only available if lattice has been built)."""
         return self.data.num_sites
 
     @property
     def num_cells(self) -> int:
-        """Number of unit-cells in lattice data (only available if lattice has been built)."""
+        """int : Number of unit-cells in lattice data (only available if lattice has been built)."""
         return np.unique(self.data.indices[:, :-1], axis=0).shape[0]
 
     def itransform(self, world_coords: Union[Sequence[int], Sequence[Sequence[int]]]) -> np.ndarray:
-        """ Transform the world-coordinates (x, y, ...) into the basis coordinates (n, m, ...)
+        """Transform the world-coordinates (x, y, ...) into the basis coordinates (n, m, ...)
 
         Parameters
         ----------
-        world_coords: (..., N) array_like
+        world_coords : (..., N) array_like
 
         Returns
         -------
-        basis_coords: (..., N) np.ndarray
+        basis_coords : (..., N) np.ndarray
         """
         world_coords = np.atleast_1d(world_coords)
-        # if len(world_coords.shape) == 1:
-        #     return np.asarray(world_coords) @ self._vectors_inv
-        # else:
-        #     return np.dot(world_coords, self._vectors_inv[np.newaxis, :, :])[:, 0, :]
         return np.inner(world_coords, self._vectors_inv)
 
     def transform(self, basis_coords: Union[Sequence[int], Sequence[Sequence[int]]]) -> np.ndarray:
@@ -247,17 +239,13 @@ class Lattice:
 
         Parameters
         ----------
-        basis_coords: (..., N) array_like
+        basis_coords : (..., N) array_like
 
         Returns
         -------
-        world_coords: (..., N) np.ndarray
+        world_coords : (..., N) np.ndarray
         """
         basis_coords = np.atleast_1d(basis_coords)
-        # if len(basis_coords.shape) == 1:
-        #     return basis_coords @ self._vectors
-        # else:
-        #     return np.dot(basis_coords, self.vectors[np.newaxis, :, :])[:, 0, :]
         return np.inner(basis_coords, self._vectors)
 
     def translate(self, nvec: Union[int, Sequence[int], Sequence[Sequence[int]]],
@@ -271,22 +259,18 @@ class Lattice:
 
         Parameters
         ----------
-        nvec: (..., N) array_like
+        nvec : (..., N) array_like
             Translation vector in the lattice basis.
-        r: (N) array_like, optional
+        r : (N) array_like, optional
             The position in cartesian coordinates. If no vector is passed only
             the translation is returned.
 
         Returns
         -------
-        r_trans: (N) np.ndarray
+        r_trans : (N) np.ndarray
         """
         r = np.atleast_1d(r)
         nvec = np.atleast_1d(nvec)
-        # if len(nvec.shape) == 1:
-        #     return r + (self._vectors @ nvec)
-        # else:
-        #     return r + np.dot(nvec, self.vectors[np.newaxis, :, :])[:, 0, :]
         return r + np.inner(nvec, self._vectors)
 
     def itranslate(self, x: Union[float, Sequence[float]]) -> [np.ndarray, np.ndarray]:
@@ -294,14 +278,14 @@ class Lattice:
 
         Parameters
         ----------
-        x: (N) array_like or float
+        x : (N) array_like or float
             Position vector in cartesian coordinates.
 
         Returns
         -------
-        nvec: (N) np.ndarray
+        nvec : (N) np.ndarray
             Translation vector in the lattice basis.
-        r: (N) np.ndarray, optional
+        r : (N) np.ndarray, optional
             The position in real-space.
         """
         x = np.atleast_1d(x)
@@ -323,14 +307,14 @@ class Lattice:
 
         Parameters
         ----------
-        vecs: array_like or float
+        vecs : array_like or float
             The vectors to check. Must have the same dimension as the lattice.
-        tol: float, optional
+        tol : float, optional
             The tolerance used for checking the result of the dot-products.
 
         Returns
         -------
-        is_reciprocal: bool
+        is_reciprocal : bool
         """
         vecs = np.atleast_2d(vecs)
         two_pi = 2 * np.pi
@@ -349,13 +333,13 @@ class Lattice:
 
         Parameters
         ----------
-        tol: float, optional
+        tol : float, optional
             The tolerance used for checking the result of the dot-products.
-        check: bool, optional
+        check : bool, optional
             Check the result and raise an exception if it doesn't satisfy the definition.
         Returns
         -------
-        v_rec: np.ndarray
+        v_rec : np.ndarray
         """
         two_pi = 2 * np.pi
         if self.dim == 1:
@@ -391,13 +375,13 @@ class Lattice:
 
         Parameters
         ----------
-        min_negative: bool, optional
+        min_negative : bool, optional
             If 'True' the reciprocal vectors are scaled such that
             there are fewer negative elements than positive ones.
 
         Returns
         -------
-        rlatt: Lattice
+        rlatt : Lattice
         """
         rvecs = self.reciprocal_vectors(min_negative)
         rlatt = self.__class__(rvecs)
@@ -410,16 +394,16 @@ class Lattice:
 
         Parameters
         ----------
-        distidx: int, default
+        distidx : int, default
             Index of distance to neighboring cells, default is 0 (nearest neighbors).
-        include_origin: bool, optional
+        include_origin : bool, optional
             If ``True`` the origin is included in the set.
-        comparison: callable, optional
+        comparison : callable, optional
             The method used for comparing distances.
 
         Returns
         -------
-        indices: np.ndarray
+        indices : np.ndarray
         """
         # Build cell points
         max_factor = distidx + 1
@@ -452,7 +436,7 @@ class Lattice:
 
         Returns
         -------
-        ws_cell: WignerSeitzCell
+        ws_cell : WignerSeitzCell
         """
         nvecs = self.get_neighbor_cells(include_origin=True)
         positions = np.dot(nvecs, self.vectors[np.newaxis, :, :])[:, 0, :]
@@ -465,13 +449,13 @@ class Lattice:
 
         Parameters
         ----------
-        min_negative: bool, optional
+        min_negative : bool, optional
             If 'True' the reciprocal vectors are scaled such that
             there are fewer negative elements than positive ones.
 
         Returns
         -------
-        ws_cell: WignerSeitzCell
+        ws_cell : WignerSeitzCell
         """
         rvecs = self.reciprocal_vectors(min_negative)
         rlatt = self.__class__(rvecs)
@@ -643,9 +627,6 @@ class Lattice:
             Flag if lattice base is analyzed. If `False` the `analyze`-method
             needs to be called manually. The default is `True`.
         """
-        # self._num_distances = num_neighbors
-        # if analyze:
-        #     self.analyze()
         warnings.warn("Configuring neighbors with 'set_num_neighbors' is deprecated and "
                       "will be removed in a future version. Use the 'add_connections' instead.",
                       DeprecationWarning)
@@ -754,6 +735,11 @@ class Lattice:
                 base_neighbors[a1].setdefault(dist, list()).extend(neighbors[dist])
                 base_distance_matrix[a1][a2].append(dist)
             base_distance_matrix[a1][a2] = list(sorted(base_distance_matrix[a1][a2]))
+
+        # Convert base neighbors back to np.ndarray
+        for a1 in range(self.num_base):
+            for key, vals in base_neighbors[a1].items():
+                base_neighbors[a1][key] = np.asarray(vals)
 
         max_num_distances = len(unique_distances)
 
@@ -1071,7 +1057,8 @@ class Lattice:
     def check_points(self, points: np.ndarray,
                      shape: Union[int, Sequence[int]],
                      relative: Optional[bool] = False,
-                     pos: Optional[Union[float, Sequence[float]]] = None
+                     pos: Optional[Union[float, Sequence[float]]] = None,
+                     eps: Optional[float] = 1e-3,
                      ) -> np.ndarray:
         """Returns a mask for the points in the given shape.
 
@@ -1086,6 +1073,8 @@ class Lattice:
             The default is ``True``.
         pos: (N) array_like or int, optional
             Optional position of the section to build. If 'None' the origin is used.
+        eps: float, optional
+            Optional padding of the shape for checking the points. The default is ``1e-3``
 
         Returns
         -------
@@ -1098,9 +1087,9 @@ class Lattice:
         if relative:
             shape = np.array(shape) * np.max(self.vectors, axis=0) - 0.1 * self.norms
 
-        if pos is None:
-            pos = np.zeros(self.dim)
-        end = pos + shape
+        pos = np.zeros(self.dim) if pos is None else np.array(pos, dtype=np.float)
+        pos -= eps
+        end = pos + shape + eps
 
         mask = (pos[0] <= points[:, 0]) & (points[:, 0] <= end[0])
         for i in range(1, self.dim):
@@ -1541,20 +1530,100 @@ class Lattice:
         self.data.set_periodic(pidx, pdists, paxs)
         self.periodic_axes = axis
 
+    def _compute_connection_neighbors(self, positions1, positions2):
+        # Set neighbor query parameters
+        k = np.sum(np.sum(self._raw_num_neighbors, axis=1)) + 1
+        max_dist = np.max(self.distances) + 0.1 * np.min(self._raw_distance_matrix)
+
+        # Build sublattice tree's
+        tree1 = KDTree(positions1, k=k, max_dist=max_dist)
+        tree2 = KDTree(positions2, k=k, max_dist=max_dist)
+
+        pairs = list()
+        distances = list()
+        offset = len(positions1)
+        connections = tree1.query_ball_tree(tree2, max_dist)
+        for i, conns in enumerate(connections):
+            if conns:
+                conns = np.asarray(conns)
+                dists = cdist(np.asarray([positions1[i]]), positions2[conns])[0]
+                for j, dist in zip(conns + offset, dists):
+                    pairs.append((i, j))
+                    pairs.append((j, i))
+                    distances.append(dist)
+                    distances.append(dist)
+
+        return np.array(pairs), np.array(distances)
+
+    def append(self, latt, ax=0, side=+1, sort_axis=None, sort_reverse=False):
+        # Build translation vector
+        indices = self.data.indices if side > 0 else latt.data.indices
+        nvec = build_periodic_translation_vector(indices, ax)
+        if side <= 0:
+            nvec = -1 * nvec
+        vec = self.translate(nvec)
+
+        # Store temporary data
+        positions1 = self.data.positions
+        indices2 = latt.data.indices.copy()
+        positions2 = latt.data.positions.copy()
+        neighbors2 = latt.data.neighbors.copy()
+        distances2 = latt.data.distvals[latt.data.distances]
+
+        # Shift data of appended lattice
+        indices2[:, :-1] += nvec
+        positions2 += vec
+
+        # Append data and compute connecting neighbors
+        self.data.append(indices2, positions2, neighbors2, distances2)
+        pairs, distances = self._compute_connection_neighbors(positions1, positions2)
+        for (i, j), dist in zip(pairs, distances):
+            self.data.add_neighbors(i, j, dist)
+
+        if sort_axis is not None:
+            self.data.sort(sort_axis, reverse=sort_reverse)
+
+        # Update the shape of the lattice
+        limits = self.data.get_limits()
+        self.shape = limits[1] - limits[0]
+
     # ==============================================================================================
 
-    def save(self, file: Optional[Union[str, int, bytes]] = 'tmp_lattice.pkl') -> None:
+    def copy(self) -> 'Lattice':
+        """Lattice : Creates a (deep) copy of the lattice instance."""
+        return deepcopy(self)
+
+    def todict(self) -> dict:
+        d = dict()
+        d["vectors"] = self.vectors
+        d["atoms"] = self._atoms
+        d["positions"] = self._positions
+        d["connections"] = self._connections
+        d["shape"] = self.shape
+        return d
+
+    def dumps(self):
+        lines = list()
+        for key, values in self.todict().items():
+            head = key + ":"
+            lines.append(f"{head:<15}" + "; ".join(str(x) for x in values))
+        return "\n".join(lines)
+
+    def dump(self, file: Optional[Union[str, int, bytes]] = 'tmp.latt') -> None:
         """Save the data of the ``Lattice`` instance.
 
         Parameters
         ----------
         file: str or int or bytes
+            File name to store the lattice. If ``None`` the hash of the lattice is used.
         """
+        if file is None:
+            file = f"{self.__hash__()}.latt"
         with open(file, "wb") as f:
             pickle.dump(self, f)
 
     @classmethod
-    def load(cls, file: Optional[Union[str, int, bytes]] = 'tmp_lattice.pkl') -> 'Lattice':
+    def load(cls, file: Optional[Union[str, int, bytes]] = 'tmp.latt') -> 'Lattice':
         """Load data of a saved ``Lattice`` instance.
 
         Parameters
@@ -1568,6 +1637,11 @@ class Lattice:
         with open(file, "rb") as f:
             latt = pickle.load(f)
         return latt
+
+    def __hash__(self):
+        import hashlib
+        sha = hashlib.md5(self.dumps().encode("utf-8"))
+        return int(sha.hexdigest(), 16)
 
     def plot_cell(self, show: Optional[bool] = True,
                   ax: Optional[Union[plt.Axes, Axes3D]] = None,
@@ -1735,17 +1809,18 @@ class Lattice:
         for i in range(self.num_sites):
             pos = self.data.positions[i]
             neighbor_pos = self.data.get_neighbor_pos(i, periodic=False)
-            draw_vectors(ax, neighbor_pos - pos, pos=pos, color=color, lw=lw, zorder=1)
-            if show_periodic:
-                mask = self.data.neighbor_mask(i, periodic=True)
-                idx = self.data.neighbors[i, mask]
-                paxes = self.data.paxes[i, mask]
-                neighbor_pos = self.data.positions[idx]
-                for pax, x in zip(paxes, neighbor_pos):
-                    nvec = nvecs[pax]
-                    sign = +1 if x[pax] < pos[pax] else -1
-                    x = self.translate(sign * nvec, x)
-                    draw_vectors(ax, x - pos, pos=pos, color=color, lw=lw, zorder=1)
+            if len(neighbor_pos):
+                draw_vectors(ax, neighbor_pos - pos, pos=pos, color=color, lw=lw, zorder=1)
+                if show_periodic:
+                    mask = self.data.neighbor_mask(i, periodic=True)
+                    idx = self.data.neighbors[i, mask]
+                    paxes = self.data.paxes[i, mask]
+                    neighbor_pos = self.data.positions[idx]
+                    for pax, x in zip(paxes, neighbor_pos):
+                        nvec = nvecs[pax]
+                        sign = +1 if x[pax] < pos[pax] else -1
+                        x = self.translate(sign * nvec, x)
+                        draw_vectors(ax, x - pos, pos=pos, color=color, lw=lw, zorder=1)
 
         # Draw sites
         for alpha in range(self.num_base):
@@ -1784,6 +1859,6 @@ class Lattice:
         return ax
 
     def __repr__(self) -> str:
-        shape = str(self.shape) if self.shape else "None"
+        shape = str(self.shape) if self.shape is not None else "None"
         return f"{self.__class__.__name__}(dim: {self.dim}, " \
                f"num_base: {self.num_base}, shape: {shape})"

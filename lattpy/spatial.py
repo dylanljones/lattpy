@@ -23,7 +23,7 @@ from .plotting import draw_points, draw_vectors, draw_lines, draw_surfaces
 __all__ = [
     "distance", "interweave", "vindices", "vrange", "cell_size", "cell_volume",
     "compute_vectors", "compute_neighbors", "KDTree", "VoronoiTree", "WignerSeitzCell",
-    "rx", "ry", "rz", "rotate2d", "rotate3d"
+    "rx", "ry", "rz", "rotate2d", "rotate3d", "build_periodic_translation_vector"
 ]
 
 
@@ -225,6 +225,14 @@ def cell_volume(vectors: ArrayLike) -> float:
     else:
         v = np.sqrt(np.linalg.det(np.dot(vectors.T, vectors)))
     return abs(v)
+
+
+def build_periodic_translation_vector(indices, axs):
+    limits = np.array([np.min(indices, axis=0), np.max(indices, axis=0)])
+    nvec = np.zeros(indices.shape[1] - 1, dtype=np.int)
+    for ax in np.atleast_1d(axs):
+        nvec[ax] = np.floor(limits[1][ax]) + 1
+    return nvec
 
 
 def compute_vectors(a: float, b: Optional[float] = None, c: Optional[float] = None,

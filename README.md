@@ -34,8 +34,9 @@ Configuration
 A new instance of a lattice model is initialized using the unit-vectors of the Bravais lattice.
 After the initialization the atoms of the unit-cell need to be added. To finish the configuration
 the connections between the atoms in the lattice have to be set. This can either be done for 
-each atom-pair indicidually or for posiible pairs at once. The argument is the number of unique 
-distances of neighbors. Setting a value of ``1`` for example will compute only the nearest 
+each atom-pair individually by calling ``add_connection`` or for all possible pairs at once by 
+callling ``add_connections``. The argument is the number of unique 
+distances of neighbors. Setting a value of ``1`` will compute only the nearest 
 neighbors of the atom. 
 ````python
 import numpy as np

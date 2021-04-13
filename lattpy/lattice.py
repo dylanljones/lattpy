@@ -191,7 +191,7 @@ class Lattice:
         return self._positions
 
     @property
-    def max_num_distances(self) -> int:
+    def num_distances(self) -> int:
         """int : The maximal number of distances between the lattice sites."""
         return int(np.max(self._connections))
 
@@ -1359,7 +1359,7 @@ class Lattice:
         -------
         distidx: int or None
         """
-        for distidx in range(self.max_num_distances):
+        for distidx in range(self.num_distances):
             if idx1 in self.neighbors(idx0, distidx):
                 return distidx
         return None
@@ -1703,7 +1703,7 @@ class Lattice:
             position_arr = [list() for _ in range(self.num_base)]
             for i in range(self.num_base):
                 pos = self.atom_positions[i]
-                for distidx in range(self.max_num_distances):
+                for distidx in range(self.num_distances):
                     try:
                         indices = self.get_neighbors(alpha=i, distidx=distidx)
                         positions = self.get_positions(indices)

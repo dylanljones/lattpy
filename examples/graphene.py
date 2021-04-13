@@ -19,7 +19,8 @@ ATOM_2 = Atom("C_2", color="C0")
 latt = Lattice.hexagonal(A)
 latt.add_atom([0, 0], atom=ATOM_1)
 latt.add_atom([A, 0], atom=ATOM_2)
-latt.set_num_neighbors(1)
+latt.add_connection(ATOM_1, ATOM_2, 1)
+latt.analyze()
 
 # Build the lattice in a square
 latt.build((10, 10))

@@ -15,7 +15,7 @@ import numpy as np
 import itertools
 import matplotlib.pyplot as plt
 from scipy.spatial import cKDTree, Voronoi
-from typing import Iterable, List, Sequence, Optional, Union
+from typing import Iterable, Sequence, Optional, Union
 from .utils import ArrayLike, min_dtype, chain
 from .plotting import draw_points, draw_vectors, draw_lines, draw_surfaces
 
@@ -23,7 +23,7 @@ from .plotting import draw_points, draw_vectors, draw_lines, draw_surfaces
 __all__ = [
     "distance", "interweave", "vindices", "vrange", "cell_size", "cell_volume",
     "compute_vectors", "compute_neighbors", "KDTree", "VoronoiTree", "WignerSeitzCell",
-    "rx", "ry", "rz", "rotate2d", "rotate3d"
+    "rx", "ry", "rz", "rotate2d", "rotate3d", "build_periodic_translation_vector"
 ]
 
 
@@ -227,6 +227,14 @@ def cell_volume(vectors: ArrayLike) -> float:
     return abs(v)
 
 
+def build_periodic_translation_vector(indices, axs):
+    limits = np.array([np.min(indices, axis=0), np.max(indices, axis=0)])
+    nvec = np.zeros(indices.shape[1] - 1, dtype=np.int)
+    for ax in np.atleast_1d(axs):
+        nvec[ax] = np.floor(limits[1][ax]) + 1
+    return nvec
+
+
 def compute_vectors(a: float, b: Optional[float] = None, c: Optional[float] = None,
                     alpha: Optional[float] = None, beta: Optional[float] = None,
                     gamma: Optional[float] = None,
@@ -263,36 +271,61 @@ def compute_vectors(a: float, b: Optional[float] = None, c: Optional[float] = No
     return vectors
 
 
+# noinspection PyUnresolvedReferences
 class KDTree(cKDTree):
     """Simple wrapper of scipy's cKTree with global query settings."""
 
-    def __init__(self, points, k=1, distance_bound=np.inf, eps=0., p=2):
+    def __init__(self, points, k=1, max_dist=np.inf, eps=0., p=2):
         super().__init__(points)
-        self.distance_bound = distance_bound
+        self.max_dist = max_dist
         self.k = k
         self.p = p
         self.eps = eps
 
-    def query(self, x, n_jobs=1, k=0, eps=0., p=0, distance_upper_bound=0):
-        k = k or self.k
-        eps = eps or self.eps
-        p = p or self.p
-        bound = distance_upper_bound or self.distance_bound
-        # noinspection PyUnresolvedReferences
-        return super().query(x, k, eps, p, bound, n_jobs)
+    def query_ball_point(self, x, r):
+        return super().query_ball_point(x, r, self.p, self.eps)
+
+    def query_ball_tree(self, other, r):
+        return super().query_ball_tree(other, r, self.p, self.eps)
+
+    def query_pairs(self, r):
+        return super().query_pairs(r, self.p, self.eps)
+
+    def query(self, x=None, num_jobs=1, decimals=None, include_zero=False, compact=True):
+        x = self.data if x is None else x
+        distances, neighbors = super().query(x, self.k, self.eps, self.p, self.max_dist, num_jobs)
+
+        # Remove zero-distance neighbors and convert dtype
+        if not include_zero and np.all(distances[:, 0] == 0):
+            distances = distances[:, 1:]
+            neighbors = neighbors[:, 1:]
+        neighbors = neighbors.astype(min_dtype(self.n, signed=False))
+
+        # Remove neighbors with distance larger than max_dist
+        if self.max_dist < np.inf:
+            invalid = distances > self.max_dist
+            neighbors[invalid] = self.n
+            distances[invalid] = np.inf
+
+        # Remove all invalid columns
+        if compact:
+            mask = np.any(distances != np.inf, axis=0)
+            neighbors = neighbors[:, mask]
+            distances = distances[:, mask]
+
+        # Round distances
+        if decimals is not None:
+            distances = np.round(distances, decimals=decimals)
+
+        return neighbors, distances
 
 
-def compute_neighbors(positions, x=None, k=20, max_dist=np.inf, eps=0., num_jobs=1,
-                      include_zero=False):
+def compute_neighbors(positions, k=20, max_dist=np.inf, num_jobs=1, decimals=None, eps=0.,
+                      include_zero=False, compact=True, x=None):
+    # Build tree and query neighbors
     x = positions if x is None else x
-    tree = KDTree(positions, k=k, distance_bound=max_dist * 1.1, eps=eps)
-    distances, neighbors = tree.query(x, n_jobs=num_jobs)
-    if not include_zero and np.all(distances[:, 0] == 0):
-        distances = distances[:, 1:]
-        neighbors = neighbors[:, 1:]
-    invalid = distances > max_dist
-    neighbors[invalid] = tree.n  # noqa
-    distances[invalid] = np.inf
+    tree = KDTree(positions, k=k, max_dist=max_dist, eps=eps)
+    distances, neighbors = tree.query(x, num_jobs, decimals, include_zero, compact)
     return neighbors, distances
 
 

@@ -33,17 +33,32 @@ Configuration
 
 A new instance of a lattice model is initialized using the unit-vectors of the Bravais lattice.
 After the initialization the atoms of the unit-cell need to be added. To finish the configuration
-the number of distances in the lattice need to be set. This computes the nearest distances between
-all atoms of the unit-cells. If only the nearest distance is computed the lattice will be set to 
-nearest neighbors.
+the connections between the atoms in the lattice have to be set. This can either be done for 
+each atom-pair individually by calling ``add_connection`` or for all possible pairs at once by 
+callling ``add_connections``. The argument is the number of unique 
+distances of neighbors. Setting a value of ``1`` will compute only the nearest 
+neighbors of the atom. 
 ````python
 import numpy as np
 from lattpy import Lattice
 
-latt = Lattice(np.eye(2))       # Construct a Bravais lattice with square unit-vectors
-latt.add_atom(pos=[0.0, 0.0])   # Add an Atom to the unit cell of the lattice
-latt.set_num_neighbors(1)       # Set the maximum number of distances in the configuration.
+latt = Lattice(np.eye(2))                 # Construct a Bravais lattice with square unit-vectors
+latt.add_atom(pos=[0.0, 0.0])             # Add an Atom to the unit cell of the lattice
+latt.add_connections(1)                   # Set the maximum number of distances between all atoms
+
+latt = Lattice(np.eye(2))                 # Construct a Bravais lattice with square unit-vectors
+latt.add_atom(pos=[0.0, 0.0], atom="A")   # Add an Atom to the unit cell of the lattice
+latt.add_atom(pos=[0.5, 0.5], atom="B")   # Add an Atom to the unit cell of the lattice
+latt.add_connection("A", "A", 1)          # Set the max number of distances between A and A
+latt.add_connection("A", "B", 1)          # Set the max number of distances between A and B
+latt.add_connection("B", "B", 1)          # Set the max number of distances between B and B
+latt.analyze()
 ````
+
+Configuring all connections using the ``add_connections``-method will call the ``analyze``-method
+directly. Otherwise this has to be called at the end of the lattice setup or by using 
+``analyze=True`` in the last call of ``add_connection``. This will compute the number of neighbors, 
+their distances and their positions for each atom in the unitcell.
 
 To speed up the configuration prefabs of common lattices are included. The previous lattice 
 can also be created with

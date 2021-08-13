@@ -46,7 +46,7 @@ from .plotting import (
     draw_indices
 )
 from .unitcell import Atom
-from .data import LatticeData
+from .data import LatticeData, DataMap
 
 __all__ = ["Lattice"]
 
@@ -1585,6 +1585,10 @@ class Lattice:
         # Update the shape of the lattice
         limits = self.data.get_limits()
         self.shape = limits[1] - limits[0]
+
+    def dmap(self) -> DataMap:
+        """Returns the data-map of the lattice model"""
+        return self.data.map()
 
     # ==============================================================================================
 

@@ -229,7 +229,7 @@ def cell_volume(vectors: ArrayLike) -> float:
 
 def build_periodic_translation_vector(indices, axs):
     limits = np.array([np.min(indices, axis=0), np.max(indices, axis=0)])
-    nvec = np.zeros(indices.shape[1] - 1, dtype=np.int)
+    nvec = np.zeros(indices.shape[1] - 1, dtype=np.int64)
     for ax in np.atleast_1d(axs):
         nvec[ax] = np.floor(limits[1][ax]) + 1
     return nvec
@@ -504,11 +504,17 @@ def rot(thetax: float = 0., thetay: float = 0., thetaz: float = 0.) -> np.ndarra
     return r
 
 
-def rotate2d(a, theta):
+def rotate2d(a, theta, degree=True):
     """Applies the z-rotation matrix to a 2D point"""
+    if degree:
+        theta = np.deg2rad(theta)
     return np.dot(a, rz(theta)[:2, :2])
 
 
-def rotate3d(a, thetax=0., thetay=0., thetaz=0.):
+def rotate3d(a, thetax=0., thetay=0., thetaz=0., degree=True):
     """Applies the general rotation matrix to a 3D point"""
+    if degree:
+        thetax = np.deg2rad(thetax)
+        thetay = np.deg2rad(thetay)
+        thetaz = np.deg2rad(thetaz)
     return np.dot(a, rot(thetax, thetay, thetaz))

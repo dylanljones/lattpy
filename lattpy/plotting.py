@@ -102,7 +102,7 @@ def draw_arrows(ax, vectors, pos=None, **kwargs):
     pos = pos if pos is not None else np.zeros(dim)
     if dim != 3:
         kwargs.update({"angles": "xy", "scale_units": "xy", "scale": 1})
-    return ax.quiver(*pos, *vectors, **kwargs)
+    return ax.quiver(pos, *vectors, **kwargs)
 
 
 def draw_vectors(ax, vectors, pos=None, ls="-", lw=1, zorder=1, **kwargs):
@@ -151,6 +151,7 @@ def draw_cell(ax, vectors, color="k", lw=2, zorder=1, outlines=True):
         return
 
     draw_arrows(ax, vectors, color=color, lw=lw, zorder=zorder)
+    # draw_vectors(ax, vectors, color=color, lw=lw, zorder=zorder)
     if outlines:
         for v, pos in itertools.permutations(vectors, r=2):
             data = np.asarray([pos, pos + v]).T

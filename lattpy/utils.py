@@ -79,7 +79,7 @@ class NoBaseNeighborsError(ConfigurationError):
 
     def __init__(self):
         msg = "base neighbors not configured"
-        hint = "call 'set_num_neighbors' after adding atoms or " \
+        hint = "call 'add_connection' after adding atoms or " \
                "use the 'neighbors' keyword of 'add_atom'"
         super().__init__(msg, hint)
 

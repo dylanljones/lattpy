@@ -96,8 +96,7 @@ class Lattice:
         self.data = LatticeData()
         self.shape = None
         self.periodic_axes = list()
-        logger.debug("Lattice initialized (D=%i)\n"
-                     "vectors:\n%s", self.dim, self._vectors)
+        logger.debug("Lattice initialized (D=%i)\n vectors:\n%s", self.dim, self._vectors)
 
     @classmethod
     def chain(cls, a: Optional[float] = 1.0, **kwargs) -> 'Lattice':
@@ -522,7 +521,7 @@ class Lattice:
 
         # Initial array for number of neighbour distances
         # for current number of atoms in the unitcell
-        self._connections = np.zeros((num_base, num_base), dtype=np.int)
+        self._connections = np.zeros((num_base, num_base), dtype=np.int64)
 
         if neighbors:
             self.add_connections(neighbors)
@@ -643,7 +642,7 @@ class Lattice:
         nvecs = self.get_neighbor_cells(cell_range, include_origin=True, comparison=np.less_equal)
         arrays = [np.c_[nvecs, i * np.ones(nvecs.shape[0])] for i in range(self.num_base)]
         cols = self.dim + 1
-        indices = np.ravel(arrays, order="F").astype(np.int)
+        indices = np.ravel(arrays, order="F").astype(np.int64)
         indices = indices.reshape(cols, int(indices.shape[0] / cols)).T
 
         # Compute positions and initialize tree
@@ -684,7 +683,7 @@ class Lattice:
 
         # Compute the raw distance matrix and the raw number of neighbors
         raw_distance_matrix = [[list() for _ in range(n)] for _ in range(n)]
-        raw_num_neighbors = np.zeros((n, n), dtype=np.int)
+        raw_num_neighbors = np.zeros((n, n), dtype=np.int64)
         for a1, a2 in itertools.product(range(n), repeat=2):
             neighbors = neighbor_array[a1][a2]
             raw_distance_matrix[a1][a2] += list(neighbors.keys())
@@ -851,7 +850,7 @@ class Lattice:
         dist = keys[distidx]
         indices = self._base_neighbors[alpha][dist]
         indices_transformed = indices.copy()
-        indices_transformed[:, :-1] += nvec.astype(np.int)
+        indices_transformed[:, :-1] += nvec.astype(np.int64)
         logger.debug("Neighbour-indices: %s", indices_transformed)
 
         return indices_transformed
@@ -1038,7 +1037,7 @@ class Lattice:
         # Pad maximum translation vectors and create index limits
         padding = oversample * shape + 1
         max_nvecs += [-padding, +padding]
-        limits = max_nvecs.astype(np.int).T
+        limits = max_nvecs.astype(np.int64).T
         logger.debug("Limits: %s, %s", limits[:, 0], limits[:, 1])
 
         # Generate translation vectors with too many points to reach each corner
@@ -1087,7 +1086,7 @@ class Lattice:
         if relative:
             shape = np.array(shape) * np.max(self.vectors, axis=0) - 0.1 * self.norms
 
-        pos = np.zeros(self.dim) if pos is None else np.array(pos, dtype=np.float)
+        pos = np.zeros(self.dim) if pos is None else np.array(pos, dtype=np.float64)
         pos -= eps
         end = pos + shape + eps
 
@@ -1436,7 +1435,7 @@ class Lattice:
     def _build_periodic_segment(self, indices, positions, axs, out_ind=None, out_pos=None):
         limits = np.array([np.min(indices, axis=0), np.max(indices, axis=0)])
         idx_size = (limits[1] - limits[0])[:-1]
-        nvec = np.zeros_like(idx_size, dtype=np.int)
+        nvec = np.zeros_like(idx_size, dtype=np.int64)
         for ax in np.atleast_1d(axs):
             nvec[ax] = np.floor(idx_size[ax]) + 1
 
@@ -1787,6 +1786,8 @@ class Lattice:
         show_cell: bool, optional
             If 'True' the first unit-cell is drawn.
         """
+        logger.debug("Plotting lattice")
+
         if self.dim > 3:
             raise ValueError(f"Plotting in {self.dim} dimensions is not supported!")
 

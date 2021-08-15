@@ -10,12 +10,12 @@
 
 """Objects for representing atoms and the unitcell of a lattice."""
 
-import numpy as np
+import warnings
 import itertools
+import numpy as np
 from collections import abc
 from typing import Union, Optional, Any, Iterator, Dict, Sequence, List, Tuple
 from .utils import SiteOccupiedError
-
 __all__ = ["Atom", "UnitCell"]
 
 
@@ -24,15 +24,20 @@ class Atom(abc.MutableMapping):
 
     _counter = itertools.count()
 
-    __slots__ = ["_index", "_name", "_params"]
+    __slots__ = ["_index", "_name", "_weight", "_params"]
 
-    def __init__(self, name: Optional[str] = None, color: Optional[str] = None,
-                 size: Optional[int] = 10, **kwargs):
+    def __init__(self, name: str = None, weight: float = 1.0, color: str = None,
+                 size: int = 10, **kwargs):
         super().__init__()
         index = next(Atom._counter)
         self._index = index
         self._name = name or str(index)
+        self._weight = weight
         self._params = dict(color=color, size=size, **kwargs)
+
+    @property
+    def id(self):
+        return id(self)
 
     @property
     def index(self) -> int:
@@ -44,6 +49,11 @@ class Atom(abc.MutableMapping):
         """Return the name of the ``Atom`` instance."""
         return self._name
 
+    @property
+    def weight(self):
+        """Return the weight or the ``Atom`` instance."""
+        return self._weight
+
     def dict(self) -> Dict[str, Any]:
         """Returns the data of the ``Atom`` instance as a dictionary."""
         data = dict(index=self._index, name=self._name)
@@ -52,7 +62,7 @@ class Atom(abc.MutableMapping):
 
     def copy(self) -> 'Atom':
         """Creates a deep copy of the ``Atom`` instance."""
-        return Atom(self.name, **self._params.copy())
+        return Atom(self.name, self.weight, **self._params.copy())
 
     def get(self, key: str, default=None) -> Any:
         try:
@@ -119,7 +129,7 @@ class Atom(abc.MutableMapping):
         paramstr = ", ".join(f"{k}={v}" for k, v in self._params.items() if v)
         if paramstr:
             argstr += ", " + paramstr
-        return f"Atom({argstr})"
+        return f"Atom({argstr}, {self.index}, {hex(self.id)})"
 
 
 class UnitCell(abc.Sequence):
@@ -130,6 +140,8 @@ class UnitCell(abc.Sequence):
     def __init__(self):
         """Initialize a unitcell instance."""
         super().__init__()
+        warnings.warn("The UnitCell-object is deprecated and will be removed in a future version.",
+                      DeprecationWarning)
         self._num_base = 0
         self._atoms = list()
         self._positions = list()

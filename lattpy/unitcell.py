@@ -16,6 +16,7 @@ import numpy as np
 from collections import abc
 from typing import Union, Optional, Any, Iterator, Dict, Sequence, List, Tuple
 from .utils import SiteOccupiedError
+
 __all__ = ["Atom", "UnitCell"]
 
 
@@ -70,6 +71,10 @@ class Atom(abc.MutableMapping):
         except KeyError:
             return default
 
+    def is_identical(self, other: 'Atom') -> bool:
+        """Checks if the other ``Atom`` is identical to this one."""
+        return self._name == other.name
+
     def __len__(self) -> int:
         """Return the length of the ``Atom`` attributes."""
         return len(self._params)
@@ -120,7 +125,7 @@ class Atom(abc.MutableMapping):
 
     def __eq__(self, other: Union['Atom', str]) -> bool:
         if isinstance(other, Atom):
-            return self._name == other._name
+            return self.is_identical(other)
         else:
             return self._name == other
 

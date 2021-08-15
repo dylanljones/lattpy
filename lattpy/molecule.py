@@ -14,6 +14,8 @@ from .utils import SiteOccupiedError
 from .spatial import distance, distances
 from .unitcell import Atom
 
+__all__ = ["Molecule"]
+
 
 class Molecule:
 

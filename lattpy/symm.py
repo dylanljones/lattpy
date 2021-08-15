@@ -292,6 +292,28 @@ def is_valid_symop(positions, atoms, symop, tol=1e-4):
     return True
 
 
+def find_unique_symops(positions, atoms, symops, tol=1e-4):
+    unique_symops = dict()
+    for symop in symops:
+        transformed = symop.apply(positions)
+
+        # Shift center of mass to origin
+        weights = np.array([atom.weight for atom in atoms])
+        mc = np.average(transformed, weights=weights, axis=0)
+        transformed -= mc
+
+        # Check for equivalent configs
+        for other_symop, other_pos in unique_symops.items():
+            if is_equivalent(transformed, atoms, other_pos, tol):
+                logger.debug("%s is equivalent to %s", symop.__repr__(), other_symop.__repr__())
+                break
+        else:
+            logger.debug("Found unique symop %s", symop.__repr__())
+            unique_symops[symop] = transformed
+
+    return unique_symops
+
+
 def cluster_sites(positions, atoms, tol):
     """Cluster sites based on distance and atom type.
 

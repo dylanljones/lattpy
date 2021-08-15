@@ -23,6 +23,7 @@ from .utils import (
 
 from .spatial import (
     distance,
+    distances,
     interweave,
     vindices,
     vrange,

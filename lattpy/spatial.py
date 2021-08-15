@@ -21,13 +21,13 @@ from .plotting import draw_points, draw_vectors, draw_lines, draw_surfaces
 
 
 __all__ = [
-    "distance", "interweave", "vindices", "vrange", "cell_size", "cell_volume",
+    "distance", "distances", "interweave", "vindices", "vrange", "cell_size", "cell_volume",
     "compute_vectors", "compute_neighbors", "KDTree", "VoronoiTree", "WignerSeitzCell",
     "rx", "ry", "rz", "rotate2d", "rotate3d", "build_periodic_translation_vector"
 ]
 
 
-def distance(r1: ArrayLike, r2: ArrayLike, decimals: Optional[int] = None) -> float:
+def distance(r1: ArrayLike, r2: ArrayLike, decimals: int = None) -> float:
     """ Calculates the euclidian distance bewteen two points.
 
     Parameters
@@ -46,6 +46,31 @@ def distance(r1: ArrayLike, r2: ArrayLike, decimals: Optional[int] = None) -> fl
     dist = math.sqrt(np.sum(np.square(r1 - r2)))
     if decimals is not None:
         dist = round(dist, decimals)
+    return dist
+
+
+def distances(r1: ArrayLike, r2: ArrayLike, decimals: int = None) -> np.ndarray:
+    """ Calculates the euclidian distance between multiple points.
+
+    Parameters
+    ----------
+    r1: array_like
+        First input point.
+    r2: array_like
+        Second input point of matching size.
+    decimals: int, optional
+        Optional decimals to round distance to.
+
+    Returns
+    -------
+    distance: np.ndarray
+    """
+
+    r1 = np.atleast_2d(r1)
+    r2 = np.atleast_2d(r2)
+    dist = np.sqrt(np.sum(np.square(r1 - r2), axis=1))
+    if decimals is not None:
+        dist = np.round(dist, decimals=decimals)
     return dist
 
 
@@ -124,7 +149,7 @@ def vindices(limits: Iterable[Sequence[int]], sort_axis: Optional[int] = 0,
 def vrange(start=None, *args,
            dtype: Optional[Union[int, str, np.dtype]] = None,
            sort_axis: Optional[int] = 0, **kwargs) -> np.ndarray:
-    """ Return evenly spaced vectors within a given interval.
+    """Return evenly spaced vectors within a given interval.
 
     Parameters
     ----------
@@ -293,31 +318,31 @@ class KDTree(cKDTree):
 
     def query(self, x=None, num_jobs=1, decimals=None, include_zero=False, compact=True):
         x = self.data if x is None else x
-        distances, neighbors = super().query(x, self.k, self.eps, self.p, self.max_dist, num_jobs)
+        dists, neighbors = super().query(x, self.k, self.eps, self.p, self.max_dist, num_jobs)
 
         # Remove zero-distance neighbors and convert dtype
-        if not include_zero and np.all(distances[:, 0] == 0):
-            distances = distances[:, 1:]
+        if not include_zero and np.all(dists[:, 0] == 0):
+            dists = dists[:, 1:]
             neighbors = neighbors[:, 1:]
         neighbors = neighbors.astype(min_dtype(self.n, signed=False))
 
         # Remove neighbors with distance larger than max_dist
         if self.max_dist < np.inf:
-            invalid = distances > self.max_dist
+            invalid = dists > self.max_dist
             neighbors[invalid] = self.n
-            distances[invalid] = np.inf
+            dists[invalid] = np.inf
 
         # Remove all invalid columns
         if compact:
-            mask = np.any(distances != np.inf, axis=0)
+            mask = np.any(dists != np.inf, axis=0)
             neighbors = neighbors[:, mask]
-            distances = distances[:, mask]
+            dists = dists[:, mask]
 
         # Round distances
         if decimals is not None:
-            distances = np.round(distances, decimals=decimals)
+            dists = np.round(dists, decimals=decimals)
 
-        return neighbors, distances
+        return neighbors, dists
 
 
 def compute_neighbors(positions, k=20, max_dist=np.inf, num_jobs=1, decimals=None, eps=0.,
@@ -325,8 +350,8 @@ def compute_neighbors(positions, k=20, max_dist=np.inf, num_jobs=1, decimals=Non
     # Build tree and query neighbors
     x = positions if x is None else x
     tree = KDTree(positions, k=k, max_dist=max_dist, eps=eps)
-    distances, neighbors = tree.query(x, num_jobs, decimals, include_zero, compact)
-    return neighbors, distances
+    dists, neighbors = tree.query(x, num_jobs, decimals, include_zero, compact)
+    return neighbors, dists
 
 
 class VoronoiTree:

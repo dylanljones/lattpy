@@ -1281,7 +1281,7 @@ class Lattice:
 
         Parameters
         ----------
-        idx: int
+        idx : int
             Site index in the cached lattice data.
 
         Returns
@@ -1289,6 +1289,46 @@ class Lattice:
         pos: (N) np.ndarray
         """
         return self.data.positions[idx]
+
+    def index_from_position(self, pos: ArrayLike, atol: float = 1e-4) -> Optional[int]:
+        """Returns the index of a given position.
+
+        Parameters
+        ----------
+        pos : (D) array_like
+            The position (x, y, ...) of the site.
+        atol : float, optional
+            The absolute tolerance for comparing positions
+
+        Returns
+        -------
+        index: int
+            The index (i) of the site
+        """
+        diff = self.data.positions - np.array(pos)[None, :]
+        indices = np.where(np.all(np.abs(diff) < atol, axis=1))[0]
+        if len(indices) == 0:
+            return None
+        return indices[0]
+
+    def index_from_lattice_index(self, ind: ArrayLike) -> Optional[int]:
+        """Returns the index of a given lattice index.
+
+        Parameters
+        ----------
+        ind : (D + 1) array_like
+            The lattice index (n_1, .., n_D, alpha) of the site.
+
+        Returns
+        -------
+        index: int
+            The index (i) of the site
+        """
+        diff = self.data.indices - np.array(ind)[None, :]
+        indices = np.where(np.all(np.abs(diff) < 1e-4, axis=1))[0]
+        if len(indices) == 0:
+            return None
+        return indices[0]
 
     def neighbors(self, site: int, distidx: Optional[int] = None,
                   unique: Optional[bool] = False) -> np.ndarray:
@@ -1298,7 +1338,7 @@ class Lattice:
         ----------
         site: int
             Site index in the cached lattice data.
-        distidx: int, default
+        distidx: int, optional
             Index of distance to neighbors, defauzlt is 0 (nearest neighbors).
         unique: bool, optional
             If 'True', each unique pair is only return once.

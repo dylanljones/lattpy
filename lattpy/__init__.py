@@ -87,7 +87,7 @@ def simple_rectangular(a1=1.0, a2=1.0, atom=None, neighbors=1):
 
 
 def centered_rectangular(a1=1.0, a2=1.0, atom=None, neighbors=1):
-    latt = Lattice([[a1, 0], [a1/2, a2/2]])
+    latt = Lattice([[a1, 0], [a1 / 2, a2 / 2]])
     latt.add_atom(atom=atom)
     latt.add_connections(neighbors)
     return latt
@@ -117,6 +117,6 @@ def simple_cubic(a=1.0, atom=None, neighbors=1):
 def nacl_structure(a=1.0, atom1="Na", atom2="Cl", neighbors=1):
     latt = Lattice.fcc(a)
     latt.add_atom(pos=[0, 0, 0], atom=atom1)
-    latt.add_atom(pos=[a/2, a/2, a/2], atom=atom2)
+    latt.add_atom(pos=[a / 2, a / 2, a / 2], atom=atom2)
     latt.add_connections(neighbors)
     return latt

@@ -139,7 +139,7 @@ def min_dtype(a: Union[int, float, np.ndarray, Iterable],
         The required dtype.
     """
     if signed:
-        a = -np.max(np.abs(a))-1
+        a = -np.max(np.abs(a)) - 1
     else:
         amin, amax = np.min(a), np.max(a)
         if amin < 0:
@@ -173,8 +173,8 @@ def chain(items: Sequence, cycle: bool = False) -> List:
     [['x', 'y'], ['y', 'z'], ['z', 'x']]
     """
     result = list()
-    for i in range(len(items)-1):
-        result.append([items[i], items[i+1]])
+    for i in range(len(items) - 1):
+        result.append([items[i], items[i + 1]])
     if cycle:
         result.append([items[-1], items[0]])
     return result

@@ -38,7 +38,7 @@ class DataMap:
 
     def __init__(self, alphas: np.ndarray, pairs: np.ndarray, distindices: np.ndarray):
         sites = np.arange(len(alphas), dtype=pairs.dtype)
-        self._map = np.append(-alphas-1, distindices)
+        self._map = np.append(-alphas - 1, distindices)
         self._indices = np.append(np.tile(sites, (2, 1)).T, pairs, axis=0)
 
     @property
@@ -80,7 +80,7 @@ class DataMap:
         """
         if alpha is None:
             return self._map < 0
-        return self._map == -alpha-1
+        return self._map == -alpha - 1
 
     def hopping(self, distidx: Optional[int] = None) -> np.ndarray:
         """Creates a mask of the site-pair elements with the given distance index.

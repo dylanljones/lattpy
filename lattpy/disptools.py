@@ -228,7 +228,7 @@ def plot_bands(kgrid, bands, k_label="k", disp_label="E(k)", grid="both",
 
 
 class DispersionPath:
-    """ This object is used to define a dispersion path between high symmetry (HS) points.
+    """Defines a dispersion path between high symmetry (HS) points.
 
     Examples
     --------
@@ -279,7 +279,8 @@ class DispersionPath:
             The coordinates of the HS point. If the dimension of the point is
             higher than the set dimension the point will be clipped.
         name: str, optional
-            Optional name of the point. If not specified the number of the point is used.
+            Optional name of the point. If not specified the number of the point
+            is used.
 
         Returns
         -------
@@ -304,7 +305,8 @@ class DispersionPath:
         points: array_like
             The coordinates of the HS points.
         names: list of str, optional
-            Optional names of the points. If not specified the number of the point is used.
+            Optional names of the points. If not specified the number of the point
+            is used.
 
         Returns
         -------
@@ -414,8 +416,10 @@ class DispersionPath:
 
     def plot_dispersion(self, disp, ax=None, show=True, **kwargs):
         scales = self.scales()
-        return plot_dispersion(disp, self.labels, scales=scales, ax=ax, show=show,  **kwargs)
+        return plot_dispersion(disp, self.labels, scales=scales, ax=ax, show=show,
+                               **kwargs)
 
     def plot_disp_dos(self, disp, dos, axs=None, show=True, **kwargs):
         scales = self.scales()
-        return plot_disp_dos(disp, dos, self.labels, scales=scales, axs=axs, show=show, **kwargs)
+        return plot_disp_dos(disp, dos, self.labels, scales=scales, axs=axs, show=show,
+                             **kwargs)

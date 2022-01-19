@@ -8,6 +8,8 @@
 # LICENSE file in the root directory and this permission notice shall
 # be included in all copies or substantial portions of the Software.
 
+# flake8: noqa
+
 """Symmetry operations and analyzers.
 
 References
@@ -64,7 +66,8 @@ def affine_from_axis_angle_trans(axis, angle: float, trans=None, degree: bool = 
     return affine_matrix(rot, trans)
 
 
-def affine_from_axis_angle_origin(axis, angle: float, origin=None, degree: bool = True):
+def affine_from_axis_angle_origin(
+        axis, angle: float, origin=None, degree: bool = True):
     if origin is None:
         origin = np.zeros(3)
     theta = np.deg2rad(angle) if degree else angle
@@ -192,7 +195,8 @@ class SymmetryOperation:
             points = points3d
 
         # Apply transformation
-        affine_points = np.concatenate([points, np.ones(points.shape[:-1] + (1,))], axis=-1)
+        affine_points = np.concatenate([points, np.ones(points.shape[:-1] + (1,))],
+                                       axis=-1)
         res = np.inner(affine_points, self.mat)[..., :-1]
 
         # cast back to original dim
@@ -401,7 +405,8 @@ class PointGroupAnalyzer:
                 atom = self.atoms[alpha]
                 wt = atom.weight
                 for i in range(3):
-                    inertia_tensor[i, i] += wt * (pos[(i + 1) % 3] ** 2 + pos[(i + 2) % 3] ** 2)
+                    inertia_tensor[i, i] += wt * (pos[(i + 1) % 3] ** 2 +
+                                                  pos[(i + 2) % 3] ** 2)
                 for i, j in [(0, 1), (1, 2), (0, 2)]:
                     inertia_tensor[i, j] += -wt * pos[i] * pos[j]
                     inertia_tensor[j, i] += -wt * pos[j] * pos[i]
@@ -434,7 +439,7 @@ class PointGroupAnalyzer:
                 self._symmetric_top()
 
     def is_valid_symop(self, symop: SymmetryOperation) -> bool:
-        """Check if a particular symmetry operation is a valid symmetry operation for a molecule.
+        """Check if a particular symmetry operation is a valid operation for a molecule.
 
         A valid symmetry operations maps all atoms to another equivalent atom.
 
@@ -451,7 +456,7 @@ class PointGroupAnalyzer:
         return is_valid_symop(self.positions, self.atoms, symop, self._tol)
 
     def add_valid_symop(self, symop: SymmetryOperation) -> bool:
-        """Check if a particular symmetry operation is valid and add to symmetry operations if so.
+        """Check if a particular symmetry operation is valid and adds it if so.
 
         A valid symmetry operations maps all atoms to another equivalent atom.
 
@@ -481,9 +486,9 @@ class PointGroupAnalyzer:
     def _find_mirror(self, axis) -> str:
         """Looks for a mirror symmetry of specified type about axis.
 
-        Possible types are "h" or "vd".  Horizontal (h) mirrors are perpendicular to the axis
-        while vertical (v) or diagonal (d) mirrors are parallel. "v" mirrors have atoms lying
-        on the mirror plane while "d" mirrors do not.
+        Possible types are "h" or "vd".  Horizontal (h) mirrors are perpendicular to
+        the axis while vertical (v) or diagonal (d) mirrors are parallel.
+        "v" mirrors have atoms lying on the mirror plane while "d" mirrors do not.
         """
         mirror_type = ""
 
@@ -522,11 +527,13 @@ class PointGroupAnalyzer:
         """Looks for R5, R4, R3 and R2 axes in spherical top molecules.
 
         Point group T molecules have only one unique 3-fold and one unique 2-fold axis.
-        O molecules have one unique 4, 3 and 2-fold axes. I molecules have a unique 5-fold axis.
+        O molecules have one unique 4, 3 and 2-fold axes. I molecules have a unique
+        5-fold axis.
         """
         rot_present = defaultdict(bool)
 
-        origin_site, dist_el_sites = cluster_sites(self.positions, self.atoms, self._tol)
+        origin_site, dist_el_sites = cluster_sites(self.positions, self.atoms,
+                                                   self._tol)
 
         test_set = min(dist_el_sites.values(), key=lambda s: len(s))
         coords = [self.positions[i] for i in test_set]
@@ -545,7 +552,8 @@ class PointGroupAnalyzer:
             if np.linalg.norm(test_axis) > self._tol:
                 for r in (3, 4, 5):
                     if not rot_present[r]:
-                        op = SymmetryOperation.rot_axis_trans(test_axis, 360 / r, name=f"C{r}")
+                        op = SymmetryOperation.rot_axis_trans(test_axis, 360 / r,
+                                                              name=f"C{r}")
                         rot_present[r] = self.is_valid_symop(op)
                         if rot_present[r]:
                             self.sym_ops.append(op)
@@ -567,7 +575,8 @@ class PointGroupAnalyzer:
             return np.linalg.norm(v) > self._tol
 
         valid_sets = []
-        origin_site, dist_el_sites = cluster_sites(self.positions, self.atoms, self._tol)
+        origin_site, dist_el_sites = cluster_sites(self.positions, self.atoms,
+                                                   self._tol)
         for test_set in dist_el_sites.values():
             valid_set = list(filter(not_on_axis, test_set))
             if len(valid_set) > 0:
@@ -578,7 +587,8 @@ class PointGroupAnalyzer:
     def _check_rot_sym(self, axis):
         """Determines the rotational symmetry about supplied axis.
 
-        Used only for symmetric top molecules which has possible rotational symmetry operations > 2.
+        Used only for symmetric top molecules which has possible rotational symmetry
+        operations > 2.
         """
         min_set = self._get_smallest_set_not_on_axis(axis)
         max_sym = len(min_set)
@@ -698,7 +708,8 @@ class PointGroupAnalyzer:
         elif mirror_type == "v":
             self.sch_symbol += "v"
         elif mirror_type == "":
-            op = SymmetryOperation.rotoreflection(main_axis, angle=180 / rot, name=f"S{rot}")
+            op = SymmetryOperation.rotoreflection(main_axis, angle=180 / rot,
+                                                  name=f"S{rot}")
             if self.is_valid_symop(op):
                 # self.sym_ops.append(op)
                 self.sch_symbol = f"S{2 * rot}"
@@ -723,8 +734,9 @@ class PointGroupAnalyzer:
     def _symmetric_top(self) -> None:
         """Handles symmetric top molecules.
 
-        Has one unique eigenvalue whose corresponding principal axis is a unique rotational axis.
-        More complex handling required to look for R2 axes perpendicular to this unique axis.
+        Has one unique eigenvalue whose corresponding principal axis is a unique
+        rotational axis. More complex handling required to look for R2 axes
+        perpendicular to this unique axis.
         """
         if abs(self.eigvals[0] - self.eigvals[1]) < self._eig_tol:
             ind = 2

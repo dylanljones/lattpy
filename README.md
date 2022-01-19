@@ -1,23 +1,34 @@
 # lattpy
 
-| Master | Dev  |
-|:-------|:-----|
-| [![codecov](https://codecov.io/gh/dylanljones/lattpy/branch/master/graph/badge.svg?token=P61R3IQKXC)](https://codecov.io/gh/dylanljones/lattpy) | [![codecov](https://codecov.io/gh/dylanljones/lattpy/branch/dev/graph/badge.svg?token=P61R3IQKXC)](https://codecov.io/gh/dylanljones/lattpy) |
+![PyPI](https://img.shields.io/pypi/v/lattpy?color=blue)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/lattpy)
+![PyPI - License](https://img.shields.io/pypi/l/lattpy?color=green)
+![GitHub Repo stars](https://img.shields.io/github/stars/dylanljones/lattpy?style=social)
 
 
-`lattpy` is a python package for modeling bravais lattices and constructing (finite) lattice structures.
+| Branch | Build | Tests |
+|:-------|:------|:------|
+| Master | [![Build Status](https://app.travis-ci.com/dylanljones/lattpy.svg?branch=master)](https://app.travis-ci.com/dylanljones/lattpy) | [![codecov](https://codecov.io/gh/dylanljones/lattpy/branch/master/graph/badge.svg?token=P61R3IQKXC)](https://codecov.io/gh/dylanljones/lattpy)  |
+| Dev    | [![Build Status](https://app.travis-ci.com/dylanljones/lattpy.svg?branch=dev)](https://app.travis-ci.com/dylanljones/lattpy) | [![codecov](https://codecov.io/gh/dylanljones/lattpy/branch/dev/graph/badge.svg?token=P61R3IQKXC)](https://codecov.io/gh/dylanljones/lattpy) |
 
 
-NOTE: This project is still under development and may change significantly!
+`lattpy` is a Python package for efficiently modeling Bravais lattices and constructing (finite) lattice structures.
+
+| :warning: **WARNING**: This project is still in development and might change significantly in the future! |
+|-----------------------------------------------------------------------------------------------------------|
+
 
 Installation
 ------------
-
 Install via pip
 ````commandline
 pip install lattpy
 ````
-or by downloading from GitHub and running
+or Github
+```commandline
+pip install git+https://github.com/dylanljones/lattpy.git@VERSION
+```
+or download/clone the package, navigate to the root directory and install via
 ````commandline
 python setup.py install
 ````

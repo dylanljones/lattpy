@@ -14,8 +14,8 @@
 
 `lattpy` is a Python package for efficiently modeling Bravais lattices and constructing (finite) lattice structures.
 
-| :warning: **WARNING**: This project is still in development and might significantly in the future! |
-|----------------------------------------------------------------------------------------------------|
+| :warning: **WARNING**: This project is still in development and might change significantly in the future! |
+|-----------------------------------------------------------------------------------------------------------|
 
 
 Installation

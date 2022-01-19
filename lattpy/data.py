@@ -12,7 +12,7 @@
 
 import logging
 from copy import deepcopy
-from typing import Optional, Iterable, Union, Sequence
+from typing import Iterable, Union, Sequence
 import numpy as np
 from .utils import ArrayLike, create_lookup_table
 
@@ -66,7 +66,7 @@ class DataMap:
         """The number of bytes stored in the datamap."""
         return self._map.nbytes + self._indices.nbytes
 
-    def onsite(self, alpha: Optional[int] = None) -> np.ndarray:
+    def onsite(self, alpha: int = None) -> np.ndarray:
         """Creates a mask of the site elements for the atoms with the given index.
 
         Parameters
@@ -82,7 +82,7 @@ class DataMap:
             return self._map < 0
         return self._map == -alpha - 1
 
-    def hopping(self, distidx: Optional[int] = None) -> np.ndarray:
+    def hopping(self, distidx: int = None) -> np.ndarray:
         """Creates a mask of the site-pair elements with the given distance index.
 
         Parameters
@@ -100,7 +100,7 @@ class DataMap:
         return self._map == distidx
 
     def fill(self, array: np.ndarray, hop: ArrayLike,
-             eps: Optional[ArrayLike] = 0.) -> np.ndarray:
+             eps: ArrayLike = 0.) -> np.ndarray:
         """Fills a data-array with the given values mapped to the right indices.
 
         Parameters
@@ -259,9 +259,9 @@ class LatticeData:
         """
         return self.get_index_limits()[:, :-1]
 
-    def neighbor_mask(self, site: int, distidx: Optional[int] = None,
-                      periodic: Optional[bool] = None,
-                      unique: Optional[bool] = False) -> np.ndarray:
+    def neighbor_mask(self, site: int, distidx: int = None,
+                      periodic: bool = None,
+                      unique: bool = False) -> np.ndarray:
         """Creates a mask for the valid neighbors of a specific site.
 
         Parameters
@@ -424,9 +424,9 @@ class LatticeData:
         mask = self.indices[:, -1] == alpha
         return self.positions[mask]
 
-    def get_neighbors(self, site: int, distidx: Optional[int] = None,
-                      periodic: Optional[bool] = None,
-                      unique: Optional[bool] = False) -> np.ndarray:
+    def get_neighbors(self, site: int, distidx: int = None,
+                      periodic: bool = None,
+                      unique: bool = False) -> np.ndarray:
         """Returns the neighbors of a lattice site.
 
         See the `neighbor_mask`-method for more information on parameters
@@ -439,9 +439,9 @@ class LatticeData:
         mask = self.neighbor_mask(site, distidx, periodic, unique)
         return self.neighbors[site, mask]
 
-    def get_neighbor_pos(self, site: int, distidx: Optional[int] = None,
-                         periodic: Optional[bool] = None,
-                         unique: Optional[bool] = False) -> np.ndarray:
+    def get_neighbor_pos(self, site: int, distidx: int = None,
+                         periodic: bool = None,
+                         unique: bool = False) -> np.ndarray:
         """Returns the neighbor positions of a lattice site.
 
         See the `neighbor_mask`-method for more information on parameters
@@ -456,7 +456,7 @@ class LatticeData:
             return np.array([])
         return self.positions[ind]
 
-    def iter_neighbors(self, site: int, unique: Optional[bool] = False) -> np.ndarray:
+    def iter_neighbors(self, site: int, unique: bool = False) -> np.ndarray:
         """Iterates over the neighbors of all distance levels.
 
         See the `neighbor_mask`-method for more information on parameters
@@ -492,9 +492,9 @@ class LatticeData:
             self._dmap = DataMap(alphas, pairs.astype(dtype), distindices)
         return self._dmap
 
-    def site_mask(self, mins: Optional[Sequence[Union[float, None]]] = None,
-                  maxs: Optional[Sequence[Union[float, None]]] = None,
-                  invert: Optional[bool] = False) -> np.ndarray:
+    def site_mask(self, mins: Sequence[Union[float, None]] = None,
+                  maxs: Sequence[Union[float, None]] = None,
+                  invert: bool = False) -> np.ndarray:
         """Creates a mask for the position data of the sites.
 
         Parameters
@@ -528,9 +528,9 @@ class LatticeData:
             mask &= (limits[0, ax] <= ax_data) & (ax_data <= limits[1, ax])
         return np.asarray(1 - mask if invert else mask)
 
-    def find_sites(self, mins: Optional[Sequence[Union[float, None]]] = None,
-                   maxs: Optional[Sequence[Union[float, None]]] = None,
-                   invert: Optional[bool] = False) -> np.ndarray:
+    def find_sites(self, mins: Sequence[Union[float, None]] = None,
+                   maxs: Sequence[Union[float, None]] = None,
+                   invert: bool = False) -> np.ndarray:
         """Returns the indices of sites inside or outside the given limits.
 
         Parameters

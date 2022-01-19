@@ -14,7 +14,7 @@ import warnings
 import itertools
 import numpy as np
 from collections import abc
-from typing import Union, Optional, Any, Iterator, Dict, Sequence, List, Tuple
+from typing import Union, Any, Iterator, Dict, Sequence, List, Tuple
 from .utils import SiteOccupiedError
 
 __all__ = ["Atom", "UnitCell"]
@@ -167,8 +167,8 @@ class UnitCell(abc.Sequence):
         """Return the positions of the atoms contained in the unitcell."""
         return np.asarray(self._positions)
 
-    def add(self, pos: Optional[Union[float, Sequence[float]]] = None,
-            atom: Optional[Union[str, Dict[str, Any], Atom]] = None,
+    def add(self, pos: Union[float, Sequence[float]] = None,
+            atom: Union[str, Dict[str, Any], Atom] = None,
             **kwargs) -> Atom:
         """Adds a new atom to the unitcell.
 
@@ -273,7 +273,7 @@ class UnitCell(abc.Sequence):
         return atom
 
     def get_atom_attrib(self, atom: Union[int, str, Atom], attrib: str,
-                        default: Optional[Any] = None) -> Any:
+                        default: Any = None) -> Any:
         """ Returns an attribute of a specific atom in the unit cell.
 
         Parameters
@@ -293,7 +293,7 @@ class UnitCell(abc.Sequence):
         return atom.get(attrib, default)
 
     def get_atom_positions(self, atom: Union[int, str, Atom],
-                           atleast2d: Optional[bool] = True) -> Iterator[np.ndarray]:
+                           atleast2d: bool = True) -> Iterator[np.ndarray]:
         """Return a list of all positions of a specific atom in the unitcell.
 
         Parameters
@@ -314,7 +314,7 @@ class UnitCell(abc.Sequence):
             if at == atom:
                 yield pos
 
-    def get_positions(self, atleast2d: Optional[bool] = True
+    def get_positions(self, atleast2d: bool = True
                       ) -> Dict[Any, List[np.ndarray]]:
         """Returns a dict containing the positions of all unique atoms in the unitcell.
 

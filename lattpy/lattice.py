@@ -102,48 +102,47 @@ class Lattice:
                      self.dim, self._vectors)
 
     @classmethod
-    def chain(cls, a: Optional[float] = 1.0, **kwargs) -> 'Lattice':
+    def chain(cls, a: float = 1.0, **kwargs) -> 'Lattice':
         return cls(a, **kwargs)
 
     @classmethod
-    def square(cls, a: Optional[float] = 1.0, **kwargs) -> 'Lattice':
+    def square(cls, a: float = 1.0, **kwargs) -> 'Lattice':
         return cls(a * np.eye(2), **kwargs)
 
     @classmethod
-    def rectangular(cls, a1: Optional[float] = 1., a2: Optional[float] = 1.,
+    def rectangular(cls, a1: float = 1., a2: float = 1.,
                     **kwargs) -> 'Lattice':
         return cls(np.array([[a1, 0], [0, a2]]), **kwargs)
 
     @classmethod
-    def hexagonal(cls, a: Optional[float] = 1.0, **kwargs) -> 'Lattice':
+    def hexagonal(cls, a: float = 1.0, **kwargs) -> 'Lattice':
         vectors = a / 2 * np.array([[3, np.sqrt(3)], [3, -np.sqrt(3)]])
         return cls(vectors, **kwargs)
 
     @classmethod
-    def oblique(cls, alpha: float, a1: Optional[float] = 1.0,
-                a2: Optional[float] = 1.0, **kwargs) -> 'Lattice':
+    def oblique(cls, alpha: float, a1: float = 1.0, a2: float = 1.0,
+                **kwargs) -> 'Lattice':
         vectors = np.array([[a1, 0], [a2 * np.cos(alpha), a2 * np.sin(alpha)]])
         return cls(vectors, **kwargs)
 
     @classmethod
-    def hexagonal3d(cls, a: Optional[float] = 1., az: Optional[float] = 1.,
-                    **kwargs) -> 'Lattice':
+    def hexagonal3d(cls, a: float = 1., az: float = 1., **kwargs) -> 'Lattice':
         vectors = a / 2 * np.array([[3, np.sqrt(3), 0],
                                     [3, -np.sqrt(3), 0],
                                     [0, 0, az]])
         return cls(vectors, **kwargs)
 
     @classmethod
-    def sc(cls, a: Optional[float] = 1.0, **kwargs) -> 'Lattice':
+    def sc(cls, a: float = 1.0, **kwargs) -> 'Lattice':
         return cls(a * np.eye(3), **kwargs)
 
     @classmethod
-    def fcc(cls, a: Optional[float] = 1.0, **kwargs) -> 'Lattice':
+    def fcc(cls, a: float = 1.0, **kwargs) -> 'Lattice':
         vectors = a / 2 * np.array([[1, 1, 0], [1, 0, 1], [0, 1, 1]])
         return cls(vectors, **kwargs)
 
     @classmethod
-    def bcc(cls, a: Optional[float] = 1.0, **kwargs) -> 'Lattice':
+    def bcc(cls, a: float = 1.0, **kwargs) -> 'Lattice':
         vectors = a / 2 * np.array([[1, 1, 1], [1, -1, 1], [-1, 1, 1]])
         return cls(vectors, **kwargs)
 
@@ -257,7 +256,7 @@ class Lattice:
         return np.inner(basis_coords, self._vectors)
 
     def translate(self, nvec: Union[int, Sequence[int], Sequence[Sequence[int]]],
-                  r: Optional[Union[float, Sequence[float]]] = 0.0) -> np.ndarray:
+                  r: Union[float, Sequence[float]] = 0.0) -> np.ndarray:
         r""" Translates the given postion vector r by the translation vector n.
 
         The position is calculated using the translation vector .math`n` and the
@@ -302,8 +301,7 @@ class Lattice:
         r = x - self.translate(nvec)
         return nvec, r
 
-    def is_reciprocal(self, vecs: vecs_t,
-                      tol: Optional[float] = RVEC_TOLERANCE) -> bool:
+    def is_reciprocal(self, vecs: vecs_t, tol: float = RVEC_TOLERANCE) -> bool:
         r""" Checks if the given vectors are reciprocal to the lattice vectors.
 
         The lattice- and reciprocal vectors .math'a_i' and .math'b_i' must satisfy
@@ -332,8 +330,8 @@ class Lattice:
                 return False
         return True
 
-    def reciprocal_vectors(self, tol: Optional[float] = RVEC_TOLERANCE,
-                           check: Optional[bool] = False) -> np.ndarray:
+    def reciprocal_vectors(self, tol: float = RVEC_TOLERANCE,
+                           check: bool = False) -> np.ndarray:
         r""" Computes the reciprocal basis vectors of the bravais lattice.
 
         The lattice- and reciprocal vectors .math'a_i' and .math'b_i' must satisfy
@@ -381,7 +379,7 @@ class Lattice:
 
         return rvecs
 
-    def reciprocal_lattice(self, min_negative: Optional[bool] = False) -> 'Lattice':
+    def reciprocal_lattice(self, min_negative: bool = False) -> 'Lattice':
         """Creates the lattice in reciprocal space
 
         Parameters
@@ -398,9 +396,9 @@ class Lattice:
         rlatt = self.__class__(rvecs)
         return rlatt
 
-    def get_neighbor_cells(self, distidx: Optional[int] = 0,
-                           include_origin: Optional[bool] = True,
-                           comparison: Optional[Callable] = np.isclose) -> np.ndarray:
+    def get_neighbor_cells(self, distidx: int = 0,
+                           include_origin: bool = True,
+                           comparison: Callable = np.isclose) -> np.ndarray:
         """ Find all neighboring unit cells.
 
         Parameters
@@ -453,7 +451,7 @@ class Lattice:
         positions = np.dot(nvecs, self.vectors[np.newaxis, :, :])[:, 0, :]
         return WignerSeitzCell(positions)
 
-    def brillouin_zone(self, min_negative: Optional[bool] = False) -> WignerSeitzCell:
+    def brillouin_zone(self, min_negative: bool = False) -> WignerSeitzCell:
         """Computes the first Brillouin-zone of the lattice structure.
 
         Constructs the Wigner-Seitz cell of the reciprocal lattice
@@ -474,10 +472,10 @@ class Lattice:
 
     # ==================================================================================
 
-    def add_atom(self, pos: Optional[Union[float, Sequence[float]]] = None,
-                 atom: Optional[Union[str, Dict[str, Any], Atom]] = None,
-                 relative: Optional[bool] = False,
-                 neighbors: Optional[int] = 0,
+    def add_atom(self, pos: Union[float, Sequence[float]] = None,
+                 atom: Union[str, Dict[str, Any], Atom] = None,
+                 relative: bool = False,
+                 neighbors: int = 0,
                  **kwargs) -> Atom:
         """ Adds a site to the basis of the lattice unit-cell.
 
@@ -784,8 +782,8 @@ class Lattice:
         logger.debug("Distance-matrix:\n%s", base_distance_matrix)
         logger.debug("Distances:\n%s", distances)
 
-    def get_position(self, nvec: Optional[Union[int, Sequence[int]]] = None,
-                     alpha: Optional[int] = 0) -> np.ndarray:
+    def get_position(self, nvec: Union[int, Sequence[int]] = None,
+                     alpha: int = 0) -> np.ndarray:
         """ Returns the position for a given translation vector and site index
 
         Parameters
@@ -836,9 +834,9 @@ class Lattice:
         n = np.asarray(np.round(self._vectors_inv @ pos, decimals=0), dtype="int")
         return n
 
-    def get_neighbors(self, nvec: Optional[Union[int, Sequence[int]]] = None,
-                      alpha: Optional[int] = 0,
-                      distidx: Optional[int] = 0) -> np.ndarray:
+    def get_neighbors(self, nvec: Union[int, Sequence[int]] = None,
+                      alpha: int = 0,
+                      distidx: int = 0) -> np.ndarray:
         """Returns the neighour-indices of a given site by transforming neighbor data.
 
         Raises
@@ -876,9 +874,9 @@ class Lattice:
 
         return indices_transformed
 
-    def get_neighbor_positions(self, nvec: Optional[Union[int, Sequence[int]]] = None,
-                               alpha: Optional[int] = 0,
-                               distidx: Optional[int] = 0) -> np.ndarray:
+    def get_neighbor_positions(self, nvec: Union[int, Sequence[int]] = None,
+                               alpha: int = 0,
+                               distidx: int = 0) -> np.ndarray:
         """Returns the neighour-positions of a given site by transforming neighbor data.
 
         Raises
@@ -914,9 +912,8 @@ class Lattice:
 
         return positions
 
-    def get_neighbor_vectors(self, alpha: Optional[int] = 0,
-                             distidx: Optional[int] = 0,
-                             include_zero: Optional[bool] = False) -> np.ndarray:
+    def get_neighbor_vectors(self, alpha: int = 0, distidx: int = 0,
+                             include_zero: bool = False) -> np.ndarray:
         """Returns the neighours of a given site by transforming neighbor data.
 
         Raises
@@ -951,8 +948,8 @@ class Lattice:
 
         return vecs
 
-    def fourier_weights(self, k: ArrayLike, alpha: Optional[int] = 0,
-                        distidx: Optional[int] = 0) -> np.ndarray:
+    def fourier_weights(self, k: ArrayLike, alpha: int = 0,
+                        distidx: int = 0) -> np.ndarray:
         """Returns the Fourier-weight for a given vector.
 
         Parameters
@@ -973,8 +970,8 @@ class Lattice:
         weights = np.sum(np.exp(1j * np.inner(k, vecs)))
         return weights
 
-    def get_base_atom_dict(self, atleast2d: Optional[bool] = True) \
-            -> Dict[Any, List[Union[np.ndarray, Any]]]:
+    def get_base_atom_dict(self, atleast2d: bool = True) -> \
+            Dict[Any, List[Union[np.ndarray, Any]]]:
         """Returns a dictionary containing the positions for eatch of the base atoms.
 
         Parameters
@@ -998,11 +995,11 @@ class Lattice:
         return atom_pos
 
     def build_translation_vectors(self, shape: Union[int, Sequence[int]],
-                                  relative: Optional[bool] = False,
-                                  pos: Optional[Union[float, Sequence[float]]] = None,
-                                  check: Optional[bool] = True,
+                                  relative: bool = False,
+                                  pos: Union[float, Sequence[float]] = None,
+                                  check: bool = True,
                                   dtype: Union[int, np.dtype] = None,
-                                  oversample: Optional[float] = 0.0,
+                                  oversample: float = 0.0,
                                   ) -> np.ndarray:
         """Constructs the translation vectors .math:`n` in the basis for a given shape.
 
@@ -1080,9 +1077,9 @@ class Lattice:
 
     def check_points(self, points: np.ndarray,
                      shape: Union[int, Sequence[int]],
-                     relative: Optional[bool] = False,
-                     pos: Optional[Union[float, Sequence[float]]] = None,
-                     eps: Optional[float] = 1e-3,
+                     relative: bool = False,
+                     pos: Union[float, Sequence[float]] = None,
+                     eps: float = 1e-3,
                      ) -> np.ndarray:
         """Returns a mask for the points in the given shape.
 
@@ -1122,12 +1119,12 @@ class Lattice:
         return mask
 
     def build_indices(self, shape: Union[int, Sequence[int]],
-                      relative: Optional[bool] = False,
-                      pos: Optional[Union[float, Sequence[float]]] = None,
+                      relative: bool = False,
+                      pos: Union[float, Sequence[float]] = None,
                       check: bool = True,
-                      callback: Optional[Callable] = None,
+                      callback: Callable = None,
                       dtype: Union[int, str, np.dtype] = None,
-                      return_pos: Optional[bool] = False
+                      return_pos: bool = False
                       ) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
         """Constructs the lattice indices .math:`(n, \alpha)` in the given shape.
 
@@ -1236,7 +1233,7 @@ class Lattice:
         return neighbors, distances
 
     def compute_neighbors(self, indices: ArrayLike, positions: ArrayLike,
-                          num_jobs: Optional[int] = 1) -> Tuple[np.ndarray, np.ndarray]:
+                          num_jobs: int = 1) -> Tuple[np.ndarray, np.ndarray]:
         """ Computes the neighbors for the given points.
 
         Parameters
@@ -1336,7 +1333,7 @@ class Lattice:
 
         Returns
         -------
-        index: int
+        index: int or None
             The index (i) of the site
         """
         diff = self.data.positions - np.array(pos)[None, :]
@@ -1355,7 +1352,7 @@ class Lattice:
 
         Returns
         -------
-        index: int
+        index: int or None
             The index (i) of the site
         """
         diff = self.data.indices - np.array(ind)[None, :]
@@ -1364,8 +1361,8 @@ class Lattice:
             return None
         return indices[0]
 
-    def neighbors(self, site: int, distidx: Optional[int] = None,
-                  unique: Optional[bool] = False) -> np.ndarray:
+    def neighbors(self, site: int, distidx: int = None,
+                  unique: bool = False) -> np.ndarray:
         """ Returns the neighours of a given site in the cached lattice data.
 
         Parameters
@@ -1383,7 +1380,7 @@ class Lattice:
         """
         return self.data.get_neighbors(site, distidx, unique=unique)
 
-    def nearest_neighbors(self, idx: int, unique: Optional[bool] = False) -> np.ndarray:
+    def nearest_neighbors(self, idx: int, unique: bool = False) -> np.ndarray:
         """ Returns the nearest neighours of a given site in the cached lattice data.
 
         Parameters
@@ -1399,7 +1396,7 @@ class Lattice:
         """
         return self.neighbors(idx, 0, unique)
 
-    def iter_neighbors(self, site: int, unique: Optional[bool] = False
+    def iter_neighbors(self, site: int, unique: bool = False
                        ) -> Iterator[Tuple[int, np.ndarray]]:
         """Iterates over the neighbors of all distances of a given site.
 
@@ -1438,12 +1435,12 @@ class Lattice:
         return None
 
     def build(self, shape: Union[int, Sequence[int]],
-              relative: Optional[bool] = False,
-              pos: Optional[Union[float, Sequence[float]]] = None,
-              check: Optional[bool] = True,
-              num_jobs: Optional[int] = -1,
-              periodic: Optional[Union[int, Sequence[int]]] = None,
-              callback: Optional[Callable] = None,
+              relative: bool = False,
+              pos: Union[float, Sequence[float]] = None,
+              check: bool = True,
+              num_jobs: int = -1,
+              periodic: Union[bool, int, Sequence[int]] = None,
+              callback: Callable = None,
               dtype: Union[int, str, np.dtype] = None
               ) -> LatticeData:
         """Constructs the indices and neighbors of a finite size lattice.
@@ -1576,7 +1573,7 @@ class Lattice:
 
         return pidx, pdists, paxs
 
-    def set_periodic(self, axis: Optional[Union[int, Sequence[int]]] = 0):
+    def set_periodic(self, axis: Union[bool, int, Sequence[int]]):
         """ Sets periodic boundary conditions along the given axis.
 
         Notes
@@ -1591,11 +1588,14 @@ class Lattice:
 
         Parameters
         ----------
-        axis: int or (N) array_like, optional
+        axis: bool or int or (N) array_like
             One or multiple axises to apply the periodic boundary conditions.
-            The default is the x-direction. If the axis is `None` the perodic boundary
+            If the axis is `None` the perodic boundary
             conditions will be removed.
         """
+        if isinstance(axis, bool) and axis is True:
+            axis = np.arange(self.dim)
+
         logger.debug("Computing periodic neighbors along axis %s", axis)
         if self.shape is None:
             raise NotBuiltError()
@@ -1691,7 +1691,7 @@ class Lattice:
             lines.append(f"{head:<15}" + "; ".join(str(x) for x in values))
         return "\n".join(lines)
 
-    def dump(self, file: Optional[Union[str, int, bytes]] = 'tmp.latt') -> None:
+    def dump(self, file: Union[str, int, bytes] = 'tmp.latt') -> None:
         """Save the data of the ``Lattice`` instance.
 
         Parameters
@@ -1705,7 +1705,7 @@ class Lattice:
             pickle.dump(self, f)
 
     @classmethod
-    def load(cls, file: Optional[Union[str, int, bytes]] = 'tmp.latt') -> 'Lattice':
+    def load(cls, file: Union[str, int, bytes] = 'tmp.latt') -> 'Lattice':
         """Load data of a saved ``Lattice`` instance.
 
         Parameters
@@ -1725,16 +1725,16 @@ class Lattice:
         sha = hashlib.md5(self.dumps().encode("utf-8"))
         return int(sha.hexdigest(), 16)
 
-    def plot_cell(self, show: Optional[bool] = True,
-                  ax: Optional[Union[plt.Axes, Axes3D]] = None,
-                  lw: Optional[float] = 1.,
-                  color: Optional[Union[str, float]] = 'k',
-                  alpha: Optional[float] = 0.5,
-                  legend: Optional[bool] = True,
-                  margins: Optional[Union[Sequence[float], float]] = 0.25,
-                  show_cell: Optional[bool] = True,
-                  show_vecs: Optional[bool] = True,
-                  show_neighbors: Optional[bool] = True) -> Union[plt.Axes, Axes3D]:
+    def plot_cell(self, show: bool = True,
+                  ax: Union[plt.Axes, Axes3D] = None,
+                  lw: float = 1.,
+                  color: Union[str, float] = 'k',
+                  alpha: float = 0.5,
+                  legend: bool = True,
+                  margins: Union[Sequence[float], float] = 0.25,
+                  show_cell: bool = True,
+                  show_vecs: bool = True,
+                  show_neighbors: bool = True) -> Union[plt.Axes, Axes3D]:
         """ Plot the unit cell of the lattice.
 
         Parameters
@@ -1836,16 +1836,16 @@ class Lattice:
             plt.show()
         return ax
 
-    def plot(self, show: Optional[bool] = True,
-             ax: Optional[Union[plt.Axes, Axes3D]] = None,
-             lw: Optional[float] = 1.,
-             color: Optional[Union[str, float, int]] = 'k',
-             margins: Optional[Union[Sequence[float], float]] = 0.1,
-             legend: Optional[bool] = True,
-             grid: Optional[bool] = False,
-             show_periodic: Optional[bool] = True,
-             show_indices: Optional[bool] = False,
-             show_cell: Optional[bool] = False) -> Union[plt.Axes, Axes3D]:
+    def plot(self, show: bool = True,
+             ax: Union[plt.Axes, Axes3D] = None,
+             lw: float = 1.,
+             color: Union[str, float, int] = 'k',
+             margins: Union[Sequence[float], float] = 0.1,
+             legend: bool = True,
+             grid: bool = False,
+             show_periodic: bool = True,
+             show_indices: bool = False,
+             show_cell: bool = False) -> Union[plt.Axes, Axes3D]:
         """Plot the cached lattice.
 
         Parameters

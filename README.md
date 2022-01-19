@@ -6,7 +6,7 @@
 ![GitHub Repo stars](https://img.shields.io/github/stars/dylanljones/lattpy?style=social)
 
 
-| Branch | Build | Tests |
+|  |  |  |
 |:-------|:------|:------|
 | Master | [![Build Status](https://app.travis-ci.com/dylanljones/lattpy.svg?branch=master)](https://app.travis-ci.com/dylanljones/lattpy) | [![codecov](https://codecov.io/gh/dylanljones/lattpy/branch/master/graph/badge.svg?token=P61R3IQKXC)](https://codecov.io/gh/dylanljones/lattpy)  |
 | Dev    | [![Build Status](https://app.travis-ci.com/dylanljones/lattpy.svg?branch=dev)](https://app.travis-ci.com/dylanljones/lattpy) | [![codecov](https://codecov.io/gh/dylanljones/lattpy/branch/dev/graph/badge.svg?token=P61R3IQKXC)](https://codecov.io/gh/dylanljones/lattpy) |

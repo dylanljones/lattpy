@@ -2,7 +2,7 @@
 #
 # This code is part of lattpy.
 #
-# Copyright (c) 2021, Dylan Jones
+# Copyright (c) 2022, Dylan Jones
 #
 # This code is licensed under the MIT License. The copyright notice in the
 # LICENSE file in the root directory and this permission notice shall
@@ -21,9 +21,10 @@ from .plotting import draw_points, draw_vectors, draw_lines, draw_surfaces
 
 
 __all__ = [
-    "distance", "distances", "interweave", "vindices", "vrange", "cell_size", "cell_volume",
-    "compute_vectors", "compute_neighbors", "KDTree", "VoronoiTree", "WignerSeitzCell",
-    "rx", "ry", "rz", "rotate2d", "rotate3d", "build_periodic_translation_vector"
+    "distance", "distances", "interweave", "vindices", "vrange", "cell_size",
+    "cell_volume", "compute_vectors", "compute_neighbors", "KDTree", "VoronoiTree",
+    "WignerSeitzCell", "rx", "ry", "rz", "rotate2d", "rotate3d",
+    "build_periodic_translation_vector"
 ]
 
 
@@ -146,6 +147,7 @@ def vindices(limits: Iterable[Sequence[int]], sort_axis: Optional[int] = 0,
     return nvecs
 
 
+# noinspection PyIncorrectDocstring
 def vrange(start=None, *args,
            dtype: Optional[Union[int, str, np.dtype]] = None,
            sort_axis: Optional[int] = 0, **kwargs) -> np.ndarray:
@@ -316,9 +318,11 @@ class KDTree(cKDTree):
     def query_pairs(self, r):
         return super().query_pairs(r, self.p, self.eps)
 
-    def query(self, x=None, num_jobs=1, decimals=None, include_zero=False, compact=True):
+    def query(self, x=None, num_jobs=1, decimals=None, include_zero=False,
+              compact=True):
         x = self.data if x is None else x
-        dists, neighbors = super().query(x, self.k, self.eps, self.p, self.max_dist, num_jobs)
+        dists, neighbors = super().query(x, self.k, self.eps, self.p,
+                                         self.max_dist, num_jobs)
 
         # Remove zero-distance neighbors and convert dtype
         if not include_zero and np.all(dists[:, 0] == 0):
@@ -345,8 +349,8 @@ class KDTree(cKDTree):
         return neighbors, dists
 
 
-def compute_neighbors(positions, k=20, max_dist=np.inf, num_jobs=1, decimals=None, eps=0.,
-                      include_zero=False, compact=True, x=None):
+def compute_neighbors(positions, k=20, max_dist=np.inf, num_jobs=1, decimals=None,
+                      eps=0., include_zero=False, compact=True, x=None):
     # Build tree and query neighbors
     x = positions if x is None else x
     tree = KDTree(positions, k=k, max_dist=max_dist, eps=eps)
@@ -384,8 +388,8 @@ class VoronoiTree:
     def query(self, x, k=1, eps=0):
         return self.tree.query(x, k, eps)  # noqa
 
-    def draw(self, ax=None, color="C0", size=3, lw=1, alpha=0.15, point_color="k", point_size=3,
-             draw_data=True, points=True, draw=True, fill=True):
+    def draw(self, ax=None, color="C0", size=3, lw=1, alpha=0.15, point_color="k",
+             point_size=3, draw_data=True, points=True, draw=True, fill=True):
 
         if ax is None:
             fig = plt.figure()
@@ -404,7 +408,9 @@ class VoronoiTree:
             draw_lines(ax, segments, color=color, lw=lw)
         elif self.dim == 3:
             if draw:
-                segments = np.array([self.vertices[np.append(i, i[0])] for i in self.edges])
+                segments = np.array(
+                    [self.vertices[np.append(i, i[0])] for i in self.edges]
+                )
                 draw_lines(ax, segments, color=color, lw=lw)
             if fill:
                 surfaces = np.array([self.vertices[i] for i in self.edges])
@@ -433,7 +439,8 @@ class WignerSeitzCell(VoronoiTree):
 
     @property
     def limits(self):
-        return np.array([np.min(self.vertices, axis=0), np.max(self.vertices, axis=0)]).T
+        return np.array([np.min(self.vertices, axis=0),
+                         np.max(self.vertices, axis=0)]).T
 
     @property
     def size(self):
@@ -459,7 +466,8 @@ class WignerSeitzCell(VoronoiTree):
         elif steps is not None:
             grid = np.array(np.meshgrid(*self.arange(steps, offset)))
         else:
-            raise ValueError("Either the number of points or the step size muste be specified")
+            raise ValueError("Either the number of points or the step size "
+                             "must be specified")
 
         if check:
             lengths = grid.shape[1:]

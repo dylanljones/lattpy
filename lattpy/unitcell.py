@@ -2,7 +2,7 @@
 #
 # This code is part of lattpy.
 #
-# Copyright (c) 2021, Dylan Jones
+# Copyright (c) 2022, Dylan Jones
 #
 # This code is licensed under the MIT License. The copyright notice in the
 # LICENSE file in the root directory and this permission notice shall
@@ -145,7 +145,8 @@ class UnitCell(abc.Sequence):
     def __init__(self):
         """Initialize a unitcell instance."""
         super().__init__()
-        warnings.warn("The UnitCell-object is deprecated and will be removed in a future version.",
+        warnings.warn("The UnitCell-object is deprecated and will be removed in "
+                      "a future version.",
                       DeprecationWarning)
         self._num_base = 0
         self._atoms = list()
@@ -169,7 +170,7 @@ class UnitCell(abc.Sequence):
     def add(self, pos: Optional[Union[float, Sequence[float]]] = None,
             atom: Optional[Union[str, Dict[str, Any], Atom]] = None,
             **kwargs) -> Atom:
-        """ Adds a new atom to the unitcell.
+        """Adds a new atom to the unitcell.
 
         Raises
         ------
@@ -182,9 +183,11 @@ class UnitCell(abc.Sequence):
             Position of site in the unit-cell. The default is the origin of the cell.
             The size of the array has to match the dimension of the lattice.
         atom: str or dict or Atom, optional
-            Identifier of the site. If a string is passed, a new Atom instance is created.
+            Identifier of the site. If a string is passed, a new `Atom`
+            instance is created.
         **kwargs
-            Keyword arguments for ´Atom´ constructor. Only used if a new Atom instance is created.
+            Keyword arguments for ´Atom´ constructor. Only used if a new `Atom`
+            instance is created.
 
         Returns
         -------
@@ -311,7 +314,8 @@ class UnitCell(abc.Sequence):
             if at == atom:
                 yield pos
 
-    def get_positions(self, atleast2d: Optional[bool] = True) -> Dict[Any, List[np.ndarray]]:
+    def get_positions(self, atleast2d: Optional[bool] = True
+                      ) -> Dict[Any, List[np.ndarray]]:
         """Returns a dict containing the positions of all unique atoms in the unitcell.
 
         Parameters
@@ -385,7 +389,7 @@ class UnitCell(abc.Sequence):
         return self._atoms[item], self.positions[item]
 
     def __dict__(self) -> Dict[Any, List[Union[np.ndarray, Any]]]:
-        """Returns a dict containing the positions of all unique atoms in the unitcell"""
+        """Returns a dict of the positions of all unique atoms in the unitcell."""
         return self.get_positions(atleast2d=False)
 
     def __repr__(self) -> str:

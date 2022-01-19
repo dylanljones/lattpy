@@ -2,7 +2,7 @@
 #
 # This code is part of lattpy.
 #
-# Copyright (c) 2021, Dylan Jones
+# Copyright (c) 2022, Dylan Jones
 #
 # This code is licensed under the MIT License. The copyright notice in the
 # LICENSE file in the root directory and this permission notice shall
@@ -31,7 +31,7 @@ logger = logging.getLogger("lattpy")
 _CH = logging.StreamHandler()
 _CH.setLevel(logging.DEBUG)
 
-_FRMT_STR = "[%(asctime)s] %(levelname)-8s - %(name)-15s - %(funcName)-25s -  %(message)s"
+_FRMT_STR = "[%(asctime)s] %(levelname)-8s - %(name)-15s - %(message)s"
 _FRMT = logging.Formatter(_FRMT_STR, datefmt='%H:%M:%S')
 
 _CH.setFormatter(_FRMT)             # Add formatter to stream handler
@@ -65,7 +65,8 @@ class ConfigurationError(LatticeError):
 class SiteOccupiedError(ConfigurationError):
 
     def __init__(self, atom, pos):
-        super().__init__(f"Can't add {atom} to lattice, position {pos} already occupied!")
+        super().__init__(f"Can't add {atom} to lattice, "
+                         f"position {pos} already occupied!")
 
 
 class NoAtomsError(ConfigurationError):
@@ -92,8 +93,9 @@ class NotBuiltError(ConfigurationError):
         super().__init__(msg, hint)
 
 
-def create_lookup_table(array: ArrayLike, dtype: Optional[Union[str, np.dtype]] = np.uint8) \
-        -> Tuple[np.ndarray, np.ndarray]:
+def create_lookup_table(array: ArrayLike,
+                        dtype: Optional[Union[str, np.dtype]] = np.uint8
+                        ) -> Tuple[np.ndarray, np.ndarray]:
     """Converts the given array to an array of indices linked to the unique values.
 
     Parameters

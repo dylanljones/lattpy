@@ -2,7 +2,7 @@
 #
 # This code is part of lattpy.
 #
-# Copyright (c) 2021, Dylan Jones
+# Copyright (c) 2022, Dylan Jones
 #
 # This code is licensed under the MIT License. The copyright notice in the
 # LICENSE file in the root directory and this permission notice shall
@@ -234,14 +234,14 @@ class SymmetryOperation:
         return cls(mat, tol, name)
 
     @classmethod
-    def rot_axis_trans(cls, axis, angle: float, trans=None, degree: bool = True, tol=None,
-                       name="C"):
+    def rot_axis_trans(cls, axis, angle: float, trans=None, degree: bool = True,
+                       tol=None, name="C"):
         mat = affine_from_axis_angle_trans(axis, angle, trans, degree)
         return cls(mat, tol, name)
 
     @classmethod
-    def rot_axis_origin(cls, axis, angle: float, origin=None, degree: bool = True, tol=None,
-                        name="C"):
+    def rot_axis_origin(cls, axis, angle: float, origin=None, degree: bool = True,
+                        tol=None, name="C"):
         mat = affine_from_axis_angle_origin(axis, angle, origin, degree)
         return cls(mat, tol, name)
 
@@ -256,8 +256,8 @@ class SymmetryOperation:
         return cls(mat, tol, name)
 
     @classmethod
-    def rotoreflection(cls, axis, angle, origin=None, degree: bool = True, tol: float = None,
-                       name="S"):
+    def rotoreflection(cls, axis, angle, origin=None, degree: bool = True,
+                       tol: float = None, name="S"):
         mat = affine_rotoreflection(axis, angle, origin, degree)
         return cls(mat, tol, name)
 
@@ -305,7 +305,8 @@ def find_unique_symops(positions, atoms, symops, tol=1e-4):
         # Check for equivalent configs
         for other_symop, other_pos in unique_symops.items():
             if is_equivalent(transformed, atoms, other_pos, tol):
-                logger.debug("%s is equivalent to %s", symop.__repr__(), other_symop.__repr__())
+                logger.debug("%s is equivalent to %s", symop.__repr__(),
+                             other_symop.__repr__())
                 break
         else:
             logger.debug("Found unique symop %s", symop.__repr__())
@@ -328,7 +329,8 @@ def cluster_sites(positions, atoms, tol):
     origin : int or None
         Index of site at the center of mass. None if there are no origin atoms.
     clustered : dict
-        Dict of clustered sites with format {(avg_dist, species_and_occu): [list of sites]}.
+        Dictionary of clustered sites with format {(avg_dist, species_and_occu):
+        [list of sites]}.
     """
     num_atoms = len(positions)
     # Cluster works for dim > 2 data. We just add a dummy 0 for second coordinate.
@@ -423,7 +425,8 @@ class PointGroupAnalyzer:
             elif abs(v1 - v2) < tol and abs(v1 - v3) < tol:  # All same
                 logger.debug("Spherical top molecule detected")
                 self._spherical_top()
-            elif abs(v1 - v2) > tol and abs(v1 - v3) > tol and abs(v2 - v3) > tol:  # All different
+            elif abs(v1 - v2) > tol and abs(v1 - v3) > tol and abs(v2 - v3) > tol:
+                # All different
                 logger.debug("Asymmetric top molecule detected")
                 self._asymmetric_top()
             else:

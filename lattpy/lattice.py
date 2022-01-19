@@ -2,7 +2,7 @@
 #
 # This code is part of lattpy.
 #
-# Copyright (c) 2021, Dylan Jones
+# Copyright (c) 2022, Dylan Jones
 #
 # This code is licensed under the MIT License. The copyright notice in the
 # LICENSE file in the root directory and this permission notice shall
@@ -96,7 +96,8 @@ class Lattice:
         self.data = LatticeData()
         self.shape = None
         self.periodic_axes = list()
-        logger.debug("Lattice initialized (D=%i)\n vectors:\n%s", self.dim, self._vectors)
+        logger.debug("Lattice initialized (D=%i)\nvectors:\n%s",
+                     self.dim, self._vectors)
 
     @classmethod
     def chain(cls, a: Optional[float] = 1.0, **kwargs) -> 'Lattice':
@@ -107,7 +108,8 @@ class Lattice:
         return cls(a * np.eye(2), **kwargs)
 
     @classmethod
-    def rectangular(cls, a1: Optional[float] = 1., a2: Optional[float] = 1., **kwargs) -> 'Lattice':
+    def rectangular(cls, a1: Optional[float] = 1., a2: Optional[float] = 1.,
+                    **kwargs) -> 'Lattice':
         return cls(np.array([[a1, 0], [0, a2]]), **kwargs)
 
     @classmethod
@@ -122,8 +124,11 @@ class Lattice:
         return cls(vectors, **kwargs)
 
     @classmethod
-    def hexagonal3D(cls, a: Optional[float] = 1., az: Optional[float] = 1., **kwargs) -> 'Lattice':  # noqa
-        vectors = a / 2 * np.array([[3, np.sqrt(3), 0], [3, -np.sqrt(3), 0], [0, 0, az]])
+    def hexagonal3D(cls, a: Optional[float] = 1., az: Optional[float] = 1.,
+                    **kwargs) -> 'Lattice':  # noqa
+        vectors = a / 2 * np.array([[3, np.sqrt(3), 0],
+                                    [3, -np.sqrt(3), 0],
+                                    [0, 0, az]])
         return cls(vectors, **kwargs)
 
     @classmethod

@@ -2,7 +2,7 @@
 #
 # This code is part of lattpy.
 #
-# Copyright (c) 2021, Dylan Jones
+# Copyright (c) 2022, Dylan Jones
 #
 # This code is licensed under the MIT License. The copyright notice in the
 # LICENSE file in the root directory and this permission notice shall
@@ -67,12 +67,14 @@ class Molecule:
         Parameters
         ----------
         pos: (N) array_like or float, optional
-            Position of site in the unit-cell. The default is the origin of the molecule.
-            The size of the array has to match the dimension of the lattice.
+            Position of site in the unit-cell. The default is the origin of the
+            molecule. The size of the array has to match the dimension of the lattice.
         atom: str or dict or Atom, optional
-            Identifier of the site. If a string is passed, a new Atom instance is created.
+            Identifier of the site. If a string is passed, a new instance
+            is created.
         **kwargs
-            Keyword arguments for ´Atom´ constructor. Only used if a new Atom instance is created.
+            Keyword arguments for ´Atom´ constructor. Only used if a new instance
+            is created.
 
         Returns
         -------
@@ -125,13 +127,13 @@ class Molecule:
         return np.average(self._positions, weights=weights, axis=0)
 
     def central_atom(self) -> int:
-        """Returns the index of the nearest atom to the center of mass of the molecule."""
+        """Returns the index of the nearest atom to the center of mass."""
         mc = self.center_of_mass()
         dists = distances(self._positions, mc)
-        return np.argmin(dists)
+        return int(np.argmin(dists))
 
     def centered_molecule(self) -> 'Molecule':
-        """Returns a copy of the molecule with it's center of mass at the origin."""
+        """Returns a copy of the molecule with its center of mass at the origin."""
         mc = self.center_of_mass()
         mol = self.copy()
         mol._positions -= mc
@@ -230,7 +232,8 @@ class Molecule:
             if at == atom:
                 yield pos
 
-    def get_positions(self, atleast2d: Optional[bool] = True) -> Dict[Any, List[np.ndarray]]:
+    def get_positions(self, atleast2d: Optional[bool] = True
+                      ) -> Dict[Any, List[np.ndarray]]:
         """Returns a dict containing the positions of all unique atoms in the molecule.
 
         Parameters
@@ -275,7 +278,9 @@ class Molecule:
 
     def get_neighbor_distances(self, alpha: int = 0) -> np.ndarray:
         neighbors = self.get_neighbors(alpha)
-        return np.array([self.get_neighbor_distance(alpha, alpha2) for alpha2 in neighbors])
+        return np.array(
+            [self.get_neighbor_distance(alpha, alpha2) for alpha2 in neighbors]
+        )
 
     def translate(self, r: Union[float, Sequence[float]]) -> Iterator[np.ndarray]:
         """Translate the positions of the atoms contained in the molecule.
@@ -321,7 +326,7 @@ class Molecule:
         return self._atoms[item], self.positions[item]
 
     def __dict__(self) -> Dict[Any, List[Union[np.ndarray, Any]]]:
-        """Returns a dict containing the positions of all unique atoms in the molecule"""
+        """Returns a dict of the positions of all unique atoms in the molecule."""
         return self.get_positions(atleast2d=False)
 
     def __repr__(self) -> str:

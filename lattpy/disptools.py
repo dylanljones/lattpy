@@ -2,7 +2,7 @@
 #
 # This code is part of lattpy.
 #
-# Copyright (c) 2021, Dylan Jones
+# Copyright (c) 2022, Dylan Jones
 #
 # This code is licensed under the MIT License. The copyright notice in the
 # LICENSE file in the root directory and this permission notice shall
@@ -37,7 +37,7 @@ def _color_list(color, num_bands):
 def _scale_xaxis(num_points, disp, scales=None):
     sect_size = len(disp) / (num_points - 1)
     scales = np.ones(num_points - 1) if scales is None else scales
-    k0, k, ticks = 0, list(), [0]
+    k0, k, ticks = 0, [], [0]
     for scale in scales:
         k.extend(k0 + np.arange(sect_size) * scale)
         k0 = k[-1]
@@ -79,8 +79,9 @@ def _draw_dispersion(ax, k, disp, color=None, fill=False, alpha=0.2, lw=1.0):
             ax.fill_between(x, min(band), max(band), color=col, alpha=alpha)
 
 
-def plot_dispersion(disp, labels, xlabel="$k$", ylabel="$E(k)$", grid="both", color=None,
-                    alpha=0.2, lw=1.0, scales=None, fill=False, ax=None, show=True):
+def plot_dispersion(disp, labels, xlabel="$k$", ylabel="$E(k)$", grid="both",
+                    color=None, alpha=0.2, lw=1.0, scales=None, fill=False,
+                    ax=None, show=True):
     num_points = len(labels)
     k, ticks = _scale_xaxis(num_points, disp, scales)
     if ax is None:
@@ -132,7 +133,8 @@ def plot_disp_dos(disp, dos_data, labels, xlabel="k", ylabel="E(k)", doslabel="n
     num_points = len(labels)
     k, ticks = _scale_xaxis(num_points, disp, scales)
     if axs is None:
-        fig, axs = disp_dos_subplots(ticks, labels, xlabel, ylabel, doslabel, wratio, grid)
+        fig, axs = disp_dos_subplots(ticks, labels, xlabel, ylabel, doslabel, wratio,
+                                     grid)
         ax1, ax2 = axs
     else:
         ax1, ax2 = axs
@@ -163,8 +165,8 @@ def plot_disp_dos(disp, dos_data, labels, xlabel="k", ylabel="E(k)", doslabel="n
     return axs
 
 
-def plot_bands(kgrid, bands, k_label="k", disp_label="E(k)", grid="both", contour_grid=False,
-               bz=None, pi_ticks=True, ax=None, show=True):
+def plot_bands(kgrid, bands, k_label="k", disp_label="E(k)", grid="both",
+               contour_grid=False, bz=None, pi_ticks=True, ax=None, show=True):
     if ax is None:
         fig, ax = plt.subplots()
     else:

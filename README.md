@@ -11,15 +11,13 @@
 | Master | [![Build Status](https://app.travis-ci.com/dylanljones/lattpy.svg?branch=master)](https://app.travis-ci.com/dylanljones/lattpy) | [![codecov](https://codecov.io/gh/dylanljones/lattpy/branch/master/graph/badge.svg?token=P61R3IQKXC)](https://codecov.io/gh/dylanljones/lattpy)  |
 | Dev    | [![Build Status](https://app.travis-ci.com/dylanljones/lattpy.svg?branch=dev)](https://app.travis-ci.com/dylanljones/lattpy) | [![codecov](https://codecov.io/gh/dylanljones/lattpy/branch/dev/graph/badge.svg?token=P61R3IQKXC)](https://codecov.io/gh/dylanljones/lattpy) |
 
-
 `lattpy` is a Python package for efficiently modeling Bravais lattices and constructing (finite) lattice structures.
 
 | :warning: **WARNING**: This project is still in development and might change significantly in the future! |
 |-----------------------------------------------------------------------------------------------------------|
 
+## Installation
 
-Installation
-------------
 Install via pip
 ````commandline
 pip install lattpy
@@ -34,13 +32,13 @@ python setup.py install
 ````
 
 
-Usage
-=====
+## Usage
+
 
 Before accessing the attributes of the `Lattice`-model the lattice has to be configured
 
-Configuration
--------------
+### Configuration
+
 
 A new instance of a lattice model is initialized using the unit-vectors of the Bravais lattice.
 After the initialization the atoms of the unit-cell need to be added. To finish the configuration
@@ -102,8 +100,8 @@ latt.plot()
 
 <img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/examples/example.png" width="400">
 
-General lattice attributes
---------------------------
+### General lattice attributes
+
 
 After configuring the lattice the attributes are available.
 Even without building a (finite) lattice structure all attributes can be computed on the fly for a given lattice vector,
@@ -146,8 +144,8 @@ bz = latt.brillouin_zone()
 ````
 
 
-Finite lattice data
--------------------
+### Finite lattice data
+
 
 If the lattice has been built the needed data is cached. The lattice sites of the
 structure then can be accessed by a simple index `i`. The syntax is the same as before,
@@ -171,8 +169,8 @@ neighbor_indices = latt.nearest_neighbors(idx)
 
 ````
 
-Performance
-===========
+## Performance
+
 
 Even though `lattpy` is written in pure python, it achieves high performance and
 a low memory footprint by making heavy use of numpy's vectorized operations.
@@ -187,8 +185,8 @@ this overhead can be eliminated for small systems. By passing `num_jobs=-1` all 
 of the system is used.
 
 
-Examples
-========
+## Examples
+
 
 Using the (built) lattice model it is easy to construct the (tight-binding)
 Hamiltonian of a non-interacting model:

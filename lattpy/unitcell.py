@@ -2,7 +2,7 @@
 #
 # This code is part of lattpy.
 #
-# Copyright (c) 2021, Dylan Jones
+# Copyright (c) 2022, Dylan Jones
 #
 # This code is licensed under the MIT License. The copyright notice in the
 # LICENSE file in the root directory and this permission notice shall
@@ -10,29 +10,35 @@
 
 """Objects for representing atoms and the unitcell of a lattice."""
 
+import warnings
 import itertools
-import collections
 import numpy as np
+from collections import abc
 from typing import Union, Optional, Any, Iterator, Dict, Sequence, List, Tuple
 from .utils import SiteOccupiedError
 
 __all__ = ["Atom", "UnitCell"]
 
 
-class Atom(collections.abc.MutableMapping):
+class Atom(abc.MutableMapping):
     """Object representing an atom of a bravais lattice."""
 
     _counter = itertools.count()
 
-    __slots__ = ["_index", "_name", "_params"]
+    __slots__ = ["_index", "_name", "_weight", "_params"]
 
-    def __init__(self, name: Optional[str] = None, color: Optional[str] = None,
-                 size: Optional[int] = 10, **kwargs):
+    def __init__(self, name: str = None, weight: float = 1.0, color: str = None,
+                 size: int = 10, **kwargs):
         super().__init__()
         index = next(Atom._counter)
         self._index = index
         self._name = name or str(index)
+        self._weight = weight
         self._params = dict(color=color, size=size, **kwargs)
+
+    @property
+    def id(self):
+        return id(self)
 
     @property
     def index(self) -> int:
@@ -44,6 +50,11 @@ class Atom(collections.abc.MutableMapping):
         """Return the name of the ``Atom`` instance."""
         return self._name
 
+    @property
+    def weight(self):
+        """Return the weight or the ``Atom`` instance."""
+        return self._weight
+
     def dict(self) -> Dict[str, Any]:
         """Returns the data of the ``Atom`` instance as a dictionary."""
         data = dict(index=self._index, name=self._name)
@@ -52,13 +63,17 @@ class Atom(collections.abc.MutableMapping):
 
     def copy(self) -> 'Atom':
         """Creates a deep copy of the ``Atom`` instance."""
-        return Atom(self.name, **self._params.copy())
+        return Atom(self.name, self.weight, **self._params.copy())
 
     def get(self, key: str, default=None) -> Any:
         try:
             return self.__getitem__(key)
         except KeyError:
             return default
+
+    def is_identical(self, other: 'Atom') -> bool:
+        """Checks if the other ``Atom`` is identical to this one."""
+        return self._name == other.name
 
     def __len__(self) -> int:
         """Return the length of the ``Atom`` attributes."""
@@ -110,7 +125,7 @@ class Atom(collections.abc.MutableMapping):
 
     def __eq__(self, other: Union['Atom', str]) -> bool:
         if isinstance(other, Atom):
-            return self._name == other._name
+            return self.is_identical(other)
         else:
             return self._name == other
 
@@ -119,10 +134,10 @@ class Atom(collections.abc.MutableMapping):
         paramstr = ", ".join(f"{k}={v}" for k, v in self._params.items() if v)
         if paramstr:
             argstr += ", " + paramstr
-        return f"Atom({argstr})"
+        return f"Atom({argstr}, {self.index}, {hex(self.id)})"
 
 
-class UnitCell(collections.abc.Sequence):
+class UnitCell(abc.Sequence):
     """``Atom`` container representing the unitcell of a bravais lattice."""
 
     __slots__ = ["_num_base", "_atoms", "_positions"]
@@ -130,6 +145,9 @@ class UnitCell(collections.abc.Sequence):
     def __init__(self):
         """Initialize a unitcell instance."""
         super().__init__()
+        warnings.warn("The UnitCell-object is deprecated and will be removed in "
+                      "a future version.",
+                      DeprecationWarning)
         self._num_base = 0
         self._atoms = list()
         self._positions = list()
@@ -152,7 +170,7 @@ class UnitCell(collections.abc.Sequence):
     def add(self, pos: Optional[Union[float, Sequence[float]]] = None,
             atom: Optional[Union[str, Dict[str, Any], Atom]] = None,
             **kwargs) -> Atom:
-        """ Adds a new atom to the unitcell.
+        """Adds a new atom to the unitcell.
 
         Raises
         ------
@@ -165,9 +183,11 @@ class UnitCell(collections.abc.Sequence):
             Position of site in the unit-cell. The default is the origin of the cell.
             The size of the array has to match the dimension of the lattice.
         atom: str or dict or Atom, optional
-            Identifier of the site. If a string is passed, a new Atom instance is created.
+            Identifier of the site. If a string is passed, a new `Atom`
+            instance is created.
         **kwargs
-            Keyword arguments for ´Atom´ constructor. Only used if a new Atom instance is created.
+            Keyword arguments for ´Atom´ constructor. Only used if a new `Atom`
+            instance is created.
 
         Returns
         -------
@@ -294,7 +314,8 @@ class UnitCell(collections.abc.Sequence):
             if at == atom:
                 yield pos
 
-    def get_positions(self, atleast2d: Optional[bool] = True) -> Dict[Any, List[np.ndarray]]:
+    def get_positions(self, atleast2d: Optional[bool] = True
+                      ) -> Dict[Any, List[np.ndarray]]:
         """Returns a dict containing the positions of all unique atoms in the unitcell.
 
         Parameters
@@ -368,7 +389,7 @@ class UnitCell(collections.abc.Sequence):
         return self._atoms[item], self.positions[item]
 
     def __dict__(self) -> Dict[Any, List[Union[np.ndarray, Any]]]:
-        """Returns a dict containing the positions of all unique atoms in the unitcell"""
+        """Returns a dict of the positions of all unique atoms in the unitcell."""
         return self.get_positions(atleast2d=False)
 
     def __repr__(self) -> str:

@@ -2,7 +2,7 @@
 #
 # This code is part of lattpy.
 #
-# Copyright (c) 2021, Dylan Jones
+# Copyright (c) 2022, Dylan Jones
 #
 # This code is licensed under the MIT License. The copyright notice in the
 # LICENSE file in the root directory and this permission notice shall
@@ -18,8 +18,9 @@ from matplotlib.collections import LineCollection
 from mpl_toolkits.mplot3d.art3d import Line3DCollection, Line3D, Poly3DCollection
 
 __all__ = [
-    "set_margins", "set_padding", "set_limits", "draw_line", "draw_lines", "draw_arrows",
-    "draw_vectors", "draw_points", "draw_indices", "draw_cell", "draw_surfaces"
+    "set_margins", "set_padding", "set_limits", "draw_line", "draw_lines",
+    "draw_arrows", "draw_vectors", "draw_points", "draw_indices", "draw_cell",
+    "draw_surfaces"
 ]
 
 # Golden ratio as standard ratio for plot-figures
@@ -102,7 +103,7 @@ def draw_arrows(ax, vectors, pos=None, **kwargs):
     pos = pos if pos is not None else np.zeros(dim)
     if dim != 3:
         kwargs.update({"angles": "xy", "scale_units": "xy", "scale": 1})
-    return ax.quiver(*pos, *vectors, **kwargs)
+    return ax.quiver(pos, *vectors, **kwargs)
 
 
 def draw_vectors(ax, vectors, pos=None, ls="-", lw=1, zorder=1, **kwargs):
@@ -117,7 +118,8 @@ def draw_vectors(ax, vectors, pos=None, ls="-", lw=1, zorder=1, **kwargs):
     segments = list()
     for v in vectors:
         segments.append([pos, pos + v])
-    return draw_lines(ax, segments, linestyles=ls, linewidths=lw, zorder=zorder, **kwargs)
+    return draw_lines(ax, segments, linestyles=ls, linewidths=lw, zorder=zorder,
+                      **kwargs)
 
 
 def draw_points(ax, points, size=10, color=None, alpha=1.0, zorder=3, **kwargs):
@@ -126,7 +128,8 @@ def draw_points(ax, points, size=10, color=None, alpha=1.0, zorder=3, **kwargs):
     if points.shape[1] == 1:
         points = np.hstack((points, np.zeros((points.shape[0], 1))))
 
-    scat = ax.scatter(*points.T, s=size**2, color=color, alpha=alpha, zorder=zorder, **kwargs)
+    scat = ax.scatter(*points.T, s=size**2, color=color, alpha=alpha, zorder=zorder,
+                      **kwargs)
     # Manualy update data-limits
     # ax.ignore_existing_data_limits = True
     datalim = scat.get_datalim(ax.transData)
@@ -151,6 +154,7 @@ def draw_cell(ax, vectors, color="k", lw=2, zorder=1, outlines=True):
         return
 
     draw_arrows(ax, vectors, color=color, lw=lw, zorder=zorder)
+    # draw_vectors(ax, vectors, color=color, lw=lw, zorder=zorder)
     if outlines:
         for v, pos in itertools.permutations(vectors, r=2):
             data = np.asarray([pos, pos + v]).T

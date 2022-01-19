@@ -2,7 +2,7 @@
 #
 # This code is part of lattpy.
 #
-# Copyright (c) 2021, Dylan Jones
+# Copyright (c) 2022, Dylan Jones
 #
 # This code is licensed under the MIT License. The copyright notice in the
 # LICENSE file in the root directory and this permission notice shall
@@ -21,13 +21,14 @@ from .plotting import draw_points, draw_vectors, draw_lines, draw_surfaces
 
 
 __all__ = [
-    "distance", "interweave", "vindices", "vrange", "cell_size", "cell_volume",
-    "compute_vectors", "compute_neighbors", "KDTree", "VoronoiTree", "WignerSeitzCell",
-    "rx", "ry", "rz", "rotate2d", "rotate3d", "build_periodic_translation_vector"
+    "distance", "distances", "interweave", "vindices", "vrange", "cell_size",
+    "cell_volume", "compute_vectors", "compute_neighbors", "KDTree", "VoronoiTree",
+    "WignerSeitzCell", "rx", "ry", "rz", "rotate2d", "rotate3d",
+    "build_periodic_translation_vector"
 ]
 
 
-def distance(r1: ArrayLike, r2: ArrayLike, decimals: Optional[int] = None) -> float:
+def distance(r1: ArrayLike, r2: ArrayLike, decimals: int = None) -> float:
     """ Calculates the euclidian distance bewteen two points.
 
     Parameters
@@ -46,6 +47,31 @@ def distance(r1: ArrayLike, r2: ArrayLike, decimals: Optional[int] = None) -> fl
     dist = math.sqrt(np.sum(np.square(r1 - r2)))
     if decimals is not None:
         dist = round(dist, decimals)
+    return dist
+
+
+def distances(r1: ArrayLike, r2: ArrayLike, decimals: int = None) -> np.ndarray:
+    """ Calculates the euclidian distance between multiple points.
+
+    Parameters
+    ----------
+    r1: array_like
+        First input point.
+    r2: array_like
+        Second input point of matching size.
+    decimals: int, optional
+        Optional decimals to round distance to.
+
+    Returns
+    -------
+    distance: np.ndarray
+    """
+
+    r1 = np.atleast_2d(r1)
+    r2 = np.atleast_2d(r2)
+    dist = np.sqrt(np.sum(np.square(r1 - r2), axis=1))
+    if decimals is not None:
+        dist = np.round(dist, decimals=decimals)
     return dist
 
 
@@ -121,10 +147,11 @@ def vindices(limits: Iterable[Sequence[int]], sort_axis: Optional[int] = 0,
     return nvecs
 
 
+# noinspection PyIncorrectDocstring
 def vrange(start=None, *args,
            dtype: Optional[Union[int, str, np.dtype]] = None,
            sort_axis: Optional[int] = 0, **kwargs) -> np.ndarray:
-    """ Return evenly spaced vectors within a given interval.
+    """Return evenly spaced vectors within a given interval.
 
     Parameters
     ----------
@@ -229,7 +256,7 @@ def cell_volume(vectors: ArrayLike) -> float:
 
 def build_periodic_translation_vector(indices, axs):
     limits = np.array([np.min(indices, axis=0), np.max(indices, axis=0)])
-    nvec = np.zeros(indices.shape[1] - 1, dtype=np.int)
+    nvec = np.zeros(indices.shape[1] - 1, dtype=np.int64)
     for ax in np.atleast_1d(axs):
         nvec[ax] = np.floor(limits[1][ax]) + 1
     return nvec
@@ -291,42 +318,44 @@ class KDTree(cKDTree):
     def query_pairs(self, r):
         return super().query_pairs(r, self.p, self.eps)
 
-    def query(self, x=None, num_jobs=1, decimals=None, include_zero=False, compact=True):
+    def query(self, x=None, num_jobs=1, decimals=None, include_zero=False,
+              compact=True):
         x = self.data if x is None else x
-        distances, neighbors = super().query(x, self.k, self.eps, self.p, self.max_dist, num_jobs)
+        dists, neighbors = super().query(x, self.k, self.eps, self.p,
+                                         self.max_dist, num_jobs)
 
         # Remove zero-distance neighbors and convert dtype
-        if not include_zero and np.all(distances[:, 0] == 0):
-            distances = distances[:, 1:]
+        if not include_zero and np.all(dists[:, 0] == 0):
+            dists = dists[:, 1:]
             neighbors = neighbors[:, 1:]
         neighbors = neighbors.astype(min_dtype(self.n, signed=False))
 
         # Remove neighbors with distance larger than max_dist
         if self.max_dist < np.inf:
-            invalid = distances > self.max_dist
+            invalid = dists > self.max_dist
             neighbors[invalid] = self.n
-            distances[invalid] = np.inf
+            dists[invalid] = np.inf
 
         # Remove all invalid columns
         if compact:
-            mask = np.any(distances != np.inf, axis=0)
+            mask = np.any(dists != np.inf, axis=0)
             neighbors = neighbors[:, mask]
-            distances = distances[:, mask]
+            dists = dists[:, mask]
 
         # Round distances
         if decimals is not None:
-            distances = np.round(distances, decimals=decimals)
+            dists = np.round(dists, decimals=decimals)
 
-        return neighbors, distances
+        return neighbors, dists
 
 
-def compute_neighbors(positions, k=20, max_dist=np.inf, num_jobs=1, decimals=None, eps=0.,
-                      include_zero=False, compact=True, x=None):
+def compute_neighbors(positions, k=20, max_dist=np.inf, num_jobs=1, decimals=None,
+                      eps=0., include_zero=False, compact=True, x=None):
     # Build tree and query neighbors
     x = positions if x is None else x
     tree = KDTree(positions, k=k, max_dist=max_dist, eps=eps)
-    distances, neighbors = tree.query(x, num_jobs, decimals, include_zero, compact)
-    return neighbors, distances
+    dists, neighbors = tree.query(x, num_jobs, decimals, include_zero, compact)
+    return neighbors, dists
 
 
 class VoronoiTree:
@@ -359,8 +388,8 @@ class VoronoiTree:
     def query(self, x, k=1, eps=0):
         return self.tree.query(x, k, eps)  # noqa
 
-    def draw(self, ax=None, color="C0", size=3, lw=1, alpha=0.15, point_color="k", point_size=3,
-             draw_data=True, points=True, draw=True, fill=True):
+    def draw(self, ax=None, color="C0", size=3, lw=1, alpha=0.15, point_color="k",
+             point_size=3, draw_data=True, points=True, draw=True, fill=True):
 
         if ax is None:
             fig = plt.figure()
@@ -379,7 +408,9 @@ class VoronoiTree:
             draw_lines(ax, segments, color=color, lw=lw)
         elif self.dim == 3:
             if draw:
-                segments = np.array([self.vertices[np.append(i, i[0])] for i in self.edges])
+                segments = np.array(
+                    [self.vertices[np.append(i, i[0])] for i in self.edges]
+                )
                 draw_lines(ax, segments, color=color, lw=lw)
             if fill:
                 surfaces = np.array([self.vertices[i] for i in self.edges])
@@ -408,7 +439,8 @@ class WignerSeitzCell(VoronoiTree):
 
     @property
     def limits(self):
-        return np.array([np.min(self.vertices, axis=0), np.max(self.vertices, axis=0)]).T
+        return np.array([np.min(self.vertices, axis=0),
+                         np.max(self.vertices, axis=0)]).T
 
     @property
     def size(self):
@@ -434,7 +466,8 @@ class WignerSeitzCell(VoronoiTree):
         elif steps is not None:
             grid = np.array(np.meshgrid(*self.arange(steps, offset)))
         else:
-            raise ValueError("Either the number of points or the step size muste be specified")
+            raise ValueError("Either the number of points or the step size "
+                             "must be specified")
 
         if check:
             lengths = grid.shape[1:]
@@ -504,11 +537,17 @@ def rot(thetax: float = 0., thetay: float = 0., thetaz: float = 0.) -> np.ndarra
     return r
 
 
-def rotate2d(a, theta):
+def rotate2d(a, theta, degree=True):
     """Applies the z-rotation matrix to a 2D point"""
+    if degree:
+        theta = np.deg2rad(theta)
     return np.dot(a, rz(theta)[:2, :2])
 
 
-def rotate3d(a, thetax=0., thetay=0., thetaz=0.):
+def rotate3d(a, thetax=0., thetay=0., thetaz=0., degree=True):
     """Applies the general rotation matrix to a 3D point"""
+    if degree:
+        thetax = np.deg2rad(thetax)
+        thetay = np.deg2rad(thetay)
+        thetaz = np.deg2rad(thetaz)
     return np.dot(a, rot(thetax, thetay, thetaz))

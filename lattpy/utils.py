@@ -11,7 +11,7 @@
 """Contains miscellaneous utility methods."""
 
 import logging
-from typing import Iterable, List, Sequence, Optional, Union, Tuple
+from typing import Iterable, List, Sequence, Union, Tuple
 import time
 import numpy as np
 
@@ -94,7 +94,7 @@ class NotBuiltError(ConfigurationError):
 
 
 def create_lookup_table(array: ArrayLike,
-                        dtype: Optional[Union[str, np.dtype]] = np.uint8
+                        dtype: Union[str, np.dtype] = np.uint8
                         ) -> Tuple[np.ndarray, np.ndarray]:
     """Converts the given array to an array of indices linked to the unique values.
 
@@ -122,7 +122,7 @@ def create_lookup_table(array: ArrayLike,
 
 
 def min_dtype(a: Union[int, float, np.ndarray, Iterable],
-              signed: Optional[bool] = True) -> np.dtype:
+              signed: bool = True) -> np.dtype:
     """Returns the minimum required dtype to store the given values.
 
     Parameters
@@ -180,8 +180,8 @@ def chain(items: Sequence, cycle: bool = False) -> List:
     return result
 
 
-def frmt_num(num: float, dec: Optional[int] = 1, unit: Optional[str] = '',
-             div: Optional[float] = 1000.) -> str:
+def frmt_num(num: float, dec: int = 1, unit: str = "",
+             div: float = 1000.) -> str:
     """Returns a formatted string of a number.
 
     Parameters
@@ -206,7 +206,7 @@ def frmt_num(num: float, dec: Optional[int] = 1, unit: Optional[str] = '',
     return f"{num:.{dec}f}Y{unit}"
 
 
-def frmt_bytes(num: float, dec: Optional[int] = 1) -> str:
+def frmt_bytes(num: float, dec: int = 1) -> str:
     """Returns a formatted string of the number of bytes."""
     return frmt_num(num, dec, unit="iB", div=1024)
 

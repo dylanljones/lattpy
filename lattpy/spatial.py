@@ -15,7 +15,7 @@ import numpy as np
 import itertools
 import matplotlib.pyplot as plt
 from scipy.spatial import cKDTree, Voronoi
-from typing import Iterable, Sequence, Optional, Union
+from typing import Iterable, Sequence, Union
 from .utils import ArrayLike, min_dtype, chain
 from .plotting import draw_points, draw_vectors, draw_lines, draw_surfaces
 
@@ -103,8 +103,8 @@ def interweave(arrays: Sequence[np.ndarray]) -> np.ndarray:
     return result
 
 
-def vindices(limits: Iterable[Sequence[int]], sort_axis: Optional[int] = 0,
-             dtype: Optional[Union[int, str, np.dtype]] = None) -> np.ndarray:
+def vindices(limits: Iterable[Sequence[int]], sort_axis: int = 0,
+             dtype: Union[int, str, np.dtype] = None) -> np.ndarray:
     """ Return an array representing the indices of a d-dimensional grid.
 
     Parameters
@@ -149,8 +149,8 @@ def vindices(limits: Iterable[Sequence[int]], sort_axis: Optional[int] = 0,
 
 # noinspection PyIncorrectDocstring
 def vrange(start=None, *args,
-           dtype: Optional[Union[int, str, np.dtype]] = None,
-           sort_axis: Optional[int] = 0, **kwargs) -> np.ndarray:
+           dtype: Union[int, str, np.dtype] = None,
+           sort_axis: int = 0, **kwargs) -> np.ndarray:
     """Return evenly spaced vectors within a given interval.
 
     Parameters
@@ -262,10 +262,10 @@ def build_periodic_translation_vector(indices, axs):
     return nvec
 
 
-def compute_vectors(a: float, b: Optional[float] = None, c: Optional[float] = None,
-                    alpha: Optional[float] = None, beta: Optional[float] = None,
-                    gamma: Optional[float] = None,
-                    decimals: Optional[int] = 0) -> np.ndarray:
+def compute_vectors(a: float, b: float = None, c: float = None,
+                    alpha: float = None, beta: float = None,
+                    gamma: float = None,
+                    decimals: int = 0) -> np.ndarray:
     """ Computes lattice vectors by the lengths and angles. """
     if b is None and c is None:
         vectors = [a]

@@ -56,20 +56,26 @@ vecs_t = Union[float, Sequence[float], Sequence[Sequence[float]]]
 
 
 class Lattice:
-    """Object representing the basis and data of a bravais lattice."""
+    """Main lattice object representing a Bravais lattice.
+
+    Parameters
+    ----------
+    vectors: array_like or float
+        The primitive basis vectors that define the unit cell of the lattice.
+
+    Examples
+    --------
+    Two dimensional lattice with one atom in the unit cell and nearest neighbors
+    >>> latt = Lattice(np.eye(2))
+    >>> latt.add_atom()
+    >>> latt.add_connections(1)
+    """
 
     DIST_DECIMALS: int = 6        # Decimals used for rounding distances
     RVEC_TOLERANCE: float = 1e-6  # Tolerance for reciprocal vectors/lattice
 
     # noinspection PyUnusedLocal
     def __init__(self, vectors: vecs_t, **kwargs):
-        """Initialize a new ``Lattice`` instance.
-
-        Parameters
-        ----------
-        vectors: array_like or float
-            The vectors that span the basis of the lattice.
-        """
         # Vector basis
         self._vectors = np.atleast_2d(vectors).T
         self._vectors_inv = np.linalg.inv(self._vectors)
@@ -150,49 +156,49 @@ class Lattice:
 
     @property
     def dim(self) -> int:
-        """int : The dimension of the vector basis."""
+        """int : The dimension of the lattice."""
         return self._dim
 
     @property
     def vectors(self) -> np.ndarray:
-        """np.ndarray : Array with basis vectors as rows."""
+        """np.ndarray : Array containing the basis vectors as rows."""
         return self._vectors.T
 
     @property
     def vectors3d(self) -> np.ndarray:
-        """np.ndarray : Basis vectors expanded to three dimensions."""
+        """np.ndarray : The basis vectors expanded to three dimensions."""
         vectors = np.eye(3)
         vectors[:self.dim, :self.dim] = self._vectors
         return vectors.T
 
     @property
     def norms(self) -> np.ndarray:
-        """np.ndarray : Lengths of the basis-vectors."""
+        """np.ndarray : Lengths of the basis vectors."""
         return np.linalg.norm(self._vectors, axis=0)
 
     @property
     def cell_size(self) -> np.ndarray:
-        """np.ndarray : The shape of the box spawned by the given vectors."""
+        """np.ndarray : The shape of the box spawned by the basis vectors."""
         return self._cell_size
 
     @property
     def cell_volume(self) -> float:
-        """float : The volume of the unit cell defined by the primitive vectors."""
+        """float : The volume of the unit cell defined by the basis vectors."""
         return self._cell_volume
 
     @property
     def num_base(self) -> int:
-        """int : The number of atoms in the unitcell."""
+        """int : The number of atoms in the unit cell."""
         return self._num_base
 
     @property
     def atoms(self) -> List[Atom]:
-        """list of Atom : List of the atoms in the unitcell."""
+        """list of Atom : List of the atoms in the unit cell."""
         return self._atoms
 
     @property
     def atom_positions(self) -> List[np.ndarray]:
-        """list of np.ndarray : List of positions of the atoms in the unitcell."""
+        """list of np.ndarray : List of positions of the atoms in the unit cell."""
         return self._positions
 
     @property

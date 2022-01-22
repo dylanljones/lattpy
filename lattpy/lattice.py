@@ -412,7 +412,7 @@ class Lattice:
         distidx : int, default
             Index of distance to neighboring cells, default is 0 (nearest neighbors).
         include_origin : bool, optional
-            If ``True`` the origin is included in the set.
+            If `True` the origin is included in the set.
         comparison : callable, optional
             The method used for comparing distances.
 
@@ -503,8 +503,8 @@ class Lattice:
             created.
         relative: bool, optional
             Flag if the specified position is in cartesian or lattice coordinates.
-            If ``True`` the passed position will be multiplied with the lattice vectors.
-            The default is ``False`` (cartesian coordinates).
+            If `True` the passed position will be multiplied with the lattice vectors.
+            The default is `False` (cartesian coordinates).
         neighbors: int, optional
             The number of neighbor distance to calculate. If the number is ´0´ the
             distances have to be calculated manually after configuring the
@@ -553,8 +553,8 @@ class Lattice:
         Parameters
         ----------
         atom: int or str or Atom
-            The argument for getting the atom. If a ``int`` is passed
-            it is interpreted as the index, if a ``str`` is passed as
+            The argument for getting the atom. If a `int` is passed
+            it is interpreted as the index, if a `str` is passed as
             the name of an atom.
 
         Returns
@@ -573,8 +573,8 @@ class Lattice:
         Parameters
         ----------
         atom: int or str or Atom
-            The argument for getting the atom. If a ``int`` is passed
-            it is interpreted as the index, if a ``str`` is passed as
+            The argument for getting the atom. If a `int` is passed
+            it is interpreted as the index, if a `str` is passed as
             the name of an atom.
 
         Returns
@@ -602,12 +602,12 @@ class Lattice:
         atom2 : int or str or Atom
             The second atom of the connected pair.
         num_distances : int, optional
-            The number of neighbor-distance levels, e.g. setting to ``1`` means
+            The number of neighbor-distance levels, e.g. setting to `1` means
             only nearest neighbors. The default are nearest neighbor connections.
         analyze : bool
-            If ``True`` the lattice basis is analyzed after adding connections.
-            If ``False`` the ``analyze``-method needs to be called manually.
-            The default is ``False``.
+            If `True` the lattice basis is analyzed after adding connections.
+            If `False` the `analyze`-method needs to be called manually.
+            The default is `False`.
         """
         alpha1 = np.atleast_1d(self.get_alpha(atom1))
         alpha2 = np.atleast_1d(self.get_alpha(atom2))
@@ -623,12 +623,12 @@ class Lattice:
         Parameters
         ----------
         num_distances : int, optional
-            The number of neighbor-distance levels, e.g. setting to ``1`` means
+            The number of neighbor-distance levels, e.g. setting to `1` means
             only nearest neighbors. The default are nearest neighbor connections.
         analyze : bool
-            If ``True`` the lattice basis is analyzed after adding connections.
-            If ``False`` the ``analyze``-method needs to be called manually.
-            The default is ``True``.
+            If `True` the lattice basis is analyzed after adding connections.
+            If `False` the `analyze`-method needs to be called manually.
+            The default is `True`.
         """
         self._connections.fill(num_distances)
         if analyze:
@@ -1097,7 +1097,7 @@ class Lattice:
             shape of finite size lattice to build.
         relative: bool, optional
             If 'True' the shape will be multiplied by the cell size of the model.
-            The default is ``True``.
+            The default is `True`.
         pos: (N) array_like or int, optional
             Optional position of the section to build. If 'None' the origin is used.
         eps: float, optional
@@ -1146,7 +1146,7 @@ class Lattice:
             shape of finite size lattice to build.
         relative: bool, optional
             If 'True' the shape will be multiplied by the cell size of the model.
-            The default is ``True``.
+            The default is `True`.
         pos: (N) array_like or int, optional
             Optional position of the section to build. If 'None' the origin is used.
         check : bool, optional
@@ -1251,12 +1251,12 @@ class Lattice:
             The positions of the sites in cartesian coordinates.
         num_jobs : int, optional
             Number of jobs to schedule for parallel processing.
-            If -1 is given all processors are used. The default is ``1``.
+            If -1 is given all processors are used. The default is `1`.
 
         Returns
         -------
         neighbors: (..., M) np.ndarray
-            The indices of the neighbors in ``positions``.
+            The indices of the neighbors in `positions`.
         distances: (..., M) np.ndarray
             The corresponding distances of the neighbors.
         """
@@ -1465,7 +1465,7 @@ class Lattice:
             shape of finite size lattice to build.
         relative : bool, optional
             If 'True' the shape will be multiplied by the cell size of the model.
-            The default is ``True``.
+            The default is `True`.
         pos : (N) array_like or int, optional
             Optional position of the section to build. If 'None' the origin is used.
         check : bool, optional
@@ -1473,7 +1473,7 @@ class Lattice:
             The default is `True`. This should only be disabled if filtered later.
         num_jobs : int, optional
             Number of jobs to schedule for parallel processing of neighbors.
-            If -1 is given all processors are used. The default is ``-1``.
+            If -1 is given all processors are used. The default is `-1`.
         periodic : int or array_like, optional
             Optional periodic axes to set. See 'set_periodic' for mor details.
         callback : callable, optional
@@ -1698,12 +1698,12 @@ class Lattice:
         return "\n".join(lines)
 
     def dump(self, file: Union[str, int, bytes] = 'tmp.latt') -> None:
-        """Save the data of the ``Lattice`` instance.
+        """Save the data of the `Lattice` instance.
 
         Parameters
         ----------
         file: str or int or bytes
-            File name to store the lattice. If ``None`` the hash of the lattice is used.
+            File name to store the lattice. If `None` the hash of the lattice is used.
         """
         if file is None:
             file = f"{self.__hash__()}.latt"
@@ -1712,7 +1712,7 @@ class Lattice:
 
     @classmethod
     def load(cls, file: Union[str, int, bytes] = 'tmp.latt') -> 'Lattice':
-        """Load data of a saved ``Lattice`` instance.
+        """Load data of a saved `Lattice` instance.
 
         Parameters
         ----------
@@ -1731,8 +1731,7 @@ class Lattice:
         sha = hashlib.md5(self.dumps().encode("utf-8"))
         return int(sha.hexdigest(), 16)
 
-    def plot_cell(self, show: bool = True,
-                  ax: Union[plt.Axes, Axes3D] = None,
+    def plot_cell(self,
                   lw: float = 1.,
                   color: Union[str, float] = 'k',
                   alpha: float = 0.5,
@@ -1740,15 +1739,13 @@ class Lattice:
                   margins: Union[Sequence[float], float] = 0.25,
                   show_cell: bool = True,
                   show_vecs: bool = True,
-                  show_neighbors: bool = True) -> Union[plt.Axes, Axes3D]:
+                  show_neighbors: bool = True,
+                  ax: Union[plt.Axes, Axes3D] = None,
+                  show: bool = False) -> Union[plt.Axes, Axes3D]:
         """ Plot the unit cell of the lattice.
 
         Parameters
         ----------
-        show: bool, default: True
-            parameter for pyplot.
-        ax: plt.Axes or plt.Axes3D or None, optional
-            Parent plot. If None, a new plot is initialized.
         lw: float, default: 1
             Line width of the hopping connections.
         color: str, optional
@@ -1760,11 +1757,15 @@ class Lattice:
         margins: Sequence[float] or float, optional
             Optional margins of the plot.
         show_neighbors: bool, optional
-            If ``True`` the neighbors are plotted.
+            If `True` the neighbors are plotted.
         show_vecs: bool, optional
             If 'True' the first unit-cell is drawn.
         show_cell: bool, optional
-            If ``True`` the outlines of the unit cell are plotted.
+            If `True` the outlines of the unit cell are plotted.
+        ax: plt.Axes or plt.Axes3D or None, optional
+            Parent plot. If None, a new plot is initialized.
+        show: bool, optional
+            If `True`, show the resulting plot.
         """
         if self.dim > 3:
             raise ValueError(f"Plotting in {self.dim} dimensions is not supported!")
@@ -1842,8 +1843,7 @@ class Lattice:
             plt.show()
         return ax
 
-    def plot(self, show: bool = True,
-             ax: Union[plt.Axes, Axes3D] = None,
+    def plot(self,
              lw: float = 1.,
              color: Union[str, float, int] = 'k',
              margins: Union[Sequence[float], float] = 0.1,
@@ -1851,15 +1851,13 @@ class Lattice:
              grid: bool = False,
              show_periodic: bool = True,
              show_indices: bool = False,
-             show_cell: bool = False) -> Union[plt.Axes, Axes3D]:
+             show_cell: bool = False,
+             ax: Union[plt.Axes, Axes3D] = None,
+             show: bool = False) -> Union[plt.Axes, Axes3D]:
         """Plot the cached lattice.
 
         Parameters
         ----------
-        show: bool, default: True
-            parameter for pyplot
-        ax: plt.Axes or plt.Axes3D or None, optional
-            Parent plot. If None, a new plot is initialized.
         lw: float, default: 1
             Line width of the hopping connections.
         color: str or float or int
@@ -1876,6 +1874,10 @@ class Lattice:
             If 'True' the index of the sites will be shown.
         show_cell: bool, optional
             If 'True' the first unit-cell is drawn.
+        ax: plt.Axes or plt.Axes3D or None, optional
+            Parent plot. If None, a new plot is initialized.
+        show: bool, optional
+            If `True`, show the resulting plot.
         """
         logger.debug("Plotting lattice")
 

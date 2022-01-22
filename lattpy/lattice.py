@@ -153,7 +153,7 @@ class Lattice:
         vectors = a / 2 * np.array([[1, 1, 1], [1, -1, 1], [-1, 1, 1]])
         return cls(vectors, **kwargs)
 
-    # ==============================================================================================
+    # ==================================================================================
 
     @property
     def dim(self) -> int:
@@ -424,6 +424,14 @@ class Lattice:
         -------
         v_rec : np.ndarray
             The reciprocal basis vectors of the lattice.
+
+        Examples
+        --------
+        Reciprocal vectors of the square lattice:
+        >>> latt = Lattice(np.eye(2))
+        >>> latt.reciprocal_vectors()
+        [[6.28318531 0.        ]
+         [0.         6.28318531]]
         """
         two_pi = 2 * np.pi
         if self.dim == 1:
@@ -472,6 +480,15 @@ class Lattice:
         --------
         reciprocal_vectors : Constructs the reciprocal vectors used for the
             reciprocal lattice
+
+        Examples
+        --------
+        Reciprocal lattice of the square lattice:
+        >>> latt = Lattice(np.eye(2))
+        >>> rlatt = latt.reciprocal_lattice()
+        >>> rlatt.vectors
+        [[6.28318531 0.        ]
+         [0.         6.28318531]]
         """
         rvecs = self.reciprocal_vectors(min_negative)
         rlatt = self.__class__(rvecs)
@@ -495,6 +512,15 @@ class Lattice:
         -------
         indices : np.ndarray
             The lattice indeices of the neighboring unit cells.
+
+        Examples
+        --------
+        >>> latt = Lattice(np.eye(2))
+        >>> latt.get_neighbor_cells(distidx=0, include_origin=False)
+        [[-1  0]
+         [ 0 -1]
+         [ 0  1]
+         [ 1  0]]
         """
         # Build cell points
         max_factor = distidx + 1
@@ -565,17 +591,17 @@ class Lattice:
 
         Parameters
         ----------
-        pos: (N) array_like or float, optional
+        pos : (N) array_like or float, optional
             Position of site in the unit-cell. The default is the origin of the cell.
             The size of the array has to match the dimension of the lattice.
-        atom: str or dict or Atom, optional
+        atom : str or dict or Atom, optional
             Identifier of the site. If a string is passed, a new Atom instance is
             created.
-        relative: bool, optional
+        relative : bool, optional
             Flag if the specified position is in cartesian or lattice coordinates.
             If `True` the passed position will be multiplied with the lattice vectors.
             The default is `False` (cartesian coordinates).
-        neighbors: int, optional
+        neighbors : int, optional
             The number of neighbor distance to calculate. If the number is ´0´ the
             distances have to be calculated manually after configuring the
             lattice basis.
@@ -585,7 +611,7 @@ class Lattice:
 
         Returns
         -------
-        atom: Atom
+        atom : Atom
             The `Atom`-instance of the newly added site.
 
         Raises
@@ -619,7 +645,7 @@ class Lattice:
         logger.debug("Added atom %s at %s", atom, pos)
 
         # Initial array for number of neighbour distances
-        # for current number of atoms in the unitcell
+        # for current number of atoms in the unit cell
         self._connections = np.zeros((num_base, num_base), dtype=np.int64)
 
         if neighbors:
@@ -631,14 +657,14 @@ class Lattice:
 
         Parameters
         ----------
-        atom: int or str or Atom
+        atom : int or str or Atom
             The argument for getting the atom. If a `int` is passed
             it is interpreted as the index, if a `str` is passed as
             the name of an atom.
 
         Returns
         -------
-        alpha: int or list of int
+        alpha : int or list of int
             The atom indices. If a string was passed multiple atoms with the same name
             can be returned as list.
 
@@ -663,19 +689,19 @@ class Lattice:
         return atom
 
     def get_atom(self, atom: Union[int, str, Atom]) -> Atom:
-        """Returns the `Atom` object of the given atom in the unit cell
+        """Returns the `Atom` object of the given atom in the unit cell.
 
         Parameters
         ----------
-        atom: int or str or Atom
+        atom : int or str or Atom
             The argument for getting the atom. If a `int` is passed
             it is interpreted as the index, if a `str` is passed as
             the name of an atom.
 
         Returns
         -------
-        atom: Atom
-            The `Atom` instance of the given site
+        atom : Atom
+            The `Atom` instance of the given site.
         """
         if isinstance(atom, Atom):
             return atom
@@ -742,7 +768,7 @@ class Lattice:
         num_distances : int, optional
             The number of neighbor-distance levels, e.g. setting to `1` means
             only nearest neighbors. The default are nearest neighbor connections.
-        analyze : bool
+        analyze : bool, optional
             If `True` the lattice basis is analyzed after adding connections.
             If `False` the `analyze`-method needs to be called manually.
             The default is `True`.
@@ -766,7 +792,7 @@ class Lattice:
             self.analyze()
 
     def set_num_neighbors(self, num_neighbors: int = 1, analyze: bool = True) -> None:
-        """ Sets the maximal neighbor distance of the lattice.
+        """Sets the maximal neighbor distance of the lattice.
 
         Parameters
         ----------
@@ -833,7 +859,7 @@ class Lattice:
     def _analyze_raw(self, max_distidx):
         """Analyzes the structure of the raw lattice (without connections)."""
         n = self.num_base
-        # Compute raw neighbors of unitcell
+        # Compute raw neighbors of unit cell
         neighbor_array = self._compute_base_neighbors(max_distidx)
 
         # Compute the raw distance matrix and the raw number of neighbors
@@ -844,7 +870,7 @@ class Lattice:
             raw_distance_matrix[a1][a2] += list(neighbors.keys())
             raw_num_neighbors[a1, a2] = sum(len(x) for x in neighbors.values())
 
-        # Save raw neighbor data of the unitcell
+        # Save raw neighbor data of the unit cell
         self._raw_base_neighbors = neighbor_array
         self._raw_distance_matrix = raw_distance_matrix
         self._raw_num_neighbors = raw_num_neighbors
@@ -854,7 +880,7 @@ class Lattice:
     def analyze(self) -> None:
         """Analyzes the structure of the lattice and stores neighbor data.
 
-        Checks distances between all sites of the bravais lattice and saves n lowest
+        Check's distances between all sites of the bravais lattice and saves `n` lowest
         values. The neighbor lattice-indices of the unit-cell are also stored for
         later use. This speeds up many calculations like finding nearest neighbors.
 
@@ -940,13 +966,13 @@ class Lattice:
 
         Parameters
         ----------
-        nvec: (N) array_like or int
+        nvec : (N) array_like or int
             The translation vector.
-        alpha: int, optional
+        alpha : int, optional
             The atom index, default is 0.
         Returns
         -------
-        pos: (N) np.ndarray
+        pos : (N) np.ndarray
             The position of the transformed lattice site.
 
         Examples
@@ -968,29 +994,49 @@ class Lattice:
 
         Parameters
         ----------
-        indices: (N, D+1) array_like or int
+        indices : (N, D+1) array_like or int
             List of lattice indices in the format :math:'(n_1, ..., n_d, \alpha)'.
 
         Returns
         -------
-        pos: (N, D) np.ndarray
+        pos : (N, D) np.ndarray
             The positions of the lattice sites.
+
+        Examples
+        --------
+        >>> latt = Lattice(np.eye(2))
+        >>> latt.add_atom()
+        >>> latt.add_connections(1)
+        >>> ind = [[0, 0, 0], [1, 0, 0], [1, 1, 0]]
+        >>> latt.get_positions(ind)
+        [[0. 0.]
+         [1. 0.]
+         [1. 1.]]
         """
+        indices = np.asarray(indices)
         nvecs, alphas = indices[:, :-1], indices[:, -1]
         return self.translate(nvecs, np.array(self.atom_positions)[alphas])
 
     def estimate_index(self, pos: Union[float, Sequence[float]]) -> np.ndarray:
-        """Returns the nearest matching lattice index (n, alpha) for global position.
+        """Returns the nearest matching lattice index (n, alpha) for a position.
 
         Parameters
         ----------
-        pos: array_like or float
-            The global site position.
+        pos : array_like or float
+            The position of the site in world coordinates.
 
         Returns
         -------
-        nvec: np.ndarray
+        nvec : np.ndarray
             The estimated translation vector :math:`n`.
+
+        Examples
+        --------
+        >>> latt = Lattice(np.eye(2))
+        >>> latt.add_atom()
+        >>> latt.add_connections(1)
+        >>> latt.estimate_index([1.2, 0.2])
+        [1 0]
         """
         pos = np.asarray(pos)
         n = np.asarray(np.round(self._vectors_inv @ pos, decimals=0), dtype="int")
@@ -999,25 +1045,37 @@ class Lattice:
     def get_neighbors(self, nvec: Union[int, Sequence[int]] = None,
                       alpha: int = 0,
                       distidx: int = 0) -> np.ndarray:
-        """Returns the neighour-indices of a given site by transforming neighbor data.
+        """Returns the neighour indices of a given site by transforming neighbor data.
+
+        Parameters
+        ----------
+        nvec: (D) array_like or int, optional
+            The translation vector, the default is the origin.
+        alpha: int, optional
+            The atom index, default is 0.
+        distidx: int, optional
+            The index of distance to the neighbors, default is 0 (nearest neighbors).
+
+        Returns
+        -------
+        indices: (N, D+1) np.ndarray
+            The lattice indices of the neighbor sites.
 
         Raises
         ------
         NoBaseNeighboursError
             Raised if the lattice distances and base-neighbors haven't been computed.
 
-        Parameters
-        ----------
-        nvec: (D) array_like or int, optional
-            translation vector of site, the default is the origin.
-        alpha: int, optional
-            site index, default is 0.
-        distidx: int, default
-            index of distance to neighbors, defauzlt is 0 (nearest neighbors).
-
-        Returns
-        -------
-        indices: (N, D) np.ndarray
+        Examples
+        --------
+        >>> latt = Lattice(np.eye(2))
+        >>> latt.add_atom()
+        >>> latt.add_connections(1)
+        >>> latt.get_neighbors(nvec=[0, 0], alpha=0, distidx=0)
+        [[ 1  0  0]
+         [ 0 -1  0]
+         [-1  0  0]
+         [ 0  1  0]]
         """
         if nvec is None:
             nvec = np.zeros(self.dim)
@@ -1039,7 +1097,7 @@ class Lattice:
     def get_neighbor_positions(self, nvec: Union[int, Sequence[int]] = None,
                                alpha: int = 0,
                                distidx: int = 0) -> np.ndarray:
-        """Returns the neighour-positions of a given site by transforming neighbor data.
+        """Returns the neighour positions of a given site by transforming neighbor data.
 
         Raises
         ------
@@ -1049,15 +1107,32 @@ class Lattice:
         Parameters
         ----------
         nvec: (D) array_like or int, optional
-            translation vector of site, the default is the origin.
+            The translation vector, the default is the origin.
         alpha: int, optional
-            site index, default is 0.
+           The site index, default is 0.
         distidx: int, default
-            index of distance to neighbors, default is 0 (nearest neighbors).
+            The index of distance to the neighbors, default is 0 (nearest neighbors).
 
         Returns
         -------
         positions: (N, D) np.ndarray
+            The positions of the neighbor sites.
+
+        Raises
+        ------
+        NoBaseNeighboursError
+            Raised if the lattice distances and base-neighbors haven't been computed.
+
+        Examples
+        --------
+        >>> latt = Lattice(np.eye(2))
+        >>> latt.add_atom()
+        >>> latt.add_connections(1)
+        >>> latt.get_neighbor_positions(nvec=[0, 0], alpha=0, distidx=0)
+        [[ 1.  0.]
+         [ 0. -1.]
+         [-1.  0.]
+         [ 0.  1.]]
         """
         if nvec is None:
             nvec = np.zeros(self.dim)
@@ -1076,25 +1151,37 @@ class Lattice:
 
     def get_neighbor_vectors(self, alpha: int = 0, distidx: int = 0,
                              include_zero: bool = False) -> np.ndarray:
-        """Returns the neighours of a given site by transforming neighbor data.
-
-        Raises
-        ------
-        NoBaseNeighboursError
-            Raised if the lattice distances and base-neighbors haven't been computed.
+        """Returns the vectors to the neigbor sites of an atom in the unit cell.
 
         Parameters
         ----------
         alpha : int, optional
             Index of the base atom. The default is the first atom in the unit cell.
         distidx : int, default
-            Index of distance to neighbors, default is 0 (nearest neighbors).
+            Index of distance to the neighbors, default is 0 (nearest neighbors).
         include_zero : bool, optional
             Flag if zero-vector is included in result. The default is False.
 
         Returns
         -------
         vectors : np.ndarray
+            The vectors from the site of the atom :math:`alpha` to the neighbor sites.
+
+        Raises
+        ------
+        NoBaseNeighboursError
+            Raised if the lattice distances and base-neighbors haven't been computed.
+
+        Examples
+        --------
+        >>> latt = Lattice(np.eye(2))
+        >>> latt.add_atom()
+        >>> latt.add_connections(1)
+        >>> latt.get_neighbor_vectors(alpha=0, distidx=0)
+        [[ 1.  0.]
+         [ 0. -1.]
+         [-1.  0.]
+         [ 0.  1.]]
         """
         if not self._base_neighbors:
             raise NoBaseNeighborsError()
@@ -1116,16 +1203,16 @@ class Lattice:
 
         Parameters
         ----------
-        k: array_like
+        k : array_like
             The wavevector to compute the lattice Fourier-weights.
         alpha : int, optional
             Index of the base atom. The default is the first atom in the unit cell.
         distidx : int, default
-            Index of distance to neighbors, default is 0 (nearest neighbors).
+            Index of distance to the neighbors, default is 0 (nearest neighbors).
 
         Returns
         -------
-        weight: np.ndarray
+        weight : np.ndarray
         """
         vecs = self.get_neighbor_vectors(alpha=alpha, distidx=distidx)
         # weights = np.sum([np.exp(1j * np.dot(k, v)) for v in vecs])
@@ -1138,12 +1225,12 @@ class Lattice:
 
         Parameters
         ----------
-        atleast2d: bool, optional
-            If 'True', one-dimensional coordinates will be casted to 2D vectors.
+        atleast2d : bool, optional
+            If 'True', one-dimensional coordinates will be cast to 2D vectors.
 
         Returns
         -------
-        atom_pos: dict
+        atom_pos : dict
         """
         atom_pos = dict()
         for atom, pos in zip(self._atoms, self._positions):

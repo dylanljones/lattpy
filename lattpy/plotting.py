@@ -21,7 +21,7 @@ from mpl_toolkits.mplot3d.art3d import Line3DCollection, Line3D, Poly3DCollectio
 __all__ = [
     "set_margins", "set_padding", "set_limits", "draw_line", "draw_lines",
     "draw_arrows", "draw_vectors", "draw_points", "draw_indices", "draw_cell",
-    "draw_surfaces"
+    "draw_surfaces", "interpolate_to_grid"
 ]
 
 # Golden ratio as standard ratio for plot-figures

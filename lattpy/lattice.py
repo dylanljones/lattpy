@@ -69,6 +69,7 @@ class Lattice:
     >>> latt = Lattice(np.eye(2))
     >>> latt.add_atom()
     >>> latt.add_connections(1)
+    Lattice(dim: 2, num_base: 1, shape: None)
     """
 
     DIST_DECIMALS: int = 6        # Decimals used for rounding distances
@@ -233,47 +234,79 @@ class Lattice:
 
     def itransform(self, world_coords: Union[Sequence[int], Sequence[Sequence[int]]]
                    ) -> np.ndarray:
-        """Transform the world coords (x, y, ...) into the basis coords (n, m, ...)
+        """Transform the world coords (x, y, ...) into the basis coords (n, m, ...).
 
         Parameters
         ----------
         world_coords : (..., N) array_like
+            The coordinates in the world coordinate system that are transformed
+            into the lattice coordinate system.
 
         Returns
         -------
         basis_coords : (..., N) np.ndarray
+            The coordinates in the lattice coordinate system.
+
+        Examples
+        --------
+        Construct a lattice with basis vectors :math:`a_1 = (2, 0)` and
+        :math:`a_2 = (0, 1)`:
+        >>> latt = Lattice([[2, 0], [0, 1]])
+        Transform points into the coordinat system of the lattice:
+        >>> latt.itransform([2, 0])
+        [1. 0.]
+        >>> latt.itransform([4, 0])
+        [2. 0.]
+        >>> latt.itransform([0, 1])
+        [0. 1.]
         """
         world_coords = np.atleast_1d(world_coords)
         return np.inner(world_coords, self._vectors_inv)
 
     def transform(self, basis_coords: Union[Sequence[int], Sequence[Sequence[int]]]
                   ) -> np.ndarray:
-        """ Transform the basis-coords (n, m, ...) into the world coords (x, y, ...)
+        """Transform the basis-coords (n, m, ...) into the world coords (x, y, ...).
 
         Parameters
         ----------
         basis_coords : (..., N) array_like
+            The coordinates in the lattice coordinate system that are transformed
+            into the world coordinate system.
 
         Returns
         -------
         world_coords : (..., N) np.ndarray
+            The coordinates in the cartesian coordinate system.
+
+        Examples
+        --------
+        Construct a lattice with basis vectors :math:`a_1 = (2, 0)` and
+        :math:`a_2 = (0, 1)`:
+        >>> latt = Lattice([[2, 0], [0, 1]])
+        Transform points into the world coordinat system:
+        >>> latt.itransform([1, 0])
+        [2. 0.]
+        >>> latt.itransform([2, 0])
+        [4. 0.]
+        >>> latt.itransform([0, 1])
+        [0. 1.]
         """
         basis_coords = np.atleast_1d(basis_coords)
         return np.inner(basis_coords, self._vectors)
 
     def translate(self, nvec: Union[int, Sequence[int], Sequence[Sequence[int]]],
                   r: Union[float, Sequence[float]] = 0.0) -> np.ndarray:
-        r""" Translates the given postion vector r by the translation vector n.
+        r"""Translates the given postion vector `r` by the translation vector `n`.
 
-        The position is calculated using the translation vector .math`n` and the
-        atom position in the unitcell .math:`r`:
-        ..math::
+        The position is calculated using the translation vector :math:`n` and the
+        atom position in the unitcell _math:`r`:
+        .. math::
             R = \sum_i n_i v_i + r
 
         Parameters
         ----------
         nvec : (..., N) array_like
-            Translation vector in the lattice basis.
+            Translation vector in the lattice coordinate system.
         r : (N) array_like, optional
             The position in cartesian coordinates. If no vector is passed only
             the translation is returned.
@@ -281,13 +314,37 @@ class Lattice:
         Returns
         -------
         r_trans : (N) np.ndarray
+            The translated position.
+
+        Examples
+        --------
+        Construct a lattice with basis vectors :math:`a_1 = (2, 0)` and
+        :math:`a_2 = (0, 1)`:
+        >>> latt = Lattice([[2, 0], [0, 1]])
+        Translate the origin:
+        >>> n = [1, 0]
+        >>> latt.translate(n)
+        [2. 0.]
+
+        Translate a point:
+        >>> p = [0.5, 0.5]
+        >>> latt.translate(n, p)
+        [2.5 0.5]
+
+        Translate a point by multiple translation vectors:
+        >>> p = [0.5, 0.5]
+        >>> nvecs = [[0, 0], [1, 0], [2, 0]]
+        >>> latt.translate(nvecs, p)
+        [[0.5 0.5]
+         [2.5 0.5]
+         [4.5 0.5]]
         """
         r = np.atleast_1d(r)
         nvec = np.atleast_1d(nvec)
         return r + np.inner(nvec, self._vectors)
 
     def itranslate(self, x: Union[float, Sequence[float]]) -> [np.ndarray, np.ndarray]:
-        """ Returns the translation vector and atom position of the given position.
+        """Returns the translation vector and atom position of the given position.
 
         Parameters
         ----------
@@ -300,6 +357,16 @@ class Lattice:
             Translation vector in the lattice basis.
         r : (N) np.ndarray, optional
             The position in real-space.
+
+        Examples
+        --------
+        Construct a lattice with basis vectors :math:`a_1 = (2, 0)` and
+        :math:`a_2 = (0, 1)`:
+        >>> latt = Lattice([[2, 0], [0, 1]])
+        >>> latt.itranslate([2, 0])
+        (array([1., 0.]), array([0., 0.]))
+        >>> latt.itranslate([2.5, 0.5])
+        (array([1., 0.]), array([0.5, 0.5]))
         """
         x = np.atleast_1d(x)
         itrans = self.itransform(x)
@@ -308,9 +375,9 @@ class Lattice:
         return nvec, r
 
     def is_reciprocal(self, vecs: vecs_t, tol: float = RVEC_TOLERANCE) -> bool:
-        r""" Checks if the given vectors are reciprocal to the lattice vectors.
+        r"""Checks if the given vectors are reciprocal to the lattice vectors.
 
-        The lattice- and reciprocal vectors .math'a_i' and .math'b_i' must satisfy
+        The lattice- and reciprocal vectors :math:'a_i' and :math:'b_i' must satisfy
         the relation
         .. math::
             a_i \cdot b_i = 2 \pi \delta_{ij}
@@ -328,6 +395,7 @@ class Lattice:
         Returns
         -------
         is_reciprocal : bool
+            Flag if the vectors are reciprocal to the lattice basis vectors.
         """
         vecs = np.atleast_2d(vecs)
         two_pi = 2 * np.pi
@@ -338,9 +406,9 @@ class Lattice:
 
     def reciprocal_vectors(self, tol: float = RVEC_TOLERANCE,
                            check: bool = False) -> np.ndarray:
-        r""" Computes the reciprocal basis vectors of the bravais lattice.
+        r"""Computes the reciprocal basis vectors of the bravais lattice.
 
-        The lattice- and reciprocal vectors .math'a_i' and .math'b_i' must satisfy
+        The lattice- and reciprocal vectors :math:'a_i' and :math:'b_i' must satisfy
         the relation
         .. math::
             a_i \cdot b_i = 2 \pi \delta_{ij}
@@ -355,6 +423,7 @@ class Lattice:
         Returns
         -------
         v_rec : np.ndarray
+            The reciprocal basis vectors of the lattice.
         """
         two_pi = 2 * np.pi
         if self.dim == 1:
@@ -386,7 +455,7 @@ class Lattice:
         return rvecs
 
     def reciprocal_lattice(self, min_negative: bool = False) -> 'Lattice':
-        """Creates the lattice in reciprocal space
+        """Creates the lattice in reciprocal space.
 
         Parameters
         ----------
@@ -397,6 +466,12 @@ class Lattice:
         Returns
         -------
         rlatt : Lattice
+            The lattice in reciprocal space
+
+        See Also
+        --------
+        reciprocal_vectors : Constructs the reciprocal vectors used for the
+            reciprocal lattice
         """
         rvecs = self.reciprocal_vectors(min_negative)
         rlatt = self.__class__(rvecs)
@@ -405,7 +480,7 @@ class Lattice:
     def get_neighbor_cells(self, distidx: int = 0,
                            include_origin: bool = True,
                            comparison: Callable = np.isclose) -> np.ndarray:
-        """ Find all neighboring unit cells.
+        """Find all neighboring unit cells of the unit cell at the origin.
 
         Parameters
         ----------
@@ -419,6 +494,7 @@ class Lattice:
         Returns
         -------
         indices : np.ndarray
+            The lattice indeices of the neighboring unit cells.
         """
         # Build cell points
         max_factor = distidx + 1
@@ -452,6 +528,7 @@ class Lattice:
         Returns
         -------
         ws_cell : WignerSeitzCell
+            The Wigner-Seitz cell of the lattice.
         """
         nvecs = self.get_neighbor_cells(include_origin=True)
         positions = np.dot(nvecs, self.vectors[np.newaxis, :, :])[:, 0, :]
@@ -471,6 +548,7 @@ class Lattice:
         Returns
         -------
         ws_cell : WignerSeitzCell
+            The Wigner-Seitz cell of the reciprocal lattice.
         """
         rvecs = self.reciprocal_vectors(min_negative)
         rlatt = self.__class__(rvecs)
@@ -483,15 +561,7 @@ class Lattice:
                  relative: bool = False,
                  neighbors: int = 0,
                  **kwargs) -> Atom:
-        """ Adds a site to the basis of the lattice unit-cell.
-
-        Raises
-        ------
-        ValueError
-            Raised if the dimension of the position does not match the dimension
-            of the lattice.
-        ConfigurationError
-            Raised if the position of the new atom is already occupied.
+        """Adds a site to the basis of the lattice unit cell.
 
         Parameters
         ----------
@@ -516,6 +586,15 @@ class Lattice:
         Returns
         -------
         atom: Atom
+            The `Atom`-instance of the newly added site.
+
+        Raises
+        ------
+        ValueError
+            Raised if the dimension of the position does not match the dimension
+            of the lattice.
+        ConfigurationError
+            Raised if the position of the new atom is already occupied.
         """
         pos = np.zeros(self.dim) if pos is None else np.atleast_1d(pos)
         if relative:
@@ -560,6 +639,22 @@ class Lattice:
         Returns
         -------
         alpha: int or list of int
+            The atom indices. If a string was passed multiple atoms with the same name
+            can be returned as list.
+
+        Examples
+        --------
+        Construct a lattice with two identical atoms and a thrid atom in the unit cell:
+        >>> latt = Lattice(np.eye(2))
+        >>> latt.add_atom([0, 0], atom="A")
+        >>> latt.add_atom([0.5, 0], atom="B")
+        >>> latt.add_atom([0.5, 0.5], atom="B")
+
+        Get the atom index of atom `A`:
+        >>> latt.get_alpha("A")
+        [0]
+        >>> latt.get_alpha("B")
+        [1, 2]
         """
         if isinstance(atom, Atom):
             return self._atoms.index(atom)
@@ -568,7 +663,7 @@ class Lattice:
         return atom
 
     def get_atom(self, atom: Union[int, str, Atom]) -> Atom:
-        """ Returns the Atom object of the given atom in the unit cell
+        """Returns the `Atom` object of the given atom in the unit cell
 
         Parameters
         ----------
@@ -580,6 +675,7 @@ class Lattice:
         Returns
         -------
         atom: Atom
+            The `Atom` instance of the given site
         """
         if isinstance(atom, Atom):
             return atom
@@ -604,10 +700,31 @@ class Lattice:
         num_distances : int, optional
             The number of neighbor-distance levels, e.g. setting to `1` means
             only nearest neighbors. The default are nearest neighbor connections.
-        analyze : bool
+        analyze : bool, optional
             If `True` the lattice basis is analyzed after adding connections.
             If `False` the `analyze`-method needs to be called manually.
             The default is `False`.
+
+        See Also
+        --------
+        add_connections : Set up connections for all atoms in the unit cell in one call.
+        analyze : Called after setting up all the lattice connections.
+
+        Examples
+        --------
+        Construct a square lattice with two atoms, A and B, in the unit cell:
+        >>> latt = Lattice(np.eye(2))
+        >>> latt.add_atom([0.0, 0.0], atom="A")
+        >>> latt.add_atom([0.5, 0.5], atom="B")
+
+        Set next nearest and nearest neighbors between the A atoms:
+        >>> latt.add_connection("A", "A", num_distances=2)
+
+        Set nearest neighbors between A and B:
+        >>> latt.add_connection("A", "B", num_distances=1)
+
+        Set nearest neighbors between the B atoms:
+        >>> latt.add_connection("B", "B", num_distances=1)
         """
         alpha1 = np.atleast_1d(self.get_alpha(atom1))
         alpha2 = np.atleast_1d(self.get_alpha(atom2))
@@ -618,7 +735,7 @@ class Lattice:
             self.analyze()
 
     def add_connections(self, num_distances=1, analyze: bool = True) -> None:
-        """ Sets the number of distances for all possible atom-pairs of the unitcell.
+        """Sets the number of distances for all possible atom-pairs of the unitcell.
 
         Parameters
         ----------
@@ -629,6 +746,20 @@ class Lattice:
             If `True` the lattice basis is analyzed after adding connections.
             If `False` the `analyze`-method needs to be called manually.
             The default is `True`.
+
+        See Also
+        --------
+        add_connection : Set up connection between two specific atoms in the unit cell.
+        analyze : Called after setting up all the lattice connections.
+
+        Examples
+        --------
+        Construct a square lattice with one atom in the unit cell:
+        >>> latt = Lattice(np.eye(2))
+        >>> latt.add_atom()
+
+        Set nearest neighbor hopping:
+        >>> latt.add_connections(num_distances=1)
         """
         self._connections.fill(num_distances)
         if analyze:
@@ -732,6 +863,21 @@ class Lattice:
         NoAtomsError
             Raised if no atoms where added to the lattice. The atoms in the unit cell
             are needed for computing the neighbors and distances of the lattice.
+
+        Notes
+        -----
+        Before calling the `analyze` function all connections in the lattice have to
+        be set up.
+
+        Examples
+        --------
+        Construct a square lattice with one atom in the unit cell and nearest neighbors:
+        >>> latt = Lattice(np.eye(2))
+        >>> latt.add_atom()
+        >>> latt.add_connections(num_distances=1)
+
+        Call `analyze` after setting up the connections
+        >>> latt.analyze()
         """
         logger.debug("Analyzing lattice")
 
@@ -790,17 +936,26 @@ class Lattice:
 
     def get_position(self, nvec: Union[int, Sequence[int]] = None,
                      alpha: int = 0) -> np.ndarray:
-        """ Returns the position for a given translation vector and site index
+        """Returns the position for a given translation vector `nvec` and atom `alpha`.
 
         Parameters
         ----------
         nvec: (N) array_like or int
-            translation vector.
+            The translation vector.
         alpha: int, optional
-            site index, default is 0.
+            The atom index, default is 0.
         Returns
         -------
         pos: (N) np.ndarray
+            The position of the transformed lattice site.
+
+        Examples
+        --------
+        >>> latt = Lattice(np.eye(2))
+        >>> latt.add_atom()
+        >>> latt.add_connections(1, analyze=True)
+        >>> latt.get_position([1, 0], alpha=0)
+        [1. 0.]
         """
         r = self._positions[alpha]
         if nvec is None:
@@ -809,32 +964,33 @@ class Lattice:
         return r + (self._vectors @ n)  # self.translate(n, r)
 
     def get_positions(self, indices):
-        """Returns the positions for multiple lattice indices
+        """Returns the positions for multiple lattice indices.
 
         Parameters
         ----------
         indices: (N, D+1) array_like or int
-            List of lattice indices.
+            List of lattice indices in the format :math:'(n_1, ..., n_d, \alpha)'.
 
         Returns
         -------
         pos: (N, D) np.ndarray
+            The positions of the lattice sites.
         """
         nvecs, alphas = indices[:, :-1], indices[:, -1]
         return self.translate(nvecs, np.array(self.atom_positions)[alphas])
 
     def estimate_index(self, pos: Union[float, Sequence[float]]) -> np.ndarray:
-        """ Returns the nearest matching lattice index (n, alpha) for global position.
+        """Returns the nearest matching lattice index (n, alpha) for global position.
 
         Parameters
         ----------
         pos: array_like or float
-            global site position.
+            The global site position.
 
         Returns
         -------
-        n: np.ndarray
-            estimated translation vector n
+        nvec: np.ndarray
+            The estimated translation vector :math:`n`.
         """
         pos = np.asarray(pos)
         n = np.asarray(np.round(self._vectors_inv @ pos, decimals=0), dtype="int")

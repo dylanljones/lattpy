@@ -462,6 +462,7 @@ class Lattice:
 
         return rvecs
 
+    # noinspection PyShadowingNames
     def reciprocal_lattice(self, min_negative: bool = False) -> 'Lattice':
         """Creates the lattice in reciprocal space.
 
@@ -621,6 +622,23 @@ class Lattice:
             of the lattice.
         ConfigurationError
             Raised if the position of the new atom is already occupied.
+
+        Examples
+        --------
+        Construct a square lattice
+        >>> latt = Lattice(np.eye(2))
+
+        Create an atom and add it to the origin of the unit cell of the lattice
+        >>> atom1 = Atom(name="A")
+        >>> latt.add_atom([0.0, 0.0], atom=atom1)
+        >>> latt.get_atom(0)
+        Atom(A, size=10, 0)
+
+        An `Atom` instance can also be created by passing the name of the (new) atom
+        and optional keyword arguments for the constructor:
+        >>> latt.add_atom([0.5, 0.5], atom="B", size=15)
+        >>> latt.get_atom(1)
+        Atom(B, size=15, 1)
         """
         pos = np.zeros(self.dim) if pos is None else np.atleast_1d(pos)
         if relative:
@@ -670,7 +688,7 @@ class Lattice:
 
         Examples
         --------
-        Construct a lattice with two identical atoms and a thrid atom in the unit cell:
+        Construct a lattice with two identical atoms and a third atom in the unit cell:
         >>> latt = Lattice(np.eye(2))
         >>> latt.add_atom([0, 0], atom="A")
         >>> latt.add_atom([0.5, 0], atom="B")
@@ -679,8 +697,13 @@ class Lattice:
         Get the atom index of atom `A`:
         >>> latt.get_alpha("A")
         [0]
+
+        Get the indices of the atoms `B`:
         >>> latt.get_alpha("B")
         [1, 2]
+
+        Since there are two atoms `B` in the unit cell of the lattice both indices
+        are returned.
         """
         if isinstance(atom, Atom):
             return self._atoms.index(atom)
@@ -689,7 +712,7 @@ class Lattice:
         return atom
 
     def get_atom(self, atom: Union[int, str, Atom]) -> Atom:
-        """Returns the `Atom` object of the given atom in the unit cell.
+        """Returns the `Atom` instance of the given atom in the unit cell.
 
         Parameters
         ----------
@@ -702,6 +725,25 @@ class Lattice:
         -------
         atom : Atom
             The `Atom` instance of the given site.
+
+        See Also
+        --------
+        get_alpha : Get the index of the given atom.
+
+        Examples
+        --------
+        Construct a lattice with one atom in the unit cell
+        >>> latt = Lattice(np.eye(2))
+        >>> latt.add_atom([0, 0], atom="A")
+
+        Get the atom instance by the name
+        >>> latt.get_atom("A")
+        Atom(A, size=10, 0)
+
+        or by the index:
+        >>> latt.get_atom(0)
+        Atom(A, size=10, 0)
+
         """
         if isinstance(atom, Atom):
             return atom
@@ -880,9 +922,9 @@ class Lattice:
     def analyze(self) -> None:
         """Analyzes the structure of the lattice and stores neighbor data.
 
-        Check's distances between all sites of the bravais lattice and saves `n` lowest
-        values. The neighbor lattice-indices of the unit-cell are also stored for
-        later use. This speeds up many calculations like finding nearest neighbors.
+        Check's distances between all sites of the bravais lattice and saves the `n`
+        lowest values. The neighbor lattice-indices of the unit-cell are also stored
+        for later use. This speeds up many calculations like finding nearest neighbors.
 
         Raises
         ------
@@ -1231,6 +1273,19 @@ class Lattice:
         Returns
         -------
         atom_pos : dict
+            The positions of the atoms as a dictionary.
+
+        Examples
+        --------
+        >>> latt = Lattice(np.eye(2))
+        >>> latt.add_atom([0, 0], atom="A")
+        >>> latt.add_atom([0.5, 0], atom="B")
+        >>> latt.add_atom([0.5, 0.5], atom="B")
+        >>> latt.get_base_atom_dict()
+        {
+            Atom(A, size=10, 0): [array([0, 0])],
+            Atom(B, size=10, 1): [array([0.5, 0. ]), array([0.5, 0.5])]
+        }
         """
         atom_pos = dict()
         for atom, pos in zip(self._atoms, self._positions):
@@ -1250,7 +1305,7 @@ class Lattice:
                                   dtype: Union[int, np.dtype] = None,
                                   oversample: float = 0.0,
                                   ) -> np.ndarray:
-        """Constructs the translation vectors .math:`n` in the basis for a given shape.
+        """Constructs the translation vectors :math:`n` in a given shape.
 
         Raises
         ------
@@ -1272,7 +1327,7 @@ class Lattice:
             filtered. The default is `True`. This should only be disabled if
             filtered later.
         dtype: int or np.dtype, optional
-            Optional data-type for storing the lattice indices. By default the given
+            Optional data-type for storing the lattice indices. By default, the given
             limits are checked to determine the smallest possible data-type.
         oversample: float, optional
             Faktor for upscaling limits for initial index grid. This ensures that all
@@ -1282,7 +1337,21 @@ class Lattice:
         Returns
         -------
         nvecs: (M, N) np.ndarray
-            The translation-vectors in lattice-coordinates
+            The translation-vectors in lattice-coordinates.
+
+        Examples
+        --------
+        >>> latt = Lattice(np.eye(2))
+        >>> latt.build_translation_vectors((2, 2))
+        [[0 0]
+         [0 1]
+         [0 2]
+         [1 0]
+         [1 1]
+         [1 2]
+         [2 0]
+         [2 1]
+         [2 2]]
         """
         shape = np.atleast_1d(shape)
         if len(shape) != self.dim:
@@ -1313,7 +1382,7 @@ class Lattice:
 
         # Generate translation vectors with too many points to reach each corner
         nvecs = vindices(limits, sort_axis=0, dtype=dtype)
-        logger.debug("%s Translation vectors buildt", len(nvecs))
+        logger.debug("%s Translation vectors built", len(nvecs))
         if check:
             logger.debug("Filtering nvec's")
             # Filter points in the given volume
@@ -1324,6 +1393,7 @@ class Lattice:
             nvecs = nvecs[mask]
         return nvecs
 
+    # noinspection PyShadowingNames
     def check_points(self, points: np.ndarray,
                      shape: Union[int, Sequence[int]],
                      relative: bool = False,
@@ -1350,6 +1420,15 @@ class Lattice:
         Returns
         -------
         mask: (M) np.ndarray
+            The mask for the points inside the shape.
+
+        Examples
+        --------
+        >>> latt = Lattice(np.eye(2))
+        >>> shape = (2, 2)
+        >>> points = np.array([[0, 0], [2, 2], [3, 2]])
+        >>> latt.check_points(points, shape)
+        [ True  True False]
         """
         shape = np.atleast_1d(shape)
         if len(shape) != self.dim:
@@ -1367,6 +1446,7 @@ class Lattice:
             mask = mask & (pos[i] <= points[:, i]) & (points[:, i] <= end[i])
         return mask
 
+    # noinspection PyShadowingNames
     def build_indices(self, shape: Union[int, Sequence[int]],
                       relative: bool = False,
                       pos: Union[float, Sequence[float]] = None,
@@ -1410,13 +1490,43 @@ class Lattice:
         -------
         indices: (M, N+1) np.ndarray
             The lattice indices of the sites in the format
-            .math:`(n_1, .. n_d, \alpha)`.
+            .math:`(n_1, ..., n_d, \alpha)`.
         positions: (M, N) np.ndarray
             Corresponding positions. Only returned if `return_positions` equals `True`.
+
+        Examples
+        --------
+        Build indices of a linear chain with two atoms in the unit cell:
+        >>> latt = Lattice(np.eye(2))
+        >>> latt.add_atom([0.0, 0.0], "A")
+        >>> latt.add_atom([0.5, 0.5], "B")
+        >>> indices, positions = latt.build_indices((2, 1), return_pos=True)
+
+        The indices contain the translation vector and the atom index
+        >>> indices
+        [[0 0 0]
+         [0 0 1]
+         [0 1 0]
+         [1 0 0]
+         [1 0 1]
+         [1 1 0]
+         [2 0 0]
+         [2 1 0]]
+
+         The positions are the positions of the atoms in the same order of the indices:
+         >>> positions
+        [[0.  0. ]
+         [0.5 0.5]
+         [0.  1. ]
+         [1.  0. ]
+         [1.5 0.5]
+         [1.  1. ]
+         [2.  0. ]
+         [2.  1. ]]
         """
         logger.debug("Building lattice-indices: %s at %s", shape, pos)
 
-        # Build lattice inbdices
+        # Build lattice indices
         nvecs = self.build_translation_vectors(shape, relative, pos, check, dtype)
         ones = np.ones(nvecs.shape[0], dtype=nvecs.dtype)
         arrays = [np.c_[nvecs, i * ones] for i in range(self.num_base)]
@@ -1443,7 +1553,7 @@ class Lattice:
             positions = positions[mask]
 
         logger.debug("Created %i lattice sites", len(indices))
-        return indices, positions if return_pos else indices
+        return indices, positions if return_pos else None
 
     def _filter_neighbors(self, indices, neighbors, distances, x_ind=None):
         logger.debug("Filtering neighbors")
@@ -1481,27 +1591,65 @@ class Lattice:
 
         return neighbors, distances
 
+    # noinspection PyShadowingNames
     def compute_neighbors(self, indices: ArrayLike, positions: ArrayLike,
                           num_jobs: int = 1) -> Tuple[np.ndarray, np.ndarray]:
-        """ Computes the neighbors for the given points.
+        """Computes the neighbors for the given points.
 
         Parameters
         ----------
-        indices : array_like
+        indices : (N, D+1) array_like
             The lattice indices of the sites in the format
-            .math:`(n_1, .. n_d, \alpha)`.
-        positions : array_like
-            The positions of the sites in cartesian coordinates.
+            .math:`(n_1, ..., n_D, \alpha)` where N is the number of sites and D the
+            dimension of the lattice.
+        positions : (N, D) array_like
+            The positions of the sites in cartesian coordinates where N is the number
+            of sites and D the dimension of the lattice.
         num_jobs : int, optional
             Number of jobs to schedule for parallel processing.
             If -1 is given all processors are used. The default is `1`.
 
         Returns
         -------
-        neighbors: (..., M) np.ndarray
-            The indices of the neighbors in `positions`.
-        distances: (..., M) np.ndarray
+        neighbors: (N, M) np.ndarray
+            The indices of the neighbors in `positions`. M is the maximum
+            number of neighbors previously computed in the `analyze` method.
+        distances: (N, M) np.ndarray
             The corresponding distances of the neighbors.
+
+        See Also
+        --------
+        analyze : Used to pre-compute the base neighbors of the unit cell.
+
+        Examples
+        --------
+        Construct indices of a one dimensional lattice:
+        >>> latt = Lattice(1)
+        >>> latt.add_atom()
+        >>> latt.add_connections()
+        >>> indices, positions = latt.build_indices(3, return_pos=True)
+        >>> positions
+        [[0.]
+         [1.]
+         [2.]
+         [3.]]
+
+        Compute the neighbors of the constructed sites
+        >>> neighbors, distances = latt.compute_neighbors(indices, positions)
+        >>> neighbors
+        [[1 4]
+         [2 0]
+         [3 1]
+         [2 4]]
+        >>> indices
+        [[ 1. inf]
+         [ 1.  1.]
+         [ 1.  1.]
+         [ 1. inf]]
+
+        The neighbor indices and distances of sites with less than the maximum number
+        of neighbors are filled up with an invalid index (here: 4) and `np.inf`
+        as distance.
         """
 
         logger.debug("Querying neighbors of %i points", len(positions))
@@ -1525,48 +1673,56 @@ class Lattice:
     # ==================================================================================
 
     def volume(self) -> float:
-        """The total volume (number of cells x cell-volume) of the buildt lattice."""
+        """The total volume (number of cells x cell-volume) of the built lattice.
+
+        Returns
+        -------
+        vol : float
+            The volume of the finite lattice structure.
+        """
         return self.cell_volume * np.unique(self.data.indices[:, :-1], axis=0).shape[0]
 
     def alpha(self, idx: int) -> int:
-        """Returns the atom component of the lattice index of the given site
-
-        Parameters
-        ----------
-        idx: int
-            Site index in the cached lattice data.
-
-        Returns
-        -------
-        alpha: int
-        """
-        return self.data.indices[idx, -1]
-
-    def atom(self, idx: int) -> Atom:
-        """ Returns the atom of a given site in the cached lattice data.
-
-        Parameters
-        ----------
-        idx: int
-            Site index in the cached lattice data.
-
-        Returns
-        -------
-        atom: Atom
-        """
-        return self._atoms[self.data.indices[idx, -1]]
-
-    def position(self, idx: int) -> np.ndarray:
-        """ Returns the position for a given site in the cached lattice data.
+        """Returns the atom component of the lattice index for a site in the lattice.
 
         Parameters
         ----------
         idx : int
-            Site index in the cached lattice data.
+            The super-index of a site in the cached lattice data.
 
         Returns
         -------
-        pos: (N) np.ndarray
+        alpha : int
+            The index of the atom in the unit cell.
+        """
+        return self.data.indices[idx, -1]
+
+    def atom(self, idx: int) -> Atom:
+        """Returns the atom of a given site in the cached lattice data.
+
+        Parameters
+        ----------
+        idx : int
+            The super-index of a site in the cached lattice data.
+
+        Returns
+        -------
+        atom : Atom
+        """
+        return self._atoms[self.data.indices[idx, -1]]
+
+    def position(self, idx: int) -> np.ndarray:
+        """Returns the position of a given site in the cached lattice data.
+
+        Parameters
+        ----------
+        idx : int
+            The super-index of a site in the cached lattice data.
+
+        Returns
+        -------
+        pos : (D, ) np.ndarray
+            The position of the lattice site.
         """
         return self.data.positions[idx]
 
@@ -1575,15 +1731,15 @@ class Lattice:
 
         Parameters
         ----------
-        pos : (D) array_like
-            The position (x, y, ...) of the site.
+        pos : (D, ) array_like
+            The position of the site in cartesian coordinates.
         atol : float, optional
-            The absolute tolerance for comparing positions
+            The absolute tolerance for comparing positions.
 
         Returns
         -------
-        index: int or None
-            The index (i) of the site
+        index : int or None
+            The super-index of the site in the cached lattice data.
         """
         diff = self.data.positions - np.array(pos)[None, :]
         indices = np.where(np.all(np.abs(diff) < atol, axis=1))[0]
@@ -1592,17 +1748,17 @@ class Lattice:
         return indices[0]
 
     def index_from_lattice_index(self, ind: ArrayLike) -> Optional[int]:
-        """Returns the index of a given lattice index.
+        """Returns the super-index of a site defined by the lattice index.
 
         Parameters
         ----------
-        ind : (D + 1) array_like
-            The lattice index (n_1, .., n_D, alpha) of the site.
+        ind : (D + 1, ) array_like
+            The lattice index (n_1, ..., n_D, alpha) of the site.
 
         Returns
         -------
-        index: int or None
-            The index (i) of the site
+        index : int or None
+            The super-index of the site in the cached lattice data.
         """
         diff = self.data.indices - np.array(ind)[None, :]
         indices = np.where(np.all(np.abs(diff) < 1e-4, axis=1))[0]
@@ -1612,36 +1768,38 @@ class Lattice:
 
     def neighbors(self, site: int, distidx: int = None,
                   unique: bool = False) -> np.ndarray:
-        """ Returns the neighours of a given site in the cached lattice data.
+        """Returns the neighours of a given site in the cached lattice data.
 
         Parameters
         ----------
-        site: int
-            Site index in the cached lattice data.
-        distidx: int, optional
-            Index of distance to neighbors, defauzlt is 0 (nearest neighbors).
-        unique: bool, optional
-            If 'True', each unique pair is only return once.
+        site : int
+            The super-index of a site in the cached lattice data.
+        distidx : int, optional
+            Index of distance to the neighbors, default is 0 (nearest neighbors).
+        unique : bool, optional
+            If 'True', each unique pair is only returned once.
 
         Returns
         -------
-        indices: np.ndarray of int
+        indices : np.ndarray of int
+            The super-indices of the neighbors.
         """
         return self.data.get_neighbors(site, distidx, unique=unique)
 
     def nearest_neighbors(self, idx: int, unique: bool = False) -> np.ndarray:
-        """ Returns the nearest neighours of a given site in the cached lattice data.
+        """Returns the nearest neighors of a given site in the cached lattice data.
 
         Parameters
         ----------
-        idx: int
-            Site index in the cached lattice data.
-        unique: bool, optional
+        idx : int
+            The super-index of a site in the cached lattice data.
+        unique : bool, optional
             If 'True', each unique pair is only return once.
 
         Returns
         -------
-        indices: np.ndarray of int
+        indices : (N, ) np.ndarray of int
+            The super-indices of the nearest neighbors.
         """
         return self.neighbors(idx, 0, unique)
 
@@ -1651,32 +1809,35 @@ class Lattice:
 
         Parameters
         ----------
-        site: int
-            Site index in the cached lattice data.
-        unique: bool, optional
+        site : int
+            The super-index of a site in the cached lattice data.
+        unique : bool, optional
             If 'True', each unique pair is only return once.
 
 
         Yields
         -------
-        distidx: int
-        neighbors: np.ndarray
+        distidx : int
+            The distance index of the neighbor indices.
+        neighbors : (N, ) np.ndarray
+            The super-indices of the neighbors for the corresponding distance level.
         """
         return self.data.iter_neighbors(site, unique)
 
     def check_neighbors(self, idx0: int, idx1: int) -> Union[float, None]:
-        """ Checks if two sites are neighbors and returns the distance-idx if they are.
+        """Checks if two sites are neighbors and returns the distance level if they are.
 
         Parameters
         ----------
-        idx0: int
-            First site index in the cached lattice data.
-        idx1: int
-            Second site index in the cached lattice data.
+        idx0 : int
+            The first super-index of a site in the cached lattice data.
+        idx1 : int
+            The second super-index of a site in the cached lattice data.
 
         Returns
         -------
-        distidx: int or None
+        distidx : int or None
+            The distance index of the two sites if they are neighbors.
         """
         for distidx in range(self.num_distances):
             if idx1 in self.neighbors(idx0, distidx):
@@ -1694,22 +1855,14 @@ class Lattice:
               ) -> LatticeData:
         """Constructs the indices and neighbors of a finite size lattice.
 
-        Raises
-        ------
-        ValueError
-            Raised if the dimension of the position doesn't match the dimension of
-            the lattice.
-        NoBaseNeighboursError
-            Raised if the lattice distances and base-neighbors haven't been computed.
-
         Parameters
         ----------
-        shape : (N) array_like or int
+        shape : (N, ) array_like or int
             shape of finite size lattice to build.
         relative : bool, optional
             If 'True' the shape will be multiplied by the cell size of the model.
             The default is `True`.
-        pos : (N) array_like or int, optional
+        pos : (N, ) array_like or int, optional
             Optional position of the section to build. If 'None' the origin is used.
         check : bool, optional
             If `True` the positions of the translation vectors are checked and filtered.
@@ -1725,6 +1878,14 @@ class Lattice:
             Optional data-type for storing the lattice indices. Using a smaller
             bit-size may help reduce memory usage. By default the given limits are
             checked to determine the smallest possible data-type.
+
+        Raises
+        ------
+        ValueError
+            Raised if the dimension of the position doesn't match the dimension of
+            the lattice.
+        NoBaseNeighboursError
+            Raised if the lattice distances and base-neighbors haven't been computed.
         """
         self.data.reset()
         shape = np.atleast_1d(shape)
@@ -1823,24 +1984,24 @@ class Lattice:
         return pidx, pdists, paxs
 
     def set_periodic(self, axis: Union[bool, int, Sequence[int]]):
-        """ Sets periodic boundary conditions along the given axis.
+        """Sets periodic boundary conditions along the given axis.
 
-        Notes
-        -----
-        The lattice has to be built before applying the periodic boundarie conditions.
-        Also the lattice has to be at least three atoms big in the specified directions.
+        Parameters
+        ----------
+        axis : bool or int or (N, ) array_like
+            One or multiple axises to apply the periodic boundary conditions.
+            If the axis is `None` the perodic boundary
+            conditions will be removed.
 
         Raises
         ------
         NotBuiltError
             Raised if the lattice hasn't been built yet.
 
-        Parameters
-        ----------
-        axis: bool or int or (N) array_like
-            One or multiple axises to apply the periodic boundary conditions.
-            If the axis is `None` the perodic boundary
-            conditions will be removed.
+        Notes
+        -----
+        The lattice has to be built before applying the periodic boundarie conditions.
+        The lattice also has to be at least three atoms big in the specified directions.
         """
         if isinstance(axis, bool) and axis is True:
             axis = np.arange(self.dim)
@@ -1862,7 +2023,7 @@ class Lattice:
         k = np.sum(np.sum(self._raw_num_neighbors, axis=1)) + 1
         max_dist = np.max(self.distances) + 0.1 * np.min(self._raw_distance_matrix)
 
-        # Build sublattice tree's
+        # Build sub-lattice tree's
         tree1 = KDTree(positions1, k=k, max_dist=max_dist)
         tree2 = KDTree(positions2, k=k, max_dist=max_dist)
 
@@ -1915,7 +2076,7 @@ class Lattice:
         self.shape = limits[1] - limits[0]
 
     def dmap(self) -> DataMap:
-        """Returns the data-map of the lattice model"""
+        """Returns the data-map of the lattice model."""
         return self.data.map()
 
     # ==================================================================================
@@ -1945,7 +2106,7 @@ class Lattice:
 
         Parameters
         ----------
-        file: str or int or bytes
+        file : str or int or bytes
             File name to store the lattice. If `None` the hash of the lattice is used.
         """
         if file is None:
@@ -1959,11 +2120,13 @@ class Lattice:
 
         Parameters
         ----------
-        file: str or int or bytes
+        file : str or int or bytes
+            File name to load the lattice.
 
         Returns
         -------
-        latt: Lattice
+        latt : Lattice
+            The lattice restored from the file content.
         """
         with open(file, "rb") as f:
             latt = pickle.load(f)
@@ -1985,29 +2148,29 @@ class Lattice:
                   show_neighbors: bool = True,
                   ax: Union[plt.Axes, Axes3D] = None,
                   show: bool = False) -> Union[plt.Axes, Axes3D]:
-        """ Plot the unit cell of the lattice.
+        """Plot the unit cell of the lattice.
 
         Parameters
         ----------
-        lw: float, default: 1
+        lw : float, default: 1
             Line width of the hopping connections.
-        color: str, optional
+        color : str, optional
             Optional string for color of cell-lines.
-        alpha: float, optional
+        alpha : float, optional
             Optional alpha value of neighbors.
-        legend: bool, optional
+        legend : bool, optional
             Flag if legend is shown.
-        margins: Sequence[float] or float, optional
+        margins : Sequence[float] or float, optional
             Optional margins of the plot.
-        show_neighbors: bool, optional
+        show_neighbors : bool, optional
             If `True` the neighbors are plotted.
-        show_vecs: bool, optional
+        show_vecs : bool, optional
             If 'True' the first unit-cell is drawn.
-        show_cell: bool, optional
+        show_cell : bool, optional
             If `True` the outlines of the unit cell are plotted.
-        ax: plt.Axes or plt.Axes3D or None, optional
+        ax : plt.Axes or plt.Axes3D or None, optional
             Parent plot. If None, a new plot is initialized.
-        show: bool, optional
+        show : bool, optional
             If `True`, show the resulting plot.
         """
         if self.dim > 3:
@@ -2018,7 +2181,7 @@ class Lattice:
         else:
             fig = ax.get_figure()
 
-        # prefecth colors
+        # prefetch colors
         colors = list()
         for i in range(self.num_base):
             atom = self.get_atom(i)
@@ -2101,25 +2264,25 @@ class Lattice:
 
         Parameters
         ----------
-        lw: float, default: 1
+        lw : float, default: 1
             Line width of the hopping connections.
-        color: str or float or int
+        color : str or float or int
             Line color of the hopping connections.
-        margins: Sequence[float] or float, optional
+        margins : Sequence[float] or float, optional
             Optional margins of the plot.
-        legend: bool, optional
+        legend : bool, optional
             Flag if legend is shown
-        grid: bool, optional
+        grid : bool, optional
             If 'True', draw a grid in the plot.
-        show_periodic: bool, optional
+        show_periodic : bool, optional
             If 'True' the periodic connections will be shown.
-        show_indices: bool, optional
+        show_indices : bool, optional
             If 'True' the index of the sites will be shown.
-        show_cell: bool, optional
+        show_cell : bool, optional
             If 'True' the first unit-cell is drawn.
-        ax: plt.Axes or plt.Axes3D or None, optional
+        ax : plt.Axes or plt.Axes3D or None, optional
             Parent plot. If None, a new plot is initialized.
-        show: bool, optional
+        show : bool, optional
             If `True`, show the resulting plot.
         """
         logger.debug("Plotting lattice")

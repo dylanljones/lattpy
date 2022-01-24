@@ -311,7 +311,7 @@ class KDTree(scipy.spatial.cKDTree):
     def query_ball_point(self, x, r, *_):
         return super().query_ball_point(x, r, self.p, self.eps)
 
-    def query_ball_tree(self, other, r, *_):
+    def query_ball_tree(self, other: Union["KDTree", scipy.spatial.KDTree], r, *_):
         return super().query_ball_tree(other, r, self.p, self.eps)
 
     def query_pairs(self, r, *_):

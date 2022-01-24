@@ -134,7 +134,7 @@ class Atom(abc.MutableMapping):
         paramstr = ", ".join(f"{k}={v}" for k, v in self._params.items() if v)
         if paramstr:
             argstr += ", " + paramstr
-        return f"Atom({argstr}, {self.index}, {hex(self.id)})"
+        return f"Atom({argstr}, {self.index})"
 
 
 class UnitCell(abc.Sequence):

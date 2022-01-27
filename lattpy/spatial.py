@@ -13,8 +13,8 @@
 import math
 import numpy as np
 import itertools
+import scipy.spatial
 import matplotlib.pyplot as plt
-from scipy.spatial import cKDTree, Voronoi
 from typing import Iterable, Sequence, Union
 from .utils import ArrayLike, min_dtype, chain
 from .plotting import draw_points, draw_vectors, draw_lines, draw_surfaces
@@ -298,8 +298,7 @@ def compute_vectors(a: float, b: float = None, c: float = None,
     return vectors
 
 
-# noinspection PyUnresolvedReferences
-class KDTree(cKDTree):
+class KDTree(scipy.spatial.cKDTree):
     """Simple wrapper of scipy's cKTree with global query settings."""
 
     def __init__(self, points, k=1, max_dist=np.inf, eps=0., p=2):
@@ -309,17 +308,17 @@ class KDTree(cKDTree):
         self.p = p
         self.eps = eps
 
-    def query_ball_point(self, x, r):
+    def query_ball_point(self, x, r, *_):
         return super().query_ball_point(x, r, self.p, self.eps)
 
-    def query_ball_tree(self, other, r):
+    def query_ball_tree(self, other: Union["KDTree", scipy.spatial.KDTree], r, *_):
         return super().query_ball_tree(other, r, self.p, self.eps)
 
-    def query_pairs(self, r):
+    def query_pairs(self, r, *_):
         return super().query_pairs(r, self.p, self.eps)
 
     def query(self, x=None, num_jobs=1, decimals=None, include_zero=False,
-              compact=True):
+              compact=True, *_):
         x = self.data if x is None else x
         dists, neighbors = super().query(x, self.k, self.eps, self.p,
                                          self.max_dist, num_jobs)
@@ -370,7 +369,7 @@ class VoronoiTree:
             vertices = np.delete(vertices, idx)
             vertices = np.atleast_2d(vertices).T
         else:
-            vor = Voronoi(points)
+            vor = scipy.spatial.Voronoi(points)
             # Save only finite vertices
             vertices = vor.vertices  # noqa
             for pointidx, simplex in zip(vor.ridge_points, vor.ridge_vertices):  # noqa
@@ -382,7 +381,7 @@ class VoronoiTree:
         self.points = points
         self.edges = edges
         self.vertices = vertices
-        self.tree = cKDTree(points)  # noqa
+        self.tree = scipy.spatial.KDTree(points)
         self.origin = self.query(np.zeros(dim))
 
     def query(self, x, k=1, eps=0):

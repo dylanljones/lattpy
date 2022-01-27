@@ -13,6 +13,7 @@
 import itertools
 import numpy as np
 from collections.abc import Iterable
+from scipy.interpolate import griddata
 from matplotlib.lines import Line2D
 from matplotlib.collections import LineCollection
 from mpl_toolkits.mplot3d.art3d import Line3DCollection, Line3D, Poly3DCollection
@@ -20,7 +21,7 @@ from mpl_toolkits.mplot3d.art3d import Line3DCollection, Line3D, Poly3DCollectio
 __all__ = [
     "set_margins", "set_padding", "set_limits", "draw_line", "draw_lines",
     "draw_arrows", "draw_vectors", "draw_points", "draw_indices", "draw_cell",
-    "draw_surfaces"
+    "draw_surfaces", "interpolate_to_grid"
 ]
 
 # Golden ratio as standard ratio for plot-figures
@@ -98,12 +99,21 @@ def draw_line(ax, points, *args, **kwargs):
 
 
 def draw_arrows(ax, vectors, pos=None, **kwargs):
-    vectors = np.atleast_2d(vectors).T
-    dim = len(vectors)
-    pos = pos if pos is not None else np.zeros(dim)
+    vectors = np.atleast_2d(vectors)
+    num_vecs, dim = vectors.shape
+    if pos is None:
+        pos = np.zeros((num_vecs, dim))
+    else:
+        pos = np.asarray(pos)
+        if len(pos) == 1 or pos.shape[0] == 1:
+            pos = np.tile(pos, (num_vecs, 1))
+    assert len(pos) == len(vectors)
+
+    x, y = pos.T
+    u, v = vectors.T
     if dim != 3:
         kwargs.update({"angles": "xy", "scale_units": "xy", "scale": 1})
-    return ax.quiver(pos, *vectors, **kwargs)
+    return ax.quiver(x, y, u, v, **kwargs)
 
 
 def draw_vectors(ax, vectors, pos=None, ls="-", lw=1, zorder=1, **kwargs):
@@ -147,7 +157,7 @@ def draw_indices(ax, positions, offset=0.1):
     return texts
 
 
-def draw_cell(ax, vectors, color="k", lw=2, zorder=1, outlines=True):
+def draw_cell(ax, vectors, color="k", lw=2., zorder=1, outlines=True):
     dim = len(vectors)
     if dim == 1:
         draw_arrows(ax, [vectors[0, 0], 0], color=color, lw=lw, zorder=zorder)
@@ -172,3 +182,17 @@ def draw_surfaces(ax, vertices, color=None, alpha=0.5):
     poly = Poly3DCollection(vertices, alpha=alpha, facecolor=color)
     ax.add_collection3d(poly)
     return poly
+
+
+def interpolate_to_grid(positions, values, num=(100, 100), offset=(0., 0.),
+                        method="linear", fill_value=np.nan):
+    x, y = positions.T
+
+    # Create regular grid
+    xi = np.linspace(min(x)-offset[0], max(x)+offset[0], num[0])
+    yi = np.linspace(min(y)-offset[1], max(y)+offset[1], num[1])
+
+    # Interpolate data to grid
+    xx, yy = np.meshgrid(xi, yi)
+    zz = griddata((x, y), values, (xi[None, :], yi[:, None]), method, fill_value)
+    return xx, yy, zz

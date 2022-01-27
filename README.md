@@ -219,7 +219,7 @@ latt = Lattice([[2, 0], [0, 1]])
 latt.add_atom()
 # Two distances are needed for all connections
 latt.add_connections(2)
-latt.build((5, 3))
+latt.build((10, 6))
 
 latt.plot()
 plt.show()

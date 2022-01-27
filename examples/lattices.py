@@ -23,7 +23,7 @@ def plot_simple_rectangular():
     latt.add_atom()
     # Two distances are needed for all connections
     latt.add_connections(2)
-    latt.build((5, 3))
+    latt.build((10, 6))
 
     ax = latt.plot()
     fig = ax.get_figure()

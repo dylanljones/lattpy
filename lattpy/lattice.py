@@ -2263,10 +2263,8 @@ class Lattice:
         else:
             ax.margins(*margins)
 
-        if self.dim == 3:
-            ax.set_aspect("equal")
-        else:
-            ax.set_aspect("equal", "box")
+        if self.dim < 3:
+            ax.set_aspect("equal", "datalim")
 
         fig.tight_layout()
         if show:
@@ -2373,10 +2371,8 @@ class Lattice:
         else:
             ax.margins(*margins)
 
-        if self.dim == 3:
-            ax.set_aspect("equal")
-        else:
-            ax.set_aspect("equal", "box")
+        if self.dim < 3:
+            ax.set_aspect("equal", "datalim")
 
         fig.tight_layout()
         if show:

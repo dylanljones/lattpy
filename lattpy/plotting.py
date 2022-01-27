@@ -109,11 +109,13 @@ def draw_arrows(ax, vectors, pos=None, **kwargs):
             pos = np.tile(pos, (num_vecs, 1))
     assert len(pos) == len(vectors)
 
-    x, y = pos.T
-    u, v = vectors.T
+    points = pos.T
+    directions = vectors.T
     if dim != 3:
         kwargs.update({"angles": "xy", "scale_units": "xy", "scale": 1})
-    return ax.quiver(x, y, u, v, **kwargs)
+    else:
+        kwargs.update({"normalize": False})
+    return ax.quiver(*points, *directions, **kwargs)
 
 
 def draw_vectors(ax, vectors, pos=None, ls="-", lw=1, zorder=1, **kwargs):

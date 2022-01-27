@@ -6,7 +6,7 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: Upload Python Package to PyPi
+name: Upload Python Package to PyPI
 
 # Controls when the action will run. 
 on:
@@ -18,7 +18,7 @@ on:
 
 jobs:
   build-n-publish:
-    name: Build and publish Python Package to TestPyPi
+    name: Build and publish Python Package to PyPI
     runs-on: ubuntu-latest
 
     steps:

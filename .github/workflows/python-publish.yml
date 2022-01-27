@@ -12,7 +12,7 @@ name: Upload Python Package to TestPyPi
 on:
   # Triggers the workflow when a release is created
   release: 
-    types: [published]
+    types: [created]
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -23,18 +23,18 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
       with:
-        fetch-depth: 0
+        python-version: "3.8"
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install setuptools wheel twine build
-    - name: Build a binary wheel and a source tarball
-      run: >-
-        python setup.py sdist bdist_wheel
-    - name: Publish distribution 📦 to Test PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-        repository_url: https://test.pypi.org/legacy/
+    - name: Build and publish distribution 📦 to Test PyPI
+      env:
+        TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
+      run: |
+        python setup.py sdist
+        twine upload --repository testpypi dist/*

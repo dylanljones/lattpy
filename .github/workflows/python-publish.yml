@@ -12,7 +12,7 @@ name: Upload Python Package to PyPI
 on:
   # Triggers the workflow when a release is created
   release: 
-    types: [created]
+    types: [published]
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 

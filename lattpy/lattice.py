@@ -1584,10 +1584,25 @@ class Lattice:
         distances = distances[i, j]
         neighbors = neighbors[i, j]
 
-        # Remove columns containing only invalid data
         all_valid = np.any(distances != np.inf, axis=0)
-        distances = distances[:, all_valid]
-        neighbors = neighbors[:, all_valid]
+        if all(all_valid):
+            # No Invalid entries found. This usually happens for (2, 2, ..) systems
+            # which results in a bug for the neighbor data:
+            # Assume a 1D chain of 3 atoms. The outer two atoms each have only one
+            # neighbor (the center atom), whereas the center atom has two.
+            # In a model of two atoms no atom has two neighbors, which prevents
+            # the algorithm to create an array of size (N, 2).
+            # To prevent this a column of invalid values is appended to the data.
+            # Since the system size is small this doesn't create any memory issues.
+            col = np.full(shape=(len(neighbors), 1), fill_value=invalid_ind)
+            neighbors = np.append(neighbors, col, axis=1)
+
+            col = np.full(shape=(len(neighbors), 1), fill_value=np.inf)
+            distances = np.append(distances, col, axis=1)
+        else:
+            # Remove columns containing only invalid data
+            distances = distances[:, all_valid]
+            neighbors = neighbors[:, all_valid]
 
         return neighbors, distances
 
@@ -1663,13 +1678,14 @@ class Lattice:
         # Query and filter neighbors
         neighbors, distances = tree.query(num_jobs=num_jobs,
                                           decimals=self.DIST_DECIMALS)
+        print(neighbors)
         neighbors, distances = self._filter_neighbors(indices, neighbors, distances)
 
-        # Fix bug for two sites:
-        # Add invalid indices and distances to data
-        if len(indices) == 2:
-            neighbors = np.array([[neighbors[0, 0], 2], [neighbors[1, 0], 2]])
-            distances = np.array([[distances[0, 0], np.inf], [distances[1, 0], np.inf]])
+        # # Fix bug for two sites:
+        # # Add invalid indices and distances to data
+        # if len(indices) == 2:
+        #     neighbors = np.array([[neighbors[0, 0], 2], [neighbors[1, 0], 2]])
+        #     distances = np.array([[distances[0, 0], np.inf], [distances[1, 0], np.inf]])
 
         return neighbors, distances
 

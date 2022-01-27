@@ -17,6 +17,12 @@ constructing (finite) lattice structures in `d` dimensions.
 | :warning: **WARNING**: This project is still in development and might change significantly in the future! |
 |-----------------------------------------------------------------------------------------------------------|
 
+
+1. [Installation](#installation)
+2. [Usage](#usage)
+3. [Performance](#performance)
+4. [Examples](#examples)
+
 ## Installation
 
 Install via pip

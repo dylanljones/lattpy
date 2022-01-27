@@ -18,8 +18,7 @@ import numpy as np
 __all__ = [
     "ArrayLike", "logger", "LatticeError", "ConfigurationError", "SiteOccupiedError",
     "NoAtomsError", "NoConnectionsError", "NotAnalyzedError", "NotBuiltError",
-    "Timer", "min_dtype", "chain", "create_lookup_table", "frmt_num", "frmt_bytes",
-    "frmt_time",
+    "min_dtype", "chain", "create_lookup_table", "frmt_num", "frmt_bytes", "frmt_time",
 ]
 
 # define type for numpy `array_like` types
@@ -270,59 +269,3 @@ def frmt_time(seconds: float, short: bool = False, width: int = 0) -> str:
     if width > 0:
         string = f"{string:>{width}}"
     return string
-
-
-class Timer:
-    """Timer object for easy time measuring."""
-
-    __slots__ = ["_time", "_t0"]
-
-    def __init__(self, method=None):
-        self._time = method or time.perf_counter
-        self._t0 = 0
-        self.start()
-
-    @property
-    def seconds(self) -> float:
-        """Returns the time since the timer has been started in seconds."""
-        return self.time() - self._t0
-
-    @property
-    def millis(self) -> float:
-        """Returns the time since the timer has been started in milliseconds."""
-        return 1000 * (self.time() - self._t0)
-
-    def time(self) -> float:
-        """Returns the current time as a timestamp."""
-        return self._time()
-
-    def start(self) -> None:
-        """Start the timer."""
-        self._t0 = self._time()
-
-    def eta(self, progress: float) -> float:
-        """Approximates the time left for a task.
-
-        Parameters
-        ----------
-        progress: float
-            Progress fraction of task.
-
-        Returns
-        -------
-        eta: float
-            Approximation of time left.
-        """
-        if not progress:
-            return 0.0
-        return (1 / progress - 1) * self.time()
-
-    def strfrmt(self, short: bool = False, width: int = 0) -> str:
-        """Formats the time since the timer has been started."""
-        return frmt_time(self.seconds, short, width)
-
-    def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({self.strfrmt(short=True)})'
-
-    def __str__(self) -> str:
-        return self.strfrmt(short=True)

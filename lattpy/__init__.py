@@ -18,7 +18,6 @@ from .utils import (
     frmt_num,
     frmt_bytes,
     frmt_time,
-    Timer
 )
 
 from .spatial import (

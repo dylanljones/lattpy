@@ -189,17 +189,6 @@ of the system is used.
 
 ## Examples
 
-### Lattices
-
-Square lattice with two atoms in the unit cell:
-`````python
-from lattpy import Lattice
-
-latt = Lattice.square()
-latt.add_atom()
-
-`````
-
 ### Tight-binding Hamiltonian
 Using the (built) lattice model it is easy to construct the (tight-binding)
 Hamiltonian of a non-interacting model:

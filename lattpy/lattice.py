@@ -1486,7 +1486,7 @@ class Lattice:
             Optional callable for filtering sites.
             The indices and positions are passed as arguments.
         dtype: int or str or np.dtype, optional
-            Optional data-type for storing the lattice indices. By default the given
+            Optional data-type for storing the lattice indices. By default, the given
             limits are checked to determine the smallest possible data-type.
         return_pos: bool, optional
             Flag if positions should be returned with the indices. This can speed up
@@ -1896,7 +1896,7 @@ class Lattice:
             The indices and positions are passed as arguments.
         dtype : int or str or np.dtype, optional
             Optional data-type for storing the lattice indices. Using a smaller
-            bit-size may help reduce memory usage. By default the given limits are
+            bit-size may help reduce memory usage. By default, the given limits are
             checked to determine the smallest possible data-type.
 
         Raises
@@ -2101,6 +2101,7 @@ class Lattice:
         limits = self.data.get_limits()
         self.shape = limits[1] - limits[0]
 
+    # noinspection PyShadowingNames
     def append(self, latt, ax=0, side=+1, sort_ax=None, sort_reverse=False):
         """Append another `Lattice`-instance along an axis.
 
@@ -2253,7 +2254,7 @@ class Lattice:
             lines.append(f"{head:<15}" + "; ".join(str(x) for x in values))
         return "\n".join(lines)
 
-    def dump(self, file: Union[str, int, bytes] = 'tmp.latt') -> None:
+    def dump(self, file: Union[str, int, bytes] = "tmp.latt") -> None:
         """Save the data of the `Lattice` instance.
 
         Parameters
@@ -2267,7 +2268,7 @@ class Lattice:
             pickle.dump(self, f)
 
     @classmethod
-    def load(cls, file: Union[str, int, bytes] = 'tmp.latt') -> 'Lattice':
+    def load(cls, file: Union[str, int, bytes] = "tmp.latt") -> 'Lattice':
         """Load data of a saved `Lattice` instance.
 
         Parameters
@@ -2291,7 +2292,7 @@ class Lattice:
 
     def plot_cell(self,
                   lw: float = 1.,
-                  color: Union[str, float] = 'k',
+                  color: Union[str, float] = "k",
                   alpha: float = 0.5,
                   legend: bool = True,
                   margins: Union[Sequence[float], float] = 0.25,
@@ -2401,7 +2402,7 @@ class Lattice:
 
     def plot(self,
              lw: float = 1.,
-             color: Union[str, float, int] = 'k',
+             color: Union[str, float, int] = "k",
              margins: Union[Sequence[float], float] = 0.1,
              legend: bool = True,
              grid: bool = False,
@@ -2489,7 +2490,7 @@ class Lattice:
             ax.legend()
         if grid:
             ax.set_axisbelow(True)
-            ax.grid(b=True, which='major')
+            ax.grid(b=True, which="major")
 
         if isinstance(margins, float):
             margins = [margins] * self.dim

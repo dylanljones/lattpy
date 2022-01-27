@@ -170,10 +170,16 @@ neighbor_indices = latt.nearest_neighbors(i)
 
 Even though `lattpy` is written in pure python, it achieves high performance and
 a low memory footprint by making heavy use of numpy's vectorized operations.
-As an example the build-times of a square lattice for different number of sites
-are shown in the following plot:
+As an example the build-times, the maximal memory used in the build process and the 
+size of the stored lattice data of a square lattice for different number of 
+sites are shown in the following plots:
 
-<img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/examples/benchmark.png" width="400">
+
+|                                             Build time                                              |                                             Build memory                                              |
+|:---------------------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------------:|
+| <img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/examples/benchmark_time.png"> | <img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/examples/benchmark_memory.png"> |
+
+
 
 Note that the overhead of the multi-thread neighbor search results in a slight
 increase of the build time for small systems. By using `num_jobs=1` in the `build`-method
@@ -183,7 +189,18 @@ of the system is used.
 
 ## Examples
 
+### Lattices
 
+Square lattice with two atoms in the unit cell:
+`````python
+from lattpy import Lattice
+
+latt = Lattice.square()
+latt.add_atom()
+
+`````
+
+### Tight-binding Hamiltonian
 Using the (built) lattice model it is easy to construct the (tight-binding)
 Hamiltonian of a non-interacting model:
 

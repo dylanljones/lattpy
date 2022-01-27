@@ -17,6 +17,12 @@ constructing (finite) lattice structures in `d` dimensions.
 | :warning: **WARNING**: This project is still in development and might change significantly in the future! |
 |-----------------------------------------------------------------------------------------------------------|
 
+
+1. [Installation](#installation)
+2. [Usage](#usage)
+3. [Performance](#performance)
+4. [Examples](#examples)
+
 ## Installation
 
 Install via pip
@@ -219,7 +225,7 @@ latt = Lattice([[2, 0], [0, 1]])
 latt.add_atom()
 # Two distances are needed for all connections
 latt.add_connections(2)
-latt.build((5, 3))
+latt.build((10, 6))
 
 latt.plot()
 plt.show()

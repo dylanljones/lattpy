@@ -1660,11 +1660,16 @@ class Lattice:
         tree = KDTree(positions, k=k, max_dist=max_dist)
         logger.debug("Max. number of neighbors: %i", k)
         logger.debug("Max. neighbor distance:   %f", max_dist)
-
         # Query and filter neighbors
         neighbors, distances = tree.query(num_jobs=num_jobs,
                                           decimals=self.DIST_DECIMALS)
         neighbors, distances = self._filter_neighbors(indices, neighbors, distances)
+
+        # Fix bug for two sites:
+        # Add invalid indices and distances to data
+        if len(indices) == 2:
+            neighbors = np.array([[neighbors[0, 0], 2], [neighbors[1, 0], 2]])
+            distances = np.array([[distances[0, 0], np.inf], [distances[1, 0], np.inf]])
 
         return neighbors, distances
 

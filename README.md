@@ -92,11 +92,10 @@ latt.set_periodic(axis=0)
 
 To view the built lattice the `plot`-method can be used:
 ````python
-from lattpy import simple_square
+import matplotlib.pyplot as plt
 
-latt = simple_square(a=1.0, neighbors=1)
-latt.build((5, 3), periodic=0)
 latt.plot()
+plt.show()
 ````
 
 <img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/examples/example.png" width="400">
@@ -153,21 +152,17 @@ structure then can be accessed by a simple index `i`. The syntax is the same as 
 just without the `get_` prefix:
 
 ````python
-from lattpy import simple_square
-
-latt = simple_square()
 latt.build((5, 2))
-idx = 2
+i = 2
 
 # Get position of the atom with index i=2
-positions = latt.position(idx)
+positions = latt.position(i)
 
 # Get the atom indices of the nearest neighbors of the atom with index i=2
-neighbor_indices = latt.neighbors(idx, distidx=0)
+neighbor_indices = latt.neighbors(i, distidx=0)
 
 # the nearest neighbors can also be found by calling (equivalent to dist_idx=0)
-neighbor_indices = latt.nearest_neighbors(idx)
-
+neighbor_indices = latt.nearest_neighbors(i)
 ````
 
 ## Performance
@@ -217,13 +212,7 @@ object returned by the `map()` method of the lattice data. This stores the atom-
 neighbor-pairs and corresponding distances of the lattice sites. Using the built-in
 masks the construction of the hamiltonian-data can be vectorized:
 ````python
-import numpy as np
 from scipy import sparse
-from lattpy import simple_chain
-
-# Initializes a 1D lattice chain with a length of 5 atoms.
-latt = simple_chain(a=1.0)
-latt.build(shape=4)
 
 # Vectorized construction of the hamiltonian
 eps, t = 0., 1.

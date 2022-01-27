@@ -2067,9 +2067,15 @@ class Lattice:
 
         return np.array(pairs), np.array(distances)
 
-    def append(self, latt, ax=0, side=+1, sort_axis=None, sort_reverse=False):
+    def _append(self, ind, pos, neighbors, dists, ax=0, side=+1,
+                sort_axis=None, sort_reverse=False):
+
+        indices2 = np.copy(ind)
+        positions2 = np.copy(pos)
+        neighbors2 = np.copy(neighbors)
+        distances2 = np.copy(dists)
         # Build translation vector
-        indices = self.data.indices if side > 0 else latt.data.indices
+        indices = self.data.indices if side > 0 else indices2
         nvec = build_periodic_translation_vector(indices, ax)
         if side <= 0:
             nvec = -1 * nvec
@@ -2077,10 +2083,6 @@ class Lattice:
 
         # Store temporary data
         positions1 = self.data.positions
-        indices2 = latt.data.indices.copy()
-        positions2 = latt.data.positions.copy()
-        neighbors2 = latt.data.neighbors.copy()
-        distances2 = latt.data.distvals[latt.data.distances]
 
         # Shift data of appended lattice
         indices2[:, :-1] += nvec
@@ -2098,6 +2100,132 @@ class Lattice:
         # Update the shape of the lattice
         limits = self.data.get_limits()
         self.shape = limits[1] - limits[0]
+
+    def append(self, latt, ax=0, side=+1, sort_ax=None, sort_reverse=False):
+        """Append another `Lattice`-instance along an axis.
+
+        Parameters
+        ----------
+        latt : Lattice
+            The other lattice to append to this instance.
+        ax : int, optional
+            The axis along the other lattice is appended. The default is `0` (x-axis).
+        side : int, optional
+            The side at which the new lattice is appended. If, for example, axis `0` is
+            used, the other lattice is appended on the right side if `side=+1`
+            and on the left side if `side=-1`.
+        sort_ax : int, optional
+            The axis to sort the lattice indices after the other lattice has been
+            added. The default is the value specified for `ax`.
+        sort_reverse : bool, optional
+            If `True`, the lattice indices are sorted in reverse order.
+
+        Examples
+        --------
+        >>> latt = Lattice(np.eye(2))
+        >>> latt.add_atom(neighbors=1)
+        >>> latt.build((5, 2))
+        >>> latt.shape
+        [5. 2.]
+
+        >>> latt2 = Lattice(np.eye(2))
+        >>> latt2.add_atom(neighbors=1)
+        >>> latt2.build((2, 2))
+        >>> latt2.shape
+        [2. 2.]
+
+        >>> latt.append(latt2, ax=0)
+        >>> latt.shape
+        [8. 2.]
+        """
+        ind = latt.data.indices
+        pos = latt.data.positions
+        neighbors = latt.data.neighbors
+        dists = latt.data.distvals[latt.data.distances]
+        self._append(ind, pos, neighbors, dists, ax, side, sort_ax, sort_reverse)
+
+    def extend(self, size, ax=0, side=1, num_jobs=1, sort_ax=None, sort_reverse=False):
+        """Extend the lattice along an axis.
+
+        Parameters
+        ----------
+        size : float
+            The size of which the lattice will be extended in direction of `ax`.
+        ax : int, optional
+            The axis along the lattice is extended. The default is `0` (x-axis).
+        side : int, optional
+            The side at which the new lattice is appended. If, for example, axis `0` is
+            used, the lattice is extended to the right side if `side=+1`
+            and to the left side if `side=-1`.
+        num_jobs : int, optional
+            Number of jobs to schedule for parallel processing of neighbors for new
+            sites. If -1 is given all processors are used. The default is `-1`.
+        sort_ax : int, optional
+            The axis to sort the lattice indices after the lattice has been extended.
+            The default is the value specified for `ax`.
+        sort_reverse : bool, optional
+            If `True`, the lattice indices are sorted in reverse order.
+
+        Examples
+        --------
+        >>> latt = Lattice(np.eye(2))
+        >>> latt.add_atom(neighbors=1)
+        >>> latt.build((5, 2))
+        >>> latt.shape
+        [5. 2.]
+        >>> latt.extend(2, ax=0)
+        [8. 2.]
+        >>> latt.extend(2, ax=1)
+        [8. 5.]
+        """
+        # Build indices and positions of new section
+        shape = np.copy(self.shape)
+        shape[ax] = size
+        ind, pos = self.build_indices(shape, relative=False, return_pos=True)
+        # Compute the neighbors and distances between the sites of new section
+        neighbors, dists = self.compute_neighbors(ind, pos, num_jobs)
+        # Append new section
+        self._append(ind, pos, neighbors, dists, ax, side, sort_ax, sort_reverse)
+
+    def repeat(self, num=1, ax=0, side=1, sort_ax=None, sort_reverse=False):
+        """Repeat the lattice along an axis.
+
+        Parameters
+        ----------
+        num : int
+            The number of times the lattice will be repeated in direction `ax`.
+        ax : int, optional
+            The axis along the lattice is extended. The default is `0` (x-axis).
+        side : int, optional
+            The side at which the new lattice is appended. If, for example, axis `0` is
+            used, the lattice is extended to the right side if `side=+1`
+            and to the left side if `side=-1`.
+        sort_ax : int, optional
+            The axis to sort the lattice indices after the lattice has been extended.
+            The default is the value specified for `ax`.
+        sort_reverse : bool, optional
+            If `True`, the lattice indices are sorted in reverse order.
+
+        Examples
+        --------
+        >>> latt = Lattice(np.eye(2))
+        >>> latt.add_atom(neighbors=1)
+        >>> latt.build((5, 2))
+        >>> latt.shape
+        [5. 2.]
+        >>> latt.repeat()
+        [11.  2.]
+        >>> latt.repeat(3)
+        [35.  2.]
+        >>> latt.repeat(ax=1)
+        [35.  5.]
+        """
+        ind = self.data.indices
+        pos = self.data.positions
+        neighbors = self.data.neighbors
+        dists = self.data.distvals[self.data.distances]
+        for _ in range(num):
+            self._append(ind, pos, neighbors, dists, ax, side, sort_ax, sort_reverse)
 
     def dmap(self) -> DataMap:
         """DataMap : Returns the data-map of the lattice model."""

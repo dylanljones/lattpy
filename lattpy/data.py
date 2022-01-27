@@ -14,7 +14,7 @@ import logging
 from copy import deepcopy
 from typing import Iterable, Union, Sequence
 import numpy as np
-from .utils import ArrayLike, create_lookup_table
+from .utils import ArrayLike, create_lookup_table, min_dtype
 
 __all__ = ["DataMap", "LatticeData"]
 
@@ -388,6 +388,10 @@ class LatticeData:
         neighbors1[neighbors1 == self.invalid_idx] = invalid_idx
         neighbors2[neighbors2 == len(indices2)] = invalid_idx
 
+        # upgrade dtype if neccessary
+        dtype = min_dtype(np.max(neighbors2) + self.num_sites)
+        if dtype != neighbors2.dtype:
+            neighbors2 = neighbors2.astype(dtype)
         # Shift neighbor indices
         neighbors2[neighbors2 != invalid_idx] += self.num_sites
 

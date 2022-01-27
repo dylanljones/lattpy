@@ -2343,9 +2343,8 @@ class Lattice:
                         nvec = nvecs[pax]
                         sign = +1 if x[pax] < pos[pax] else -1
                         x = self.translate(sign * nvec, x)
-                        vec = x - pos
-
-                        draw_vectors(ax, 0.5 * vec, pos=pos, color=color, lw=lw, zorder=1)
+                        vec = 0.5 * (x - pos)
+                        draw_vectors(ax, vec, pos=pos, color="0.5", lw=lw, zorder=1)
 
         # Draw sites
         for alpha in range(self.num_base):

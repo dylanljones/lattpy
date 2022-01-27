@@ -98,7 +98,7 @@ latt.plot()
 plt.show()
 ````
 
-<img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/examples/example.png" width="400">
+<img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/examples/example_square_periodic.png" width="400">
 
 ### General lattice attributes
 
@@ -188,6 +188,45 @@ of the system is used.
 
 
 ## Examples
+
+### Lattices
+
+Square lattice with two atoms in the unit cell:
+`````python
+import matplotlib.pyplot as plt
+from lattpy import Lattice
+
+latt = Lattice.square()
+latt.add_atom([0.0, 0.0], "A")
+latt.add_atom([0.5, 0.5], "B")
+latt.add_connection("A", "A", 1)
+latt.add_connection("A", "B", 1)
+latt.analyze()
+latt.build((5, 5))
+
+latt.plot()
+plt.show()
+`````
+
+<img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/examples/example_square_two_atoms.png" width="400">
+
+Rectangular lattice with one atom in the unit cell:
+`````python
+import matplotlib.pyplot as plt
+from lattpy import Lattice
+
+latt = Lattice([[2, 0], [0, 1]])
+latt.add_atom()
+# Two distances are needed for all connections
+latt.add_connections(2)
+latt.build((5, 3))
+
+latt.plot()
+plt.show()
+`````
+
+<img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/examples/example_rectangular.png" width="400">
+
 
 ### Tight-binding Hamiltonian
 Using the (built) lattice model it is easy to construct the (tight-binding)

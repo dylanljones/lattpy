@@ -27,7 +27,8 @@ from .utils import (
     frmt_num,
     SiteOccupiedError,
     NoAtomsError,
-    NoBaseNeighborsError,
+    NoConnectionsError,
+    NotAnalyzedError,
     NotBuiltError
 )
 from .spatial import (
@@ -919,6 +920,18 @@ class Lattice:
         logger.debug("Number of raw neighbors:\n%s", raw_num_neighbors)
         logger.debug("Raw distance-matrix:\n%s", raw_distance_matrix)
 
+    def _assert_atoms(self):
+        if len(self._atoms) == 0:
+            raise NoAtomsError()
+
+    def _assert_connections(self):
+        if np.all(self._connections == 0):
+            raise NoConnectionsError()
+
+    def _assert_analyzed(self):
+        if not self._base_neighbors:
+            raise NotAnalyzedError()
+
     def analyze(self) -> None:
         """Analyzes the structure of the lattice and stores neighbor data.
 
@@ -931,6 +944,8 @@ class Lattice:
         NoAtomsError
             Raised if no atoms where added to the lattice. The atoms in the unit cell
             are needed for computing the neighbors and distances of the lattice.
+        NoConnectionsError
+            Raised if no connections have been set up.
 
         Notes
         -----
@@ -949,8 +964,8 @@ class Lattice:
         """
         logger.debug("Analyzing lattice")
 
-        if len(self._atoms) == 0:
-            raise NoAtomsError()
+        self._assert_atoms()
+        self._assert_connections()
 
         max_distidx = int(np.max(self._connections))
         n = self.num_base
@@ -1105,7 +1120,7 @@ class Lattice:
 
         Raises
         ------
-        NoBaseNeighboursError
+        NotAnalyzedError
             Raised if the lattice distances and base-neighbors haven't been computed.
 
         Examples
@@ -1121,8 +1136,7 @@ class Lattice:
         """
         if nvec is None:
             nvec = np.zeros(self.dim)
-        if not self._base_neighbors:
-            raise NoBaseNeighborsError()
+        self._assert_analyzed()
         logger.debug("Computing neighbor-indices of %s, %i (distidx: %i)",
                      nvec, alpha, distidx)
 
@@ -1141,11 +1155,6 @@ class Lattice:
                                distidx: int = 0) -> np.ndarray:
         """Returns the neighour positions of a given site by transforming neighbor data.
 
-        Raises
-        ------
-        NoBaseNeighboursError
-            Raised if the lattice distances and base-neighbors haven't been computed.
-
         Parameters
         ----------
         nvec: (D) array_like or int, optional
@@ -1162,7 +1171,7 @@ class Lattice:
 
         Raises
         ------
-        NoBaseNeighboursError
+        NotAnalyzedError
             Raised if the lattice distances and base-neighbors haven't been computed.
 
         Examples
@@ -1178,8 +1187,7 @@ class Lattice:
         """
         if nvec is None:
             nvec = np.zeros(self.dim)
-        if not self._base_neighbors:
-            raise NoBaseNeighborsError()
+        self._assert_analyzed()
         logger.debug("Computing neighbor-positions of %s, %i (distidx: %i)",
                      nvec, alpha, distidx)
 
@@ -1211,7 +1219,7 @@ class Lattice:
 
         Raises
         ------
-        NoBaseNeighboursError
+        NotAnalyzedError
             Raised if the lattice distances and base-neighbors haven't been computed.
 
         Examples
@@ -1225,8 +1233,7 @@ class Lattice:
          [-1.  0.]
          [ 0.  1.]]
         """
-        if not self._base_neighbors:
-            raise NoBaseNeighborsError()
+        self._assert_analyzed()
         logger.debug("Computing neighbor-vectors of atom %i (distidx: %i)",
                      alpha, distidx)
 
@@ -1897,7 +1904,9 @@ class Lattice:
         ValueError
             Raised if the dimension of the position doesn't match the dimension of
             the lattice.
-        NoBaseNeighboursError
+        NoConnectionsError
+            Raised if no connections have been set up.
+        NotAnalyzedError
             Raised if the lattice distances and base-neighbors haven't been computed.
         """
         self.data.reset()
@@ -1905,8 +1914,10 @@ class Lattice:
         if len(shape) != self.dim:
             raise ValueError(f"Dimension of shape {len(shape)} doesn't "
                              f"match the dimension of the lattice {self.dim}")
-        if not self._base_neighbors:
-            raise NoBaseNeighborsError()
+
+        self._assert_connections()
+        self._assert_analyzed()
+
         logger.debug("Building lattice: %s at %s", shape, pos)
 
         # Build indices and positions
@@ -2089,7 +2100,7 @@ class Lattice:
         self.shape = limits[1] - limits[0]
 
     def dmap(self) -> DataMap:
-        """Returns the data-map of the lattice model."""
+        """DataMap : Returns the data-map of the lattice model."""
         return self.data.map()
 
     # ==================================================================================

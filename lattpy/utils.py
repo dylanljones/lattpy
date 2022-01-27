@@ -17,8 +17,9 @@ import numpy as np
 
 __all__ = [
     "ArrayLike", "logger", "LatticeError", "ConfigurationError", "SiteOccupiedError",
-    "NoAtomsError", "NoBaseNeighborsError", "NotBuiltError", "Timer",
-    "min_dtype", "chain", "create_lookup_table", "frmt_num", "frmt_bytes", "frmt_time",
+    "NoAtomsError", "NoConnectionsError", "NotAnalyzedError", "NotBuiltError",
+    "Timer", "min_dtype", "chain", "create_lookup_table", "frmt_num", "frmt_bytes",
+    "frmt_time",
 ]
 
 # define type for numpy `array_like` types
@@ -76,7 +77,16 @@ class NoAtomsError(ConfigurationError):
                          "use 'add_atom' to add an 'Atom'-object")
 
 
-class NoBaseNeighborsError(ConfigurationError):
+class NotAnalyzedError(ConfigurationError):
+
+    def __init__(self):
+        msg = "lattice not analyzed"
+        hint = "call 'analyze' after adding atoms and connections or " \
+               "use the 'analyze' keyword of 'add_connection'"
+        super().__init__(msg, hint)
+
+
+class NoConnectionsError(ConfigurationError):
 
     def __init__(self):
         msg = "base neighbors not configured"

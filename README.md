@@ -92,11 +92,10 @@ latt.set_periodic(axis=0)
 
 To view the built lattice the `plot`-method can be used:
 ````python
-from lattpy import simple_square
+import matplotlib.pyplot as plt
 
-latt = simple_square(a=1.0, neighbors=1)
-latt.build((5, 3), periodic=0)
 latt.plot()
+plt.show()
 ````
 
 <img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/examples/example.png" width="400">
@@ -153,21 +152,17 @@ structure then can be accessed by a simple index `i`. The syntax is the same as 
 just without the `get_` prefix:
 
 ````python
-from lattpy import simple_square
-
-latt = simple_square()
 latt.build((5, 2))
-idx = 2
+i = 2
 
 # Get position of the atom with index i=2
-positions = latt.position(idx)
+positions = latt.position(i)
 
 # Get the atom indices of the nearest neighbors of the atom with index i=2
-neighbor_indices = latt.neighbors(idx, distidx=0)
+neighbor_indices = latt.neighbors(i, distidx=0)
 
 # the nearest neighbors can also be found by calling (equivalent to dist_idx=0)
-neighbor_indices = latt.nearest_neighbors(idx)
-
+neighbor_indices = latt.nearest_neighbors(i)
 ````
 
 ## Performance
@@ -175,10 +170,16 @@ neighbor_indices = latt.nearest_neighbors(idx)
 
 Even though `lattpy` is written in pure python, it achieves high performance and
 a low memory footprint by making heavy use of numpy's vectorized operations.
-As an example the build-times of a square lattice for different number of sites
-are shown in the following plot:
+As an example the build-times, the maximal memory used in the build process and the 
+size of the stored lattice data of a square lattice for different number of 
+sites are shown in the following plots:
 
-<img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/examples/benchmark.png" width="400">
+
+|                                             Build time                                              |                                             Build memory                                              |
+|:---------------------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------------:|
+| <img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/examples/benchmark_time.png"> | <img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/examples/benchmark_memory.png"> |
+
+
 
 Note that the overhead of the multi-thread neighbor search results in a slight
 increase of the build time for small systems. By using `num_jobs=1` in the `build`-method
@@ -188,7 +189,7 @@ of the system is used.
 
 ## Examples
 
-
+### Tight-binding Hamiltonian
 Using the (built) lattice model it is easy to construct the (tight-binding)
 Hamiltonian of a non-interacting model:
 
@@ -217,13 +218,7 @@ object returned by the `map()` method of the lattice data. This stores the atom-
 neighbor-pairs and corresponding distances of the lattice sites. Using the built-in
 masks the construction of the hamiltonian-data can be vectorized:
 ````python
-import numpy as np
 from scipy import sparse
-from lattpy import simple_chain
-
-# Initializes a 1D lattice chain with a length of 5 atoms.
-latt = simple_chain(a=1.0)
-latt.build(shape=4)
 
 # Vectorized construction of the hamiltonian
 eps, t = 0., 1.

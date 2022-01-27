@@ -104,7 +104,10 @@ latt.plot()
 plt.show()
 ````
 
+
+<p align="center">
 <img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/examples/example_square_periodic.png" width="400">
+</p>
 
 ### General lattice attributes
 
@@ -214,7 +217,9 @@ latt.plot()
 plt.show()
 `````
 
-<img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/examples/example_square_two_atoms.png" width="400">
+<p align="center">
+  <img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/examples/example_square_two_atoms.png" width="400">
+</p>
 
 Rectangular lattice with one atom in the unit cell:
 `````python
@@ -231,8 +236,9 @@ latt.plot()
 plt.show()
 `````
 
-<img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/examples/example_rectangular.png" width="400">
-
+<p align="center">
+    <img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/examples/example_rectangular.png" width="400">
+</p>
 
 ### Tight-binding Hamiltonian
 Using the (built) lattice model it is easy to construct the (tight-binding)

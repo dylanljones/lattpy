@@ -67,12 +67,12 @@ class Lattice:
     Examples
     --------
     Two dimensional lattice with one atom in the unit cell and nearest neighbors
+
     >>> latt = Lattice(np.eye(2))
     >>> latt.add_atom()
     >>> latt.add_connections(1)
     Lattice(dim: 2, num_base: 1, shape: None)
     """
-
     DIST_DECIMALS: int = 6        # Decimals used for rounding distances
     RVEC_TOLERANCE: float = 1e-6  # Tolerance for reciprocal vectors/lattice
 
@@ -252,12 +252,17 @@ class Lattice:
         --------
         Construct a lattice with basis vectors :math:`a_1 = (2, 0)` and
         :math:`a_2 = (0, 1)`:
+
         >>> latt = Lattice([[2, 0], [0, 1]])
+
         Transform points into the coordinat system of the lattice:
+
         >>> latt.itransform([2, 0])
         [1. 0.]
+
         >>> latt.itransform([4, 0])
         [2. 0.]
+
         >>> latt.itransform([0, 1])
         [0. 1.]
         """
@@ -283,12 +288,17 @@ class Lattice:
         --------
         Construct a lattice with basis vectors :math:`a_1 = (2, 0)` and
         :math:`a_2 = (0, 1)`:
+
         >>> latt = Lattice([[2, 0], [0, 1]])
+
         Transform points into the world coordinat system:
+
         >>> latt.itransform([1, 0])
         [2. 0.]
+
         >>> latt.itransform([2, 0])
         [4. 0.]
+
         >>> latt.itransform([0, 1])
         [0. 1.]
         """
@@ -321,18 +331,23 @@ class Lattice:
         --------
         Construct a lattice with basis vectors :math:`a_1 = (2, 0)` and
         :math:`a_2 = (0, 1)`:
+
         >>> latt = Lattice([[2, 0], [0, 1]])
+
         Translate the origin:
+
         >>> n = [1, 0]
         >>> latt.translate(n)
         [2. 0.]
 
         Translate a point:
+
         >>> p = [0.5, 0.5]
         >>> latt.translate(n, p)
         [2.5 0.5]
 
         Translate a point by multiple translation vectors:
+
         >>> p = [0.5, 0.5]
         >>> nvecs = [[0, 0], [1, 0], [2, 0]]
         >>> latt.translate(nvecs, p)
@@ -363,9 +378,11 @@ class Lattice:
         --------
         Construct a lattice with basis vectors :math:`a_1 = (2, 0)` and
         :math:`a_2 = (0, 1)`:
+
         >>> latt = Lattice([[2, 0], [0, 1]])
         >>> latt.itranslate([2, 0])
         (array([1., 0.]), array([0., 0.]))
+
         >>> latt.itranslate([2.5, 0.5])
         (array([1., 0.]), array([0.5, 0.5]))
         """
@@ -384,7 +401,7 @@ class Lattice:
             a_i \cdot b_i = 2 \pi \delta_{ij}
 
         To check the given vectors, the difference of each dot-product is compared to
-        .math:'2\pi' with the given tolerance.
+        :math:'2\pi' with the given tolerance.
 
         Parameters
         ----------
@@ -429,6 +446,7 @@ class Lattice:
         Examples
         --------
         Reciprocal vectors of the square lattice:
+
         >>> latt = Lattice(np.eye(2))
         >>> latt.reciprocal_vectors()
         [[6.28318531 0.        ]
@@ -486,6 +504,7 @@ class Lattice:
         Examples
         --------
         Reciprocal lattice of the square lattice:
+
         >>> latt = Lattice(np.eye(2))
         >>> rlatt = latt.reciprocal_lattice()
         >>> rlatt.vectors
@@ -627,9 +646,11 @@ class Lattice:
         Examples
         --------
         Construct a square lattice
+
         >>> latt = Lattice(np.eye(2))
 
         Create an atom and add it to the origin of the unit cell of the lattice
+
         >>> atom1 = Atom(name="A")
         >>> latt.add_atom([0.0, 0.0], atom=atom1)
         >>> latt.get_atom(0)
@@ -637,6 +658,7 @@ class Lattice:
 
         An `Atom` instance can also be created by passing the name of the (new) atom
         and optional keyword arguments for the constructor:
+
         >>> latt.add_atom([0.5, 0.5], atom="B", size=15)
         >>> latt.get_atom(1)
         Atom(B, size=15, 1)
@@ -690,16 +712,19 @@ class Lattice:
         Examples
         --------
         Construct a lattice with two identical atoms and a third atom in the unit cell:
+
         >>> latt = Lattice(np.eye(2))
         >>> latt.add_atom([0, 0], atom="A")
         >>> latt.add_atom([0.5, 0], atom="B")
         >>> latt.add_atom([0.5, 0.5], atom="B")
 
         Get the atom index of atom `A`:
+
         >>> latt.get_alpha("A")
         [0]
 
         Get the indices of the atoms `B`:
+
         >>> latt.get_alpha("B")
         [1, 2]
 
@@ -734,14 +759,17 @@ class Lattice:
         Examples
         --------
         Construct a lattice with one atom in the unit cell
+
         >>> latt = Lattice(np.eye(2))
         >>> latt.add_atom([0, 0], atom="A")
 
         Get the atom instance by the name
+
         >>> latt.get_atom("A")
         Atom(A, size=10, 0)
 
         or by the index:
+
         >>> latt.get_atom(0)
         Atom(A, size=10, 0)
 
@@ -782,17 +810,21 @@ class Lattice:
         Examples
         --------
         Construct a square lattice with two atoms, A and B, in the unit cell:
+
         >>> latt = Lattice(np.eye(2))
         >>> latt.add_atom([0.0, 0.0], atom="A")
         >>> latt.add_atom([0.5, 0.5], atom="B")
 
         Set next nearest and nearest neighbors between the A atoms:
+
         >>> latt.add_connection("A", "A", num_distances=2)
 
         Set nearest neighbors between A and B:
+
         >>> latt.add_connection("A", "B", num_distances=1)
 
         Set nearest neighbors between the B atoms:
+
         >>> latt.add_connection("B", "B", num_distances=1)
         """
         alpha1 = np.atleast_1d(self.get_alpha(atom1))
@@ -824,10 +856,12 @@ class Lattice:
         Examples
         --------
         Construct a square lattice with one atom in the unit cell:
+
         >>> latt = Lattice(np.eye(2))
         >>> latt.add_atom()
 
         Set nearest neighbor hopping:
+
         >>> latt.add_connections(num_distances=1)
         """
         self._connections.fill(num_distances)
@@ -955,11 +989,13 @@ class Lattice:
         Examples
         --------
         Construct a square lattice with one atom in the unit cell and nearest neighbors:
+
         >>> latt = Lattice(np.eye(2))
         >>> latt.add_atom()
         >>> latt.add_connections(num_distances=1)
 
         Call `analyze` after setting up the connections
+
         >>> latt.analyze()
         """
         logger.debug("Analyzing lattice")
@@ -1504,12 +1540,14 @@ class Lattice:
         Examples
         --------
         Build indices of a linear chain with two atoms in the unit cell:
+
         >>> latt = Lattice(np.eye(2))
         >>> latt.add_atom([0.0, 0.0], "A")
         >>> latt.add_atom([0.5, 0.5], "B")
         >>> indices, positions = latt.build_indices((2, 1), return_pos=True)
 
         The indices contain the translation vector and the atom index
+
         >>> indices
         [[0 0 0]
          [0 0 1]
@@ -1520,8 +1558,9 @@ class Lattice:
          [2 0 0]
          [2 1 0]]
 
-         The positions are the positions of the atoms in the same order of the indices:
-         >>> positions
+        The positions are the positions of the atoms in the same order of the indices:
+
+        >>> positions
         [[0.  0. ]
          [0.5 0.5]
          [0.  1. ]
@@ -1645,6 +1684,7 @@ class Lattice:
         Examples
         --------
         Construct indices of a one dimensional lattice:
+
         >>> latt = Lattice(1)
         >>> latt.add_atom()
         >>> latt.add_connections()
@@ -1656,12 +1696,14 @@ class Lattice:
          [3.]]
 
         Compute the neighbors of the constructed sites
+
         >>> neighbors, distances = latt.compute_neighbors(indices, positions)
         >>> neighbors
         [[1 4]
          [2 0]
          [3 1]
          [2 4]]
+
         >>> indices
         [[ 1. inf]
          [ 1.  1.]
@@ -2174,8 +2216,10 @@ class Lattice:
         >>> latt.build((5, 2))
         >>> latt.shape
         [5. 2.]
+
         >>> latt.extend(2, ax=0)
         [8. 2.]
+
         >>> latt.extend(2, ax=1)
         [8. 5.]
         """
@@ -2214,10 +2258,13 @@ class Lattice:
         >>> latt.build((5, 2))
         >>> latt.shape
         [5. 2.]
+
         >>> latt.repeat()
         [11.  2.]
+
         >>> latt.repeat(3)
         [35.  2.]
+
         >>> latt.repeat(ax=1)
         [35.  5.]
         """

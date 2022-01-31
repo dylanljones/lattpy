@@ -222,7 +222,7 @@ class Molecule:
             If ``True``, one-dimensional coordinates will be casted to 2D vectors.
 
         Yields
-        -------
+        ------
         positions: np.ndarray
         """
         atom = self.get_atom(atom)

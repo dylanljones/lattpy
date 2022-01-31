@@ -27,7 +27,7 @@ class DataMap:
     """Object for low-level representation of sites and site-pairs.
 
     Parameters
-    ---------
+    ----------
     alphas : (N) np.ndarray
         The atom indices of the sites.
     pairs : (M, 2) np.ndarray
@@ -466,7 +466,7 @@ class LatticeData:
         See the `neighbor_mask`-method for more information on parameters
 
         Yields
-        -------
+        ------
         distidx : int
         neighbors : np.ndarray
         """

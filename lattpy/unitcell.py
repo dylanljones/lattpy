@@ -304,7 +304,7 @@ class UnitCell(abc.Sequence):
             If ``True``, one-dimensional coordinates will be casted to 2D vectors.
 
         Yields
-        -------
+        ------
         positions: np.ndarray
         """
         atom = self.get_atom(atom)
@@ -347,7 +347,7 @@ class UnitCell(abc.Sequence):
             The vector for translating the positions.
 
         Yields
-        -------
+        ------
         positions: np.ndarray
         """
         r = np.atleast_1d(r)

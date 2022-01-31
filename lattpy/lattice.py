@@ -158,84 +158,85 @@ class Lattice:
 
     @property
     def dim(self) -> int:
-        """int : The dimension of the lattice."""
+        """int: The dimension of the lattice."""
         return self._dim
 
     @property
     def vectors(self) -> np.ndarray:
-        """np.ndarray : Array containing the basis vectors as rows."""
+        """np.ndarray: Array containing the basis vectors as rows."""
         return self._vectors.T
 
     @property
     def vectors3d(self) -> np.ndarray:
-        """np.ndarray : The basis vectors expanded to three dimensions."""
+        """np.ndarray: The basis vectors expanded to three dimensions."""
         vectors = np.eye(3)
         vectors[:self.dim, :self.dim] = self._vectors
         return vectors.T
 
     @property
     def norms(self) -> np.ndarray:
-        """np.ndarray : Lengths of the basis vectors."""
+        """np.ndarray: Lengths of the basis vectors."""
         return np.linalg.norm(self._vectors, axis=0)
 
     @property
     def cell_size(self) -> np.ndarray:
-        """np.ndarray : The shape of the box spawned by the basis vectors."""
+        """np.ndarray: The shape of the box spawned by the basis vectors."""
         return self._cell_size
 
     @property
     def cell_volume(self) -> float:
-        """float : The volume of the unit cell defined by the basis vectors."""
+        """float: The volume of the unit cell defined by the basis vectors."""
         return self._cell_volume
 
     @property
     def num_base(self) -> int:
-        """int : The number of atoms in the unit cell."""
+        """int: The number of atoms in the unit cell."""
         return self._num_base
 
     @property
     def atoms(self) -> List[Atom]:
-        """list of Atom : List of the atoms in the unit cell."""
+        """list of Atom: List of the atoms in the unit cell."""
         return self._atoms
 
     @property
     def atom_positions(self) -> List[np.ndarray]:
-        """list of np.ndarray : List of positions of the atoms in the unit cell."""
+        """list of np.ndarray: List of positions of the atoms in the unit cell."""
         return self._positions
 
     @property
     def num_distances(self) -> int:
-        """int : The maximal number of distances between the lattice sites."""
+        """int: The maximal number of distances between the lattice sites."""
         return int(np.max(self._connections))
 
     @property
     def num_neighbors(self) -> np.ndarray:
-        """np.ndarray : The number of neighbors of each atom in the unitcell."""
+        """np.ndarray: The number of neighbors of each atom in the unitcell."""
         return self._num_neighbors
 
     @property
-    def base_neighbors(self):
-        """The neighbors of the unitcell at the origin."""
+    def base_neighbors(self) -> np.ndarray:
+        """np.ndarray: The neighbors of the unitcell at the origin."""
         return self._base_neighbors
 
     @property
     def distances(self) -> np.ndarray:
-        """List of distances between the lattice sites."""
+        """np.ndarray: List of distances between the lattice sites."""
         return self._distances
 
     @property
     def num_sites(self) -> int:
-        """int : Number of sites in lattice data (if lattice has been built)."""
+        """int: Number of sites in lattice data (if lattice has been built)."""
         return self.data.num_sites
 
     @property
     def num_cells(self) -> int:
-        """int : Number of unit-cells in lattice data (if lattice has been built)."""
+        """int: Number of unit-cells in lattice data (if lattice has been built)."""
         return np.unique(self.data.indices[:, :-1], axis=0).shape[0]
 
     def itransform(self, world_coords: Union[Sequence[int], Sequence[Sequence[int]]]
                    ) -> np.ndarray:
-        """Transform the world coords (x, y, ...) into the basis coords (n, m, ...).
+        """Transform the world coords ``(x, y, ...)`` into the basis coords
+        ``(n, m, ...)``.
 
         Parameters
         ----------
@@ -271,7 +272,8 @@ class Lattice:
 
     def transform(self, basis_coords: Union[Sequence[int], Sequence[Sequence[int]]]
                   ) -> np.ndarray:
-        """Transform the basis-coords (n, m, ...) into the world coords (x, y, ...).
+        """Transform the basis-coords ``(n, m, ...)`` into the world coords
+        ``(x, y, ...)``.
 
         Parameters
         ----------
@@ -307,10 +309,11 @@ class Lattice:
 
     def translate(self, nvec: Union[int, Sequence[int], Sequence[Sequence[int]]],
                   r: Union[float, Sequence[float]] = 0.0) -> np.ndarray:
-        r"""Translates the given postion vector `r` by the translation vector `n`.
+        r"""Translates the given postion vector ``r`` by the translation vector ``n``.
 
         The position is calculated using the translation vector :math:`n` and the
-        atom position in the unitcell _math:`r`:
+        atom position in the unitcell :math:`r`:
+
         .. math::
             R = \sum_i n_i v_i + r
 
@@ -395,13 +398,14 @@ class Lattice:
     def is_reciprocal(self, vecs: vecs_t, tol: float = RVEC_TOLERANCE) -> bool:
         r"""Checks if the given vectors are reciprocal to the lattice vectors.
 
-        The lattice- and reciprocal vectors :math:'a_i' and :math:'b_i' must satisfy
+        The lattice- and reciprocal vectors :math:`a_i` and :math:`b_i` must satisfy
         the relation
+
         .. math::
             a_i \cdot b_i = 2 \pi \delta_{ij}
 
         To check the given vectors, the difference of each dot-product is compared to
-        :math:'2\pi' with the given tolerance.
+        :math:`2\pi` with the given tolerance.
 
         Parameters
         ----------
@@ -426,8 +430,9 @@ class Lattice:
                            check: bool = False) -> np.ndarray:
         r"""Computes the reciprocal basis vectors of the bravais lattice.
 
-        The lattice- and reciprocal vectors :math:'a_i' and :math:'b_i' must satisfy
+        The lattice- and reciprocal vectors :math:`a_i` and :math:`b_i` must satisfy
         the relation
+
         .. math::
             a_i \cdot b_i = 2 \pi \delta_{ij}
 
@@ -438,6 +443,7 @@ class Lattice:
         check : bool, optional
             Check the result and raise an exception if it does not satisfy
             the definition.
+
         Returns
         -------
         v_rec : np.ndarray
@@ -488,7 +494,7 @@ class Lattice:
         Parameters
         ----------
         min_negative : bool, optional
-            If 'True' the reciprocal vectors are scaled such that
+            If True the reciprocal vectors are scaled such that
             there are fewer negative elements than positive ones.
 
         Returns
@@ -525,7 +531,7 @@ class Lattice:
         distidx : int, default
             Index of distance to neighboring cells, default is 0 (nearest neighbors).
         include_origin : bool, optional
-            If `True` the origin is included in the set.
+            If True the origin is included in the set.
         comparison : callable, optional
             The method used for comparing distances.
 
@@ -589,7 +595,7 @@ class Lattice:
         Parameters
         ----------
         min_negative : bool, optional
-            If 'True' the reciprocal vectors are scaled such that
+            If True the reciprocal vectors are scaled such that
             there are fewer negative elements than positive ones.
 
         Returns
@@ -620,20 +626,20 @@ class Lattice:
             created.
         relative : bool, optional
             Flag if the specified position is in cartesian or lattice coordinates.
-            If `True` the passed position will be multiplied with the lattice vectors.
-            The default is `False` (cartesian coordinates).
+            If True the passed position will be multiplied with the lattice vectors.
+            The default is ``False`` (cartesian coordinates).
         neighbors : int, optional
-            The number of neighbor distance to calculate. If the number is ´0´ the
+            The number of neighbor distance to calculate. If the number is 0 the
             distances have to be calculated manually after configuring the
             lattice basis.
         **kwargs
-            Keyword arguments for ´Atom´ constructor. Only used if a new `Atom`
+            Keyword arguments for ´Atom´ constructor. Only used if a new ``Atom``
             instance is created.
 
         Returns
         -------
         atom : Atom
-            The `Atom`-instance of the newly added site.
+            The ``Atom``-instance of the newly added site.
 
         Raises
         ------
@@ -656,7 +662,7 @@ class Lattice:
         >>> latt.get_atom(0)
         Atom(A, size=10, 0)
 
-        An `Atom` instance can also be created by passing the name of the (new) atom
+        An ``Atom`` instance can also be created by passing the name of the (new) atom
         and optional keyword arguments for the constructor:
 
         >>> latt.add_atom([0.5, 0.5], atom="B", size=15)
@@ -699,8 +705,8 @@ class Lattice:
         Parameters
         ----------
         atom : int or str or Atom
-            The argument for getting the atom. If a `int` is passed
-            it is interpreted as the index, if a `str` is passed as
+            The argument for getting the atom. If a ``int`` is passed
+            it is interpreted as the index, if a ``str`` is passed as
             the name of an atom.
 
         Returns
@@ -718,17 +724,17 @@ class Lattice:
         >>> latt.add_atom([0.5, 0], atom="B")
         >>> latt.add_atom([0.5, 0.5], atom="B")
 
-        Get the atom index of atom `A`:
+        Get the atom index of atom A:
 
         >>> latt.get_alpha("A")
         [0]
 
-        Get the indices of the atoms `B`:
+        Get the indices of the atoms B:
 
         >>> latt.get_alpha("B")
         [1, 2]
 
-        Since there are two atoms `B` in the unit cell of the lattice both indices
+        Since there are two atoms B in the unit cell of the lattice both indices
         are returned.
         """
         if isinstance(atom, Atom):
@@ -738,19 +744,19 @@ class Lattice:
         return atom
 
     def get_atom(self, atom: Union[int, str, Atom]) -> Atom:
-        """Returns the `Atom` instance of the given atom in the unit cell.
+        """Returns the ``Atom`` instance of the given atom in the unit cell.
 
         Parameters
         ----------
         atom : int or str or Atom
-            The argument for getting the atom. If a `int` is passed
-            it is interpreted as the index, if a `str` is passed as
+            The argument for getting the atom. If a ``int`` is passed
+            it is interpreted as the index, if a ``str`` is passed as
             the name of an atom.
 
         Returns
         -------
         atom : Atom
-            The `Atom` instance of the given site.
+            The ``Atom`` instance of the given site.
 
         See Also
         --------
@@ -795,12 +801,12 @@ class Lattice:
         atom2 : int or str or Atom
             The second atom of the connected pair.
         num_distances : int, optional
-            The number of neighbor-distance levels, e.g. setting to `1` means
+            The number of neighbor-distance levels, e.g. setting to ``1`` means
             only nearest neighbors. The default are nearest neighbor connections.
         analyze : bool, optional
-            If `True` the lattice basis is analyzed after adding connections.
-            If `False` the `analyze`-method needs to be called manually.
-            The default is `False`.
+            If True the lattice basis is analyzed after adding connections.
+            If ``False`` the ``analyze``-method needs to be called manually.
+            The default is ``False``.
 
         See Also
         --------
@@ -841,12 +847,12 @@ class Lattice:
         Parameters
         ----------
         num_distances : int, optional
-            The number of neighbor-distance levels, e.g. setting to `1` means
+            The number of neighbor-distance levels, e.g. setting to ``1`` means
             only nearest neighbors. The default are nearest neighbor connections.
         analyze : bool, optional
-            If `True` the lattice basis is analyzed after adding connections.
-            If `False` the `analyze`-method needs to be called manually.
-            The default is `True`.
+            If True the lattice basis is analyzed after adding connections.
+            If ``False`` the ``analyze``-method needs to be called manually.
+            The default is True.
 
         See Also
         --------
@@ -875,10 +881,10 @@ class Lattice:
         ----------
         num_neighbors: int, optional
             The number of neighbor-distance levels,
-            e.g. setting to `1` means only nearest neighbors.
+            e.g. setting to ``1`` means only nearest neighbors.
         analyze: bool
-            Flag if lattice base is analyzed. If `False` the `analyze`-method
-            needs to be called manually. The default is `True`.
+            Flag if lattice base is analyzed. If ``False`` the ``analyze``-method
+            needs to be called manually. The default is True.
         """
         warnings.warn("Configuring neighbors with `set_num_neighbors` is deprecated "
                       "and will be removed in a future version. Use the "
@@ -969,7 +975,7 @@ class Lattice:
     def analyze(self) -> None:
         """Analyzes the structure of the lattice and stores neighbor data.
 
-        Check's distances between all sites of the bravais lattice and saves the `n`
+        Check's distances between all sites of the bravais lattice and saves the ``n``
         lowest values. The neighbor lattice-indices of the unit-cell are also stored
         for later use. This speeds up many calculations like finding nearest neighbors.
 
@@ -983,7 +989,7 @@ class Lattice:
 
         Notes
         -----
-        Before calling the `analyze` function all connections in the lattice have to
+        Before calling the ``analyze`` function all connections in the lattice have to
         be set up.
 
         Examples
@@ -1055,7 +1061,8 @@ class Lattice:
 
     def get_position(self, nvec: Union[int, Sequence[int]] = None,
                      alpha: int = 0) -> np.ndarray:
-        """Returns the position for a given translation vector `nvec` and atom `alpha`.
+        """Returns the position for a given translation vector ``nvec`` and atom
+        ``alpha``.
 
         Parameters
         ----------
@@ -1063,6 +1070,7 @@ class Lattice:
             The translation vector.
         alpha : int, optional
             The atom index, default is 0.
+
         Returns
         -------
         pos : (N) np.ndarray
@@ -1088,7 +1096,7 @@ class Lattice:
         Parameters
         ----------
         indices : (N, D+1) array_like or int
-            List of lattice indices in the format :math:'(n_1, ..., n_d, \alpha)'.
+            List of lattice indices in the format :math:`(n_1, ..., n_d, α)`.
 
         Returns
         -------
@@ -1246,7 +1254,7 @@ class Lattice:
         distidx : int, default
             Index of distance to the neighbors, default is 0 (nearest neighbors).
         include_zero : bool, optional
-            Flag if zero-vector is included in result. The default is False.
+            Flag if zero-vector is included in result. The default is ``False``.
 
         Returns
         -------
@@ -1311,7 +1319,7 @@ class Lattice:
         Parameters
         ----------
         atleast2d : bool, optional
-            If 'True', one-dimensional coordinates will be cast to 2D vectors.
+            If True, one-dimensional coordinates will be cast to 2D vectors.
 
         Returns
         -------
@@ -1361,13 +1369,13 @@ class Lattice:
         shape: (N) array_like or int
             shape of finite size lattice to build.
         relative: bool, optional
-            If 'True' the shape will be multiplied by the cell size of the model.
-            The default is `True`.
+            If True the shape will be multiplied by the cell size of the model.
+            The default is True.
         pos: (N) array_like or int, optional
-            Optional position of the section to build. If 'None' the origin is used.
+            Optional position of the section to build. If ``None`` the origin is used.
         check: bool, optional
             If `True` the positions of the translation vectors are checked and
-            filtered. The default is `True`. This should only be disabled if
+            filtered. The default is True. This should only be disabled if
             filtered later.
         dtype: int or np.dtype, optional
             Optional data-type for storing the lattice indices. By default, the given
@@ -1375,7 +1383,7 @@ class Lattice:
         oversample: float, optional
             Faktor for upscaling limits for initial index grid. This ensures that all
             positions are included. Only needed if corner points are missing.
-            The default is `0`.
+            The default is 0.
 
         Returns
         -------
@@ -1452,13 +1460,13 @@ class Lattice:
         shape: (N) array_like or int
             shape of finite size lattice to build.
         relative: bool, optional
-            If 'True' the shape will be multiplied by the cell size of the model.
-            The default is `True`.
+            If True the shape will be multiplied by the cell size of the model.
+            The default is True.
         pos: (N) array_like or int, optional
-            Optional position of the section to build. If 'None' the origin is used.
+            Optional position of the section to build. If ``None`` the origin is used.
         eps: float, optional
             Optional padding of the shape for checking the points.
-            The default is `1e-3`.
+            The default is ``1e-3``.
 
         Returns
         -------
@@ -1498,7 +1506,7 @@ class Lattice:
                       dtype: Union[int, str, np.dtype] = None,
                       return_pos: bool = False
                       ) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
-        """Constructs the lattice indices .math:`(n, \alpha)` in the given shape.
+        """Constructs the lattice indices .math:`(n, α)` in the given shape.
 
         Raises
         ------
@@ -1511,13 +1519,14 @@ class Lattice:
         shape: (N) array_like or int
             shape of finite size lattice to build.
         relative: bool, optional
-            If 'True' the shape will be multiplied by the cell size of the model.
-            The default is `True`.
+            If True the shape will be multiplied by the cell size of the model.
+            The default is True.
         pos: (N) array_like or int, optional
-            Optional position of the section to build. If 'None' the origin is used.
+            Optional position of the section to build. If ``None`` the origin is used.
         check : bool, optional
-            If `True` the positions of the translation vectors are checked and filtered.
-            The default is `True`. This should only be disabled if filtered later.
+            If True the positions of the translation vectors are checked and
+            filtered. The default is True. This should only be disabled if
+            filtered later.
         callback: callable, optional
             Optional callable for filtering sites.
             The indices and positions are passed as arguments.
@@ -1527,15 +1536,15 @@ class Lattice:
         return_pos: bool, optional
             Flag if positions should be returned with the indices. This can speed up
             the building process, since the positions have to be computed here anyway.
-            The default is `False`.
+            The default is ``False``.
 
         Returns
         -------
         indices: (M, N+1) np.ndarray
             The lattice indices of the sites in the format
-            .math:`(n_1, ..., n_d, \alpha)`.
+            .math:`(n_1, ..., n_d, α)`.
         positions: (M, N) np.ndarray
-            Corresponding positions. Only returned if `return_positions` equals `True`.
+            Corresponding positions. Only returned if ``return_positions=True``.
 
         Examples
         --------
@@ -1660,20 +1669,20 @@ class Lattice:
         ----------
         indices : (N, D+1) array_like
             The lattice indices of the sites in the format
-            .math:`(n_1, ..., n_D, \alpha)` where N is the number of sites and D the
+            .math:`(n_1, ..., n_D, α)` where N is the number of sites and D the
             dimension of the lattice.
         positions : (N, D) array_like
             The positions of the sites in cartesian coordinates where N is the number
             of sites and D the dimension of the lattice.
         num_jobs : int, optional
             Number of jobs to schedule for parallel processing.
-            If -1 is given all processors are used. The default is `1`.
+            If ``-1`` is given all processors are used. The default is ``1``.
 
         Returns
         -------
         neighbors: (N, M) np.ndarray
-            The indices of the neighbors in `positions`. M is the maximum
-            number of neighbors previously computed in the `analyze` method.
+            The indices of the neighbors in ``positions``. M is the maximum
+            number of neighbors previously computed in the ``analyze`` method.
         distances: (N, M) np.ndarray
             The corresponding distances of the neighbors.
 
@@ -1815,7 +1824,7 @@ class Lattice:
         Parameters
         ----------
         ind : (D + 1, ) array_like
-            The lattice index (n_1, ..., n_D, alpha) of the site.
+            The lattice index ``(n_1, ..., n_D, alpha)`` of the site.
 
         Returns
         -------
@@ -1839,7 +1848,7 @@ class Lattice:
         distidx : int, optional
             Index of distance to the neighbors, default is 0 (nearest neighbors).
         unique : bool, optional
-            If 'True', each unique pair is only returned once.
+            If True, each unique pair is only returned once.
 
         Returns
         -------
@@ -1856,7 +1865,7 @@ class Lattice:
         idx : int
             The super-index of a site in the cached lattice data.
         unique : bool, optional
-            If 'True', each unique pair is only return once.
+            If True, each unique pair is only return once.
 
         Returns
         -------
@@ -1874,11 +1883,11 @@ class Lattice:
         site : int
             The super-index of a site in the cached lattice data.
         unique : bool, optional
-            If 'True', each unique pair is only return once.
+            If True, each unique pair is only return once.
 
 
         Yields
-        -------
+        ------
         distidx : int
             The distance index of the neighbor indices.
         neighbors : (N, ) np.ndarray
@@ -1922,18 +1931,19 @@ class Lattice:
         shape : (N, ) array_like or int
             shape of finite size lattice to build.
         relative : bool, optional
-            If 'True' the shape will be multiplied by the cell size of the model.
-            The default is `True`.
+            If True the shape will be multiplied by the cell size of the model.
+            The default is True.
         pos : (N, ) array_like or int, optional
-            Optional position of the section to build. If 'None' the origin is used.
+            Optional position of the section to build. If ``None`` the origin is used.
         check : bool, optional
-            If `True` the positions of the translation vectors are checked and filtered.
-            The default is `True`. This should only be disabled if filtered later.
+            If True the positions of the translation vectors are checked and
+            filtered. The default is True. This should only be disabled if
+            filtered later.
         num_jobs : int, optional
             Number of jobs to schedule for parallel processing of neighbors.
-            If -1 is given all processors are used. The default is `-1`.
+            If ``-1`` is given all processors are used. The default is ``-1``.
         periodic : int or array_like, optional
-            Optional periodic axes to set. See 'set_periodic' for mor details.
+            Optional periodic axes to set. See ``set_periodic`` for mor details.
         callback : callable, optional
             The indices and positions are passed as arguments.
         dtype : int or str or np.dtype, optional
@@ -2056,7 +2066,7 @@ class Lattice:
         ----------
         axis : bool or int or (N, ) array_like
             One or multiple axises to apply the periodic boundary conditions.
-            If the axis is `None` the perodic boundary
+            If the axis is ``None`` the perodic boundary
             conditions will be removed.
 
         Raises
@@ -2152,16 +2162,16 @@ class Lattice:
         latt : Lattice
             The other lattice to append to this instance.
         ax : int, optional
-            The axis along the other lattice is appended. The default is `0` (x-axis).
+            The axis along the other lattice is appended. The default is 0 (x-axis).
         side : int, optional
-            The side at which the new lattice is appended. If, for example, axis `0` is
-            used, the other lattice is appended on the right side if `side=+1`
-            and on the left side if `side=-1`.
+            The side at which the new lattice is appended. If, for example, axis 0
+            is used, the other lattice is appended on the right side if ``side=+1``
+            and on the left side if ``side=-1``.
         sort_ax : int, optional
             The axis to sort the lattice indices after the other lattice has been
-            added. The default is the value specified for `ax`.
+            added. The default is the value specified for ``ax``.
         sort_reverse : bool, optional
-            If `True`, the lattice indices are sorted in reverse order.
+            If True, the lattice indices are sorted in reverse order.
 
         Examples
         --------
@@ -2193,21 +2203,21 @@ class Lattice:
         Parameters
         ----------
         size : float
-            The size of which the lattice will be extended in direction of `ax`.
+            The size of which the lattice will be extended in direction of ``ax``.
         ax : int, optional
-            The axis along the lattice is extended. The default is `0` (x-axis).
+            The axis along the lattice is extended. The default is 0 (x-axis).
         side : int, optional
-            The side at which the new lattice is appended. If, for example, axis `0` is
-            used, the lattice is extended to the right side if `side=+1`
-            and to the left side if `side=-1`.
+            The side at which the new lattice is appended. If, for example, axis 0
+            is used, the lattice is extended to the right side if ``side=+1``
+            and to the left side if ``side=-1``.
         num_jobs : int, optional
             Number of jobs to schedule for parallel processing of neighbors for new
-            sites. If -1 is given all processors are used. The default is `-1`.
+            sites. If ``-1`` is given all processors are used. The default is ``-1``.
         sort_ax : int, optional
             The axis to sort the lattice indices after the lattice has been extended.
-            The default is the value specified for `ax`.
+            The default is the value specified for ``ax``.
         sort_reverse : bool, optional
-            If `True`, the lattice indices are sorted in reverse order.
+            If True, the lattice indices are sorted in reverse order.
 
         Examples
         --------
@@ -2238,18 +2248,18 @@ class Lattice:
         Parameters
         ----------
         num : int
-            The number of times the lattice will be repeated in direction `ax`.
+            The number of times the lattice will be repeated in direction ``ax``.
         ax : int, optional
-            The axis along the lattice is extended. The default is `0` (x-axis).
+            The axis along the lattice is extended. The default is 0 (x-axis).
         side : int, optional
-            The side at which the new lattice is appended. If, for example, axis `0` is
-            used, the lattice is extended to the right side if `side=+1`
-            and to the left side if `side=-1`.
+            The side at which the new lattice is appended. If, for example, axis 0
+            is used, the lattice is extended to the right side if ``side=+1``
+            and to the left side if ``side=-1``.
         sort_ax : int, optional
             The axis to sort the lattice indices after the lattice has been extended.
-            The default is the value specified for `ax`.
+            The default is the value specified for ``ax``.
         sort_reverse : bool, optional
-            If `True`, the lattice indices are sorted in reverse order.
+            If True, the lattice indices are sorted in reverse order.
 
         Examples
         --------
@@ -2302,12 +2312,12 @@ class Lattice:
         return "\n".join(lines)
 
     def dump(self, file: Union[str, int, bytes] = "tmp.latt") -> None:
-        """Save the data of the `Lattice` instance.
+        """Save the data of the ``Lattice`` instance.
 
         Parameters
         ----------
         file : str or int or bytes
-            File name to store the lattice. If `None` the hash of the lattice is used.
+            File name to store the lattice. If ``None`` the hash of the lattice is used.
         """
         if file is None:
             file = f"{self.__hash__()}.latt"
@@ -2316,7 +2326,7 @@ class Lattice:
 
     @classmethod
     def load(cls, file: Union[str, int, bytes] = "tmp.latt") -> 'Lattice':
-        """Load data of a saved `Lattice` instance.
+        """Load data of a saved ``Lattice`` instance.
 
         Parameters
         ----------
@@ -2363,15 +2373,15 @@ class Lattice:
         margins : Sequence[float] or float, optional
             Optional margins of the plot.
         show_neighbors : bool, optional
-            If `True` the neighbors are plotted.
+            If True the neighbors are plotted.
         show_vecs : bool, optional
-            If 'True' the first unit-cell is drawn.
+            If True the first unit-cell is drawn.
         show_cell : bool, optional
-            If `True` the outlines of the unit cell are plotted.
+            If True the outlines of the unit cell are plotted.
         ax : plt.Axes or plt.Axes3D or None, optional
             Parent plot. If None, a new plot is initialized.
         show : bool, optional
-            If `True`, show the resulting plot.
+            If True, show the resulting plot.
         """
         if self.dim > 3:
             raise ValueError(f"Plotting in {self.dim} dimensions is not supported!")
@@ -2471,17 +2481,17 @@ class Lattice:
         legend : bool, optional
             Flag if legend is shown
         grid : bool, optional
-            If 'True', draw a grid in the plot.
+            If True, draw a grid in the plot.
         show_periodic : bool, optional
-            If 'True' the periodic connections will be shown.
+            If True the periodic connections will be shown.
         show_indices : bool, optional
-            If 'True' the index of the sites will be shown.
+            If True the index of the sites will be shown.
         show_cell : bool, optional
-            If 'True' the first unit-cell is drawn.
+            If True the first unit-cell is drawn.
         ax : plt.Axes or plt.Axes3D or None, optional
             Parent plot. If None, a new plot is initialized.
         show : bool, optional
-            If `True`, show the resulting plot.
+            If True, show the resulting plot.
         """
         logger.debug("Plotting lattice")
 

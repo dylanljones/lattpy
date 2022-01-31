@@ -15,13 +15,15 @@ import numpy as np
 from collections.abc import Iterable
 from scipy.interpolate import griddata
 from matplotlib.lines import Line2D
-from matplotlib.collections import LineCollection
+from matplotlib.collections import LineCollection, Collection
 from mpl_toolkits.mplot3d.art3d import Line3DCollection, Line3D, Poly3DCollection
+from matplotlib.artist import allow_rasterization
+from matplotlib import path, transforms
 
 __all__ = [
     "set_margins", "set_padding", "set_limits", "draw_line", "draw_lines",
     "draw_arrows", "draw_vectors", "draw_points", "draw_indices", "draw_cell",
-    "draw_surfaces", "interpolate_to_grid"
+    "draw_surfaces", "interpolate_to_grid", "draw_sites"
 ]
 
 # Golden ratio as standard ratio for plot-figures
@@ -30,10 +32,6 @@ GOLDEN_RATIO = (np.sqrt(5) - 1.0) / 2.0
 # =========================================================================
 # Formatting
 # =========================================================================
-
-
-def _pts_to_inch(pts):
-    return pts * (1. / 72.27)
 
 
 def set_margins(ax, x=None, y=None, z=None):
@@ -147,6 +145,60 @@ def draw_points(ax, points, size=10, color=None, alpha=1.0, zorder=3, **kwargs):
     datalim = scat.get_datalim(ax.transData)
     ax.update_datalim(datalim)
     return scat
+
+
+# noinspection PyAbstractClass
+class CircleCollection(Collection):
+    """Custom circle collection
+
+    The default matplotlib `CircleCollection` creates circles based on their
+    area in screen units. This class uses the radius in data units. It behaves
+    like a much faster version of a `PatchCollection` of `Circle`.
+    The implementation is similar to `EllipseCollection`.
+    """
+    def __init__(self, radius, **kwargs):
+        super().__init__(**kwargs)
+        self.radius = np.atleast_1d(radius)
+        self._paths = [path.Path.unit_circle()]
+        self.set_transform(transforms.IdentityTransform())
+        self._transforms = np.empty((0, 3, 3))
+
+    def _set_transforms(self):
+        ax = self.axes
+        self._transforms = np.zeros((self.radius.size, 3, 3))
+        self._transforms[:, 0, 0] = self.radius * ax.bbox.width / ax.viewLim.width
+        self._transforms[:, 1, 1] = self.radius * ax.bbox.height / ax.viewLim.height
+        self._transforms[:, 2, 2] = 1
+
+    @allow_rasterization
+    def draw(self, renderer):
+        self._set_transforms()
+        super().draw(renderer)
+
+
+def draw_sites(ax, points, size=10, color=None, alpha=1.0, zorder=3, **kwargs):
+    points = np.atleast_2d(points)
+    # Fix 1D case
+    if points.shape[1] == 1:
+        points = np.hstack((points, np.zeros((points.shape[0], 1))))
+
+    dim = points.shape[1]
+    if dim == 2:
+        radius = size / 50
+        col = CircleCollection(radius, offsets=points, transOffset=ax.transData,
+                               color=color, alpha=alpha, zorder=zorder, **kwargs)
+        ax.add_collection(col)
+        datalim = col.get_datalim(ax.transData)
+        ax.update_datalim(datalim)
+        return col
+    else:
+        scat = ax.scatter(*points.T, s=size**2, color=color, alpha=alpha, zorder=zorder,
+                          **kwargs)
+        # Manualy update data-limits
+        # ax.ignore_existing_data_limits = True
+        datalim = scat.get_datalim(ax.transData)
+        ax.update_datalim(datalim)
+        return scat
 
 
 def draw_indices(ax, positions, offset=0.1):

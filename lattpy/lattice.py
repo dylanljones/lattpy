@@ -42,6 +42,7 @@ from .spatial import (
 )
 from .plotting import (
     draw_points,
+    draw_sites,
     draw_vectors,
     draw_cell,
     draw_indices
@@ -2364,7 +2365,7 @@ class Lattice:
                   color: Union[str, float] = "k",
                   alpha: float = 0.5,
                   legend: bool = True,
-                  margins: Union[Sequence[float], float] = 0.3,
+                  margins: Union[Sequence[float], float] = 0.25,
                   show_cell: bool = True,
                   show_vecs: bool = True,
                   show_neighbors: bool = True,
@@ -2407,7 +2408,8 @@ class Lattice:
         colors = list()
         for i in range(self.num_base):
             atom = self.get_atom(i)
-            line = ax.plot([], [], color=atom.color)[0]
+            col = atom.color or f"C{i}"
+            line = ax.plot([], [], color=col)[0]
             col = line.get_color()
             colors.append(col)
 
@@ -2440,15 +2442,15 @@ class Lattice:
                     pos = np.unique(positions, axis=0)
                     size = 0.6 * atom.size
                     col = colors[i]
-                    draw_points(ax, pos, size=size, color=col, label=atom.name,
-                                alpha=alpha, zorder=2)
+                    draw_sites(ax, pos, size=size, color=col, label=atom.name,
+                               alpha=alpha, zorder=2)
 
         # Plot atoms in the unit cell
         for i in range(self.num_base):
             atom = self.get_atom(i)
             pos = self.atom_positions[i]
             col = colors[i]
-            draw_points(ax, pos, size=atom.size, color=col, label=atom.name, zorder=2)
+            draw_sites(ax, pos, size=atom.size, color=col, label=atom.name, zorder=2)
 
         # Format plot
         if legend and self._num_base > 1:
@@ -2462,7 +2464,7 @@ class Lattice:
             ax.margins(*margins)
 
         if self.dim < 3:
-            ax.set_aspect("equal", "datalim")
+            ax.set_aspect("equal")
 
         fig.tight_layout()
         if show:
@@ -2547,8 +2549,9 @@ class Lattice:
         # Draw sites
         for alpha in range(self.num_base):
             atom = self.atoms[alpha]
+            col = atom.color or f"C{alpha}"
             points = self.data.get_positions(alpha)
-            draw_points(ax, points, size=atom.size, color=atom.color, label=atom.name)
+            draw_sites(ax, points, size=atom.size, color=col, label=atom.name)
 
         if show_indices:
             positions = [self.position(i) for i in range(self.num_sites)]

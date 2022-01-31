@@ -224,13 +224,16 @@ def cell_volume(vectors: ArrayLike) -> float:
     r""" Computes the volume of the unit cell defined by the primitive vectors.
 
     The volume of the unit-cell in two and three dimensions is defined by
+
     .. math::
         V_{2d} = \abs{a_1 \cross a_2}, \quad V_{3d} = a_1 \cdot \abs{a_2 \cross a_3}
 
     For higher dimensions the volume is computed using the determinant:
+
     .. math::
         V_{d} = \sqrt{\det{A A^T}}
-    where .math:`A` is the array of vectors.
+
+    where :math:`A` is the array of vectors.
 
     Parameters
     ----------
@@ -240,6 +243,7 @@ def cell_volume(vectors: ArrayLike) -> float:
     Returns
     -------
     vol: float
+        The volume of the unit cell.
     """
     dim = len(vectors)
     if dim == 1:

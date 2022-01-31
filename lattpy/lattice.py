@@ -63,6 +63,8 @@ class Lattice:
     ----------
     vectors: array_like or float
         The primitive basis vectors that define the unit cell of the lattice.
+    **kwargs
+        Key-word arguments. Used only when subclassing ``Lattice``.
 
     Examples
     --------
@@ -111,30 +113,36 @@ class Lattice:
 
     @classmethod
     def chain(cls, a: float = 1.0, **kwargs) -> 'Lattice':
+        """Initializes a one-dimensional lattice."""
         return cls(a, **kwargs)
 
     @classmethod
     def square(cls, a: float = 1.0, **kwargs) -> 'Lattice':
+        """Initializes a 2D lattice with square basis vectors."""
         return cls(a * np.eye(2), **kwargs)
 
     @classmethod
     def rectangular(cls, a1: float = 1., a2: float = 1.,
                     **kwargs) -> 'Lattice':
+        """Initializes a 2D lattice with rectangular basis vectors."""
         return cls(np.array([[a1, 0], [0, a2]]), **kwargs)
-
-    @classmethod
-    def hexagonal(cls, a: float = 1.0, **kwargs) -> 'Lattice':
-        vectors = a / 2 * np.array([[3, np.sqrt(3)], [3, -np.sqrt(3)]])
-        return cls(vectors, **kwargs)
 
     @classmethod
     def oblique(cls, alpha: float, a1: float = 1.0, a2: float = 1.0,
                 **kwargs) -> 'Lattice':
+        """Initializes a 2D lattice with oblique basis vectors."""
         vectors = np.array([[a1, 0], [a2 * np.cos(alpha), a2 * np.sin(alpha)]])
         return cls(vectors, **kwargs)
 
     @classmethod
+    def hexagonal(cls, a: float = 1.0, **kwargs) -> 'Lattice':
+        """Initializes a 2D lattice with hexagonal basis vectors."""
+        vectors = a / 2 * np.array([[3, np.sqrt(3)], [3, -np.sqrt(3)]])
+        return cls(vectors, **kwargs)
+
+    @classmethod
     def hexagonal3d(cls, a: float = 1., az: float = 1., **kwargs) -> 'Lattice':
+        """Initializes a 3D lattice with hexagonal basis vectors."""
         vectors = a / 2 * np.array([[3, np.sqrt(3), 0],
                                     [3, -np.sqrt(3), 0],
                                     [0, 0, az]])
@@ -142,15 +150,18 @@ class Lattice:
 
     @classmethod
     def sc(cls, a: float = 1.0, **kwargs) -> 'Lattice':
+        """Initializes a 3D simple cubic lattice."""
         return cls(a * np.eye(3), **kwargs)
 
     @classmethod
     def fcc(cls, a: float = 1.0, **kwargs) -> 'Lattice':
+        """Initializes a 3D face centered cubic lattice."""
         vectors = a / 2 * np.array([[1, 1, 0], [1, 0, 1], [0, 1, 1]])
         return cls(vectors, **kwargs)
 
     @classmethod
     def bcc(cls, a: float = 1.0, **kwargs) -> 'Lattice':
+        """Initializes a 3D body centered cubic lattice."""
         vectors = a / 2 * np.array([[1, 1, 1], [1, -1, 1], [-1, 1, 1]])
         return cls(vectors, **kwargs)
 
@@ -327,7 +338,7 @@ class Lattice:
 
         Returns
         -------
-        r_trans : (N) np.ndarray
+        r_trans : (..., N) np.ndarray
             The translated position.
 
         Examples
@@ -367,14 +378,14 @@ class Lattice:
 
         Parameters
         ----------
-        x : (N) array_like or float
+        x : (..., N) array_like or float
             Position vector in cartesian coordinates.
 
         Returns
         -------
-        nvec : (N) np.ndarray
+        nvec : (..., N) np.ndarray
             Translation vector in the lattice basis.
-        r : (N) np.ndarray, optional
+        r : (..., N) np.ndarray, optional
             The position in real-space.
 
         Examples
@@ -391,7 +402,7 @@ class Lattice:
         """
         x = np.atleast_1d(x)
         itrans = self.itransform(x)
-        nvec = np.floor(itrans)
+        nvec = np.floor(itrans).astype(np.int64)
         r = x - self.translate(nvec)
         return nvec, r
 
@@ -1417,7 +1428,8 @@ class Lattice:
         end = pos + shape
 
         # Estimate the maximum needed translation vector to reach all points
-        max_nvecs = np.array([self.itranslate(pos)[0], self.itranslate(end)[0]])
+        max_nvecs = np.array([self.itranslate(pos)[0], self.itranslate(end)[0]],
+                             dtype=np.float64)
         for i in range(1, self.dim):
             for idx in itertools.combinations(range(self.dim), r=i):
                 _pos = end.copy()
@@ -2352,7 +2364,7 @@ class Lattice:
                   color: Union[str, float] = "k",
                   alpha: float = 0.5,
                   legend: bool = True,
-                  margins: Union[Sequence[float], float] = 0.25,
+                  margins: Union[Sequence[float], float] = 0.3,
                   show_cell: bool = True,
                   show_vecs: bool = True,
                   show_neighbors: bool = True,
@@ -2429,14 +2441,14 @@ class Lattice:
                     size = 0.6 * atom.size
                     col = colors[i]
                     draw_points(ax, pos, size=size, color=col, label=atom.name,
-                                alpha=alpha)
+                                alpha=alpha, zorder=2)
 
         # Plot atoms in the unit cell
         for i in range(self.num_base):
             atom = self.get_atom(i)
             pos = self.atom_positions[i]
             col = colors[i]
-            draw_points(ax, pos, size=atom.size, color=col, label=atom.name)
+            draw_points(ax, pos, size=atom.size, color=col, label=atom.name, zorder=2)
 
         # Format plot
         if legend and self._num_base > 1:
@@ -2552,6 +2564,7 @@ class Lattice:
         if isinstance(margins, float):
             margins = [margins] * self.dim
         if self.dim == 1 or (self.dim == 2 and self.shape[1] < 1):
+            ax.margins(*margins)
             sizex = self.shape[0]
             h = sizex / 4
             ax.set_ylim(-h, +h)

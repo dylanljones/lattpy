@@ -41,7 +41,6 @@ from .spatial import (
     KDTree
 )
 from .plotting import (
-    draw_points,
     draw_sites,
     draw_vectors,
     draw_cell,

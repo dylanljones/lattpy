@@ -302,6 +302,7 @@ def compute_vectors(a: float, b: float = None, c: float = None,
     return vectors
 
 
+# noinspection PyUnresolvedReferences
 class KDTree(scipy.spatial.cKDTree):
     """Simple wrapper of scipy's cKTree with global query settings."""
 

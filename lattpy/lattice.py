@@ -141,6 +141,7 @@ class Lattice:
         # Lattice Cache
         self.data = LatticeData()
         self.shape = None
+        self.pos = None
         self.periodic_axes = list()
         logger.debug("Lattice initialized (D=%i)\nvectors:\n%s",
                      self.dim, self._vectors)
@@ -1982,6 +1983,7 @@ class Lattice:
     def _update_shape(self):
         limits = self.data.get_limits()
         self.shape = limits[1] - limits[0]
+        self.pos = limits[0]
 
     def build(self, shape: Union[int, Sequence[int], AbstractShape],
               relative: bool = False,
@@ -2193,6 +2195,22 @@ class Lattice:
         return np.array(pairs), np.array(distances)
 
     def compute_connections(self, latt):
+        """Computes the connections between the current and another lattice.
+
+        Parameters
+        ----------
+        latt : Lattice
+            The other lattice.
+
+        Returns
+        -------
+        neighbors : (N, 2) np.ndarray
+            The connecting pairs between the two lattices.
+            The first index of each row is the index in the current lattice data, the
+            second one is the index for the other lattice ``latt``.
+        distances : (N) np.ndarray
+            The corresponding distances for the connections.
+        """
         positions2 = latt.data.positions
         return self._compute_connection_neighbors(self.data.positions, positions2)
 

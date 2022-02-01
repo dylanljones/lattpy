@@ -228,6 +228,36 @@ class LatticeData:
         self.invalid_distidx = np.max(self.distances)
         self._dmap = None
 
+    def remove(self, sites):
+        # store current invalid index
+        invalid_idx = self.invalid_idx
+        invalid_distidx = self.invalid_distidx
+
+        # Remove data from arrays
+        indices = np.delete(self.indices, sites, axis=0)
+        positions = np.delete(self.positions, sites, axis=0)
+        neighbors = np.delete(self.neighbors, sites, axis=0)
+        distances = np.delete(self.distances, sites, axis=0)
+
+        # Update neighbor indices and distances:
+        # For each removed site below the neighbor index has to be decremented once
+        mask = np.isin(neighbors, sites)
+        neighbors[mask] = invalid_idx
+        distances[mask] = invalid_distidx
+        for count, i in enumerate(sorted(sites)):
+            neighbors[neighbors > (i - count)] -= 1
+
+        # Update invalid indices in neighbor array since number of sites changed
+        num_sites = indices.shape[0]
+        neighbors[neighbors == invalid_idx] = num_sites
+
+        # Set updated data
+        self.indices = indices
+        self.positions = positions
+        self.neighbors = neighbors
+        self.distances = distances
+        self.invalid_idx = num_sites
+
     def get_limits(self) -> np.ndarray:
         """Computes the geometric limits of the positions of the stored sites.
 

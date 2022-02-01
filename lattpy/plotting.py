@@ -205,6 +205,8 @@ def draw_indices(ax, positions, offset=0.1):
     offset = np.ones_like(positions[0]) * offset
     texts = list()
     for i, pos in enumerate(positions):
+        if len(pos) == 1:
+            pos = [pos, 0]
         lowerleft = np.asarray(pos) + offset
         txt = ax.text(*lowerleft, s=str(i), va="bottom", ha="left")
         texts.append(txt)

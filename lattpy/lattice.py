@@ -48,12 +48,46 @@ from .plotting import (
 )
 from .unitcell import Atom
 from .data import LatticeData, DataMap
+from .shape import AbstractShape
+
 
 __all__ = ["Lattice"]
 
 logger = logging.getLogger(__name__)
 
 vecs_t = Union[float, Sequence[float], Sequence[Sequence[float]]]
+
+
+def _filter_dangling(indices, positions, neighbors, distances, min_neighbors):
+    num_neighbors = np.count_nonzero(np.isfinite(distances), axis=1)
+    sites = np.where(num_neighbors < min_neighbors)[0]
+    if len(sites) == 0:
+        return indices, positions, neighbors, distances
+    elif len(sites) == indices.shape[0]:
+        raise ValueError("Filtering min_neighbors would result in no sites!")
+
+    # store current invalid index
+    invalid_idx = indices.shape[0]
+
+    # Remove data from arrays
+    indices = np.delete(indices, sites, axis=0)
+    positions = np.delete(positions, sites, axis=0)
+    neighbors = np.delete(neighbors, sites, axis=0)
+    distances = np.delete(distances, sites, axis=0)
+
+    # Update neighbor indices and distances:
+    # For each removed site below the neighbor index has to be decremented once
+    mask = np.isin(neighbors, sites)
+    neighbors[mask] = invalid_idx
+    distances[mask] = np.inf
+    for count, i in enumerate(sorted(sites)):
+        neighbors[neighbors > (i - count)] -= 1
+
+    # Update invalid indices in neighbor array since number of sites changed
+    num_sites = indices.shape[0]
+    neighbors[neighbors == invalid_idx] = num_sites
+
+    return indices, positions, neighbors, distances
 
 
 class Lattice:
@@ -243,6 +277,16 @@ class Lattice:
     def num_cells(self) -> int:
         """int: Number of unit-cells in lattice data (if lattice has been built)."""
         return np.unique(self.data.indices[:, :-1], axis=0).shape[0]
+
+    @property
+    def indices(self):
+        """np.ndarray: The lattice indices of the cached lattice data."""
+        return self.data.indices
+
+    @property
+    def positions(self):
+        """np.ndarray: The lattice positions of the cached lattice data."""
+        return self.data.positions
 
     def itransform(self, world_coords: Union[Sequence[int], Sequence[Sequence[int]]]
                    ) -> np.ndarray:
@@ -1458,7 +1502,7 @@ class Lattice:
 
     # noinspection PyShadowingNames
     def check_points(self, points: np.ndarray,
-                     shape: Union[int, Sequence[int]],
+                     shape: Union[int, Sequence[int], AbstractShape],
                      relative: bool = False,
                      pos: Union[float, Sequence[float]] = None,
                      eps: float = 1e-3,
@@ -1469,7 +1513,7 @@ class Lattice:
         ----------
         points: (M, N) np.ndarray
             The points in cartesian coordinates.
-        shape: (N) array_like or int
+        shape: (N) array_like or int or AbstractShape
             shape of finite size lattice to build.
         relative: bool, optional
             If True the shape will be multiplied by the cell size of the model.
@@ -1493,24 +1537,27 @@ class Lattice:
         >>> latt.check_points(points, shape)
         [ True  True False]
         """
-        shape = np.atleast_1d(shape)
-        if len(shape) != self.dim:
-            raise ValueError(f"Dimension of shape {len(shape)} doesn't "
-                             f"match the dimension of the lattice {self.dim}")
-        if relative:
-            shape = np.array(shape) * np.max(self.vectors, axis=0) - 0.1 * self.norms
+        if isinstance(shape, AbstractShape):
+            return shape.contains(points)
+        else:
+            shape = np.atleast_1d(shape)
+            if len(shape) != self.dim:
+                raise ValueError(f"Dimension of shape {len(shape)} doesn't "
+                                 f"match the dimension of the lattice {self.dim}")
+            if relative:
+                shape += np.max(self.vectors, axis=0) - 0.1 * self.norms
 
-        pos = np.zeros(self.dim) if pos is None else np.array(pos, dtype=np.float64)
-        pos -= eps
-        end = pos + shape + eps
+            pos = np.zeros(self.dim) if pos is None else np.array(pos, dtype=np.float64)
+            pos -= eps
+            end = pos + shape + eps
 
-        mask = (pos[0] <= points[:, 0]) & (points[:, 0] <= end[0])
-        for i in range(1, self.dim):
-            mask = mask & (pos[i] <= points[:, i]) & (points[:, i] <= end[i])
-        return mask
+            mask = (pos[0] <= points[:, 0]) & (points[:, 0] <= end[0])
+            for i in range(1, self.dim):
+                mask = mask & (pos[i] <= points[:, i]) & (points[:, i] <= end[i])
+            return mask
 
     # noinspection PyShadowingNames
-    def build_indices(self, shape: Union[int, Sequence[int]],
+    def build_indices(self, shape: Union[int, Sequence[int], AbstractShape],
                       relative: bool = False,
                       pos: Union[float, Sequence[float]] = None,
                       check: bool = True,
@@ -1528,7 +1575,7 @@ class Lattice:
 
         Parameters
         ----------
-        shape: (N) array_like or int
+        shape: (N) array_like or int or AbstractShape
             shape of finite size lattice to build.
         relative: bool, optional
             If True the shape will be multiplied by the cell size of the model.
@@ -1594,7 +1641,12 @@ class Lattice:
         logger.debug("Building lattice-indices: %s at %s", shape, pos)
 
         # Build lattice indices
-        nvecs = self.build_translation_vectors(shape, relative, pos, check, dtype)
+        if isinstance(shape, AbstractShape):
+            pos, stop = shape.limits().T
+            outer_shape = stop - pos
+        else:
+            outer_shape = shape
+        nvecs = self.build_translation_vectors(outer_shape, relative, pos, check, dtype)
         ones = np.ones(nvecs.shape[0], dtype=nvecs.dtype)
         arrays = [np.c_[nvecs, i * ones] for i in range(self.num_base)]
         cols = self.dim + 1
@@ -1732,7 +1784,7 @@ class Lattice:
          [ 1. inf]]
 
         The neighbor indices and distances of sites with less than the maximum number
-        of neighbors are filled up with an invalid index (here: 4) and `np.inf`
+        of neighbors are filled up with an invalid index (here: 4) and ``np.inf``
         as distance.
         """
 
@@ -1927,10 +1979,15 @@ class Lattice:
                 return distidx
         return None
 
-    def build(self, shape: Union[int, Sequence[int]],
+    def _update_shape(self):
+        limits = self.data.get_limits()
+        self.shape = limits[1] - limits[0]
+
+    def build(self, shape: Union[int, Sequence[int], AbstractShape],
               relative: bool = False,
               pos: Union[float, Sequence[float]] = None,
               check: bool = True,
+              min_neighbors: int = None,
               num_jobs: int = -1,
               periodic: Union[bool, int, Sequence[int]] = None,
               callback: Callable = None,
@@ -1940,7 +1997,7 @@ class Lattice:
 
         Parameters
         ----------
-        shape : (N, ) array_like or int
+        shape : (N, ) array_like or int or AbstractShape
             shape of finite size lattice to build.
         relative : bool, optional
             If True the shape will be multiplied by the cell size of the model.
@@ -1951,6 +2008,9 @@ class Lattice:
             If True the positions of the translation vectors are checked and
             filtered. The default is True. This should only be disabled if
             filtered later.
+        min_neighbors : int, optional
+            The minimum number of neighbors a site must have. This can be used to
+            remove dangling sites at the edge of the lattice.
         num_jobs : int, optional
             Number of jobs to schedule for parallel processing of neighbors.
             If ``-1`` is given all processors are used. The default is ``-1``.
@@ -1974,10 +2034,8 @@ class Lattice:
             Raised if the lattice distances and base-neighbors haven't been computed.
         """
         self.data.reset()
-        shape = np.atleast_1d(shape)
-        if len(shape) != self.dim:
-            raise ValueError(f"Dimension of shape {len(shape)} doesn't "
-                             f"match the dimension of the lattice {self.dim}")
+        if not isinstance(shape, AbstractShape):
+            shape = np.atleast_1d(shape)
 
         self._assert_connections()
         self._assert_analyzed()
@@ -1990,11 +2048,14 @@ class Lattice:
 
         # Compute the neighbors and distances between the sites
         neighbors, distances = self.compute_neighbors(indices, positions, num_jobs)
+        if min_neighbors is not None:
+            data = _filter_dangling(indices, positions, neighbors, distances,
+                                    min_neighbors)
+            indices, positions, neighbors, distances = data
 
         # Set data of the lattice and update shape
         self.data.set(indices, positions, neighbors, distances)
-        limits = self.data.get_limits()
-        self.shape = limits[1] - limits[0]
+        self._update_shape()
 
         if periodic is not None:
             self.set_periodic(periodic)
@@ -2117,19 +2178,23 @@ class Lattice:
 
         pairs = list()
         distances = list()
-        offset = len(positions1)
+        # offset = len(positions1)
         connections = tree1.query_ball_tree(tree2, max_dist)
         for i, conns in enumerate(connections):
             if conns:
                 conns = np.asarray(conns)
                 dists = cdist(np.asarray([positions1[i]]), positions2[conns])[0]
-                for j, dist in zip(conns + offset, dists):
+                for j, dist in zip(conns, dists):
                     pairs.append((i, j))
-                    pairs.append((j, i))
+                    # pairs.append((j, i))
                     distances.append(dist)
-                    distances.append(dist)
+                    # distances.append(dist)
 
         return np.array(pairs), np.array(distances)
+
+    def compute_connections(self, latt):
+        positions2 = latt.data.positions
+        return self._compute_connection_neighbors(self.data.positions, positions2)
 
     def _append(self, ind, pos, neighbors, dists, ax=0, side=+1,
                 sort_axis=None, sort_reverse=False):
@@ -2155,15 +2220,16 @@ class Lattice:
         # Append data and compute connecting neighbors
         self.data.append(indices2, positions2, neighbors2, distances2)
         pairs, distances = self._compute_connection_neighbors(positions1, positions2)
+        offset = len(positions1)
         for (i, j), dist in zip(pairs, distances):
-            self.data.add_neighbors(i, j, dist)
+            self.data.add_neighbors(i, j + offset, dist)
+            self.data.add_neighbors(j + offset, i, dist)
 
         if sort_axis is not None:
             self.data.sort(sort_axis, reverse=sort_reverse)
 
         # Update the shape of the lattice
-        limits = self.data.get_limits()
-        self.shape = limits[1] - limits[0]
+        self._update_shape()
 
     # noinspection PyShadowingNames
     def append(self, latt, ax=0, side=+1, sort_ax=None, sort_reverse=False):

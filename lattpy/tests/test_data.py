@@ -93,3 +93,67 @@ def test_sort():
 
     latt.data.sort(ax=1)
     assert np.max(np.diff(latt.data.indices, axis=0)[:, 1]) == 1
+
+
+def test_datamap():
+    # Chain
+    latt = simple_chain()
+    latt.build(5)
+
+    dmap = latt.data.map()
+    res = [True, True, True, True, True, True, False, False, False,
+           False, False, False, False, False, False, False]
+    assert dmap.size == len(res)
+    assert_array_equal(dmap.onsite(0), res)
+
+    res = [False, False, False, False, False, False, True, True, True,
+           True, True, True, True, True, True, True]
+    assert_array_equal(dmap.hopping(0), res)
+
+    data = np.zeros(dmap.size)
+    dmap.fill(data, hop=1, eps=2)
+
+    res = np.zeros(dmap.size)
+    res[:latt.num_sites] = 2.0
+    res[latt.num_sites:] = 1.0
+    assert_array_equal(data, res)
+
+
+def test_site_mask():
+    latt = simple_square()
+    latt.build((4, 4))
+    data = latt.data
+
+    expected = [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    assert_array_equal(data.site_mask([1, 0]), expected)
+
+    expected = [0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1,
+                1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1]
+    assert_array_equal(data.site_mask([0, 1]), expected)
+
+
+def test_find_sites():
+    latt = simple_square()
+    latt.build((4, 4))
+    data = latt.data
+    mins, maxs = [1, 1], [3, 3]
+
+    expected = [6, 7, 8, 11, 12, 13, 16, 17, 18]
+    assert_array_equal(data.find_sites(mins, maxs), expected)
+
+    expected = [0, 1, 2, 3, 4, 5, 9, 10, 14, 15, 19, 20, 21, 22, 23, 24]
+    assert_array_equal(data.find_sites(mins, maxs, invert=True), expected)
+
+
+def test_find_outer_sites():
+    latt = simple_square()
+    latt.build((4, 4))
+    data = latt.data
+    offset = 1
+
+    expected = [0, 1, 2, 3, 4, 20, 21, 22, 23, 24]
+    assert_array_equal(data.find_outer_sites(0, offset), expected)
+
+    expected = [0, 4, 5, 9, 10, 14, 15, 19, 20, 24]
+    assert_array_equal(data.find_outer_sites(1, offset), expected)

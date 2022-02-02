@@ -14,7 +14,7 @@ import logging
 from copy import deepcopy
 from typing import Iterable, Union, Sequence
 import numpy as np
-from .utils import ArrayLike, create_lookup_table
+from .utils import ArrayLike, create_lookup_table, min_dtype
 
 __all__ = ["DataMap", "LatticeData"]
 
@@ -27,7 +27,7 @@ class DataMap:
     """Object for low-level representation of sites and site-pairs.
 
     Parameters
-    ---------
+    ----------
     alphas : (N) np.ndarray
         The atom indices of the sites.
     pairs : (M, 2) np.ndarray
@@ -228,6 +228,36 @@ class LatticeData:
         self.invalid_distidx = np.max(self.distances)
         self._dmap = None
 
+    def remove(self, sites):
+        # store current invalid index
+        invalid_idx = self.invalid_idx
+        invalid_distidx = self.invalid_distidx
+
+        # Remove data from arrays
+        indices = np.delete(self.indices, sites, axis=0)
+        positions = np.delete(self.positions, sites, axis=0)
+        neighbors = np.delete(self.neighbors, sites, axis=0)
+        distances = np.delete(self.distances, sites, axis=0)
+
+        # Update neighbor indices and distances:
+        # For each removed site below the neighbor index has to be decremented once
+        mask = np.isin(neighbors, sites)
+        neighbors[mask] = invalid_idx
+        distances[mask] = invalid_distidx
+        for count, i in enumerate(sorted(sites)):
+            neighbors[neighbors > (i - count)] -= 1
+
+        # Update invalid indices in neighbor array since number of sites changed
+        num_sites = indices.shape[0]
+        neighbors[neighbors == invalid_idx] = num_sites
+
+        # Set updated data
+        self.indices = indices
+        self.positions = positions
+        self.neighbors = neighbors
+        self.distances = distances
+        self.invalid_idx = num_sites
+
     def get_limits(self) -> np.ndarray:
         """Computes the geometric limits of the positions of the stored sites.
 
@@ -388,6 +418,10 @@ class LatticeData:
         neighbors1[neighbors1 == self.invalid_idx] = invalid_idx
         neighbors2[neighbors2 == len(indices2)] = invalid_idx
 
+        # upgrade dtype if neccessary
+        dtype = min_dtype(np.max(neighbors2) + self.num_sites)
+        if dtype != neighbors2.dtype:
+            neighbors2 = neighbors2.astype(dtype)
         # Shift neighbor indices
         neighbors2[neighbors2 != invalid_idx] += self.num_sites
 
@@ -462,7 +496,7 @@ class LatticeData:
         See the `neighbor_mask`-method for more information on parameters
 
         Yields
-        -------
+        ------
         distidx : int
         neighbors : np.ndarray
         """

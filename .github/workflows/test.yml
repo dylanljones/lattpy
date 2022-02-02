@@ -1,0 +1,56 @@
+name: Test
+
+on:
+  push:
+    branches: [master, dev]
+  pull_request:
+    types: [opened]
+  workflow_dispatch:
+
+jobs:
+
+  code-change:
+    runs-on: ubuntu-latest
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@master
+        with:
+          paths_ignore: '["docs/**"]'  # skip unit-tests if only docs were changed
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+
+
+  tests:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.7", "3.9"]  # check oldest and latest supported version
+        other-os: [false]
+
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.other-os }}  # don't cancel due to OS specific failures
+    env:
+      OS: ${{ matrix.os }}
+      PYTHON: ${{ matrix.python-version }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pytest-cov codecov
+        pip install -r requirements.txt
+        python setup.py install
+    - name: Run tests
+      run: |
+        pytest lattpy/ --cov=lattpy --cov-report=xml -v
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v2
+      with:
+        env_vars: OS,PYTHON
+        verbose: True
+    - name: Coverage
+      run: codecov

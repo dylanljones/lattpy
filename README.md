@@ -5,11 +5,19 @@
 ![PyPI - Status](https://img.shields.io/pypi/status/lattpy?color=yellow&style=flat-square)
 ![PyPI - License](https://img.shields.io/pypi/l/lattpy?style=flat-square)
 
-|        |                                                                                                        |                                                                                                                       |
-|:-------|:-------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------|
-| Master | ![Travis (.com) branch](https://img.shields.io/travis/com/dylanljones/lattpy/master?style=flat-square) | ![Codecov branch](https://img.shields.io/codecov/c/github/dylanljones/lattpy/master?logo=codecov&style=flat-square)   |
-| Dev    | ![Travis (.com) branch](https://img.shields.io/travis/com/dylanljones/lattpy/dev?style=flat-square)    | ![Codecov branch](https://img.shields.io/codecov/c/github/dylanljones/lattpy/dev?logo=codecov&style=flat-square)      |
+|        |                                         |                                                          |
+|:-------|:----------------------------------------|:---------------------------------------------------------|
+| Master | [![Test][img-tests-master]][link-tests] | [![Codecov branch][codecov-master]][codecov-master-link] |
+| Dev    | [![Test][img-tests-dev]][link-tests]    | [![Codecov branch][codecov-dev]][codecov-dev-link]       |
 
+[codecov-master]: https://img.shields.io/codecov/c/github/dylanljones/lattpy/master?logo=codecov&style=flat-square
+[codecov-master-link]: https://app.codecov.io/gh/dylanljones/lattpy/branch/master
+[codecov-dev]: https://img.shields.io/codecov/c/github/dylanljones/lattpy/dev?logo=codecov&style=flat-square
+[codecov-dev-link]: https://app.codecov.io/gh/dylanljones/lattpy/branch/dev
+
+[img-tests-master]: https://img.shields.io/github/workflow/status/dylanljones/lattpy/Test/master?label=Tests&logo=github&style=flat-square
+[img-tests-dev]: https://img.shields.io/github/workflow/status/dylanljones/lattpy/Test/dev?label=Tests&logo=github&style=flat-square
+[link-tests]: https://github.com/dylanljones/lattpy/actions/workflows/test.yml
 
 LattPy  is a simple and efficient Python package for modeling Bravais lattices and 
 constructing (finite) lattice structures in `d` dimensions.
@@ -104,7 +112,10 @@ latt.plot()
 plt.show()
 ````
 
+
+<p align="center">
 <img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/examples/example_square_periodic.png" width="400">
+</p>
 
 ### General lattice attributes
 
@@ -214,7 +225,9 @@ latt.plot()
 plt.show()
 `````
 
-<img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/examples/example_square_two_atoms.png" width="400">
+<p align="center">
+  <img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/examples/example_square_two_atoms.png" width="400">
+</p>
 
 Rectangular lattice with one atom in the unit cell:
 `````python
@@ -231,8 +244,9 @@ latt.plot()
 plt.show()
 `````
 
-<img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/examples/example_rectangular.png" width="400">
-
+<p align="center">
+    <img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/examples/example_rectangular.png" width="400">
+</p>
 
 ### Tight-binding Hamiltonian
 Using the (built) lattice model it is easy to construct the (tight-binding)

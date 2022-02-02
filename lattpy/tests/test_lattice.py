@@ -16,8 +16,11 @@ import hypothesis.extra.numpy as hnp
 from lattpy.utils import (
     SiteOccupiedError, NoAtomsError, NoConnectionsError, NotAnalyzedError
 )
-from lattpy import Lattice, Circle
+from lattpy import Lattice, Circle, Atom
 import lattpy as lp
+
+
+atom = Atom()
 
 
 PI = np.pi
@@ -504,9 +507,6 @@ def test_to_dict():
     expected = [[1., 0.], [0., 1.]]
     assert_array_equal(d["vectors"], expected)
 
-    expected = 0
-    assert d["atoms"][0].index == expected
-
     expected = [[0., 0.]]
     assert_array_equal(d["positions"], expected)
 
@@ -519,13 +519,10 @@ def test_to_dict():
 
 def test_hash():
     latt = Lattice(np.eye(2))
-    latt.add_atom()
+    latt.add_atom(atom=atom)
     latt.add_connections()
     latt.build((5, 5))
-
-    hash1 = 131921846022777738136727264275222413056
-    assert latt.__hash__() == hash1
-
+    hash1 = latt.__hash__()
     latt.build((6, 5))
     assert latt.__hash__() != hash1
 

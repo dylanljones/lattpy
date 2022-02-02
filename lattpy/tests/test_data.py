@@ -13,8 +13,6 @@ import pytest
 import numpy as np
 from numpy.testing import assert_array_equal, assert_allclose
 from hypothesis import given, assume, strategies as st
-import hypothesis.extra.numpy as hnp
-from lattpy.utils import SiteOccupiedError, NoAtomsError, NoConnectionsError
 from lattpy import simple_square, simple_chain
 
 
@@ -95,5 +93,3 @@ def test_sort():
 
     latt.data.sort(ax=1)
     assert np.max(np.diff(latt.data.indices, axis=0)[:, 1]) == 1
-
-

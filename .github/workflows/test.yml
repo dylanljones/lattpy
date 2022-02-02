@@ -45,4 +45,11 @@ jobs:
         python setup.py install
     - name: Run tests
       run: |
-        pytest lattpy/
+        pytest --cov=gftool --cov-report=xml -v
+    - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          env_vars: OS,PYTHON
+          verbose: True
+          - name: Coverage
+            run: codecov

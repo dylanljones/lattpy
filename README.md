@@ -5,10 +5,20 @@
 ![PyPI - Status](https://img.shields.io/pypi/status/lattpy?color=yellow&style=flat-square)
 ![PyPI - License](https://img.shields.io/pypi/l/lattpy?style=flat-square)
 
-|        |                                                                                                        |                                                                                                                       |
-|:-------|:-------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------|
-| Master | ![Travis (.com) branch](https://img.shields.io/travis/com/dylanljones/lattpy/master?style=flat-square) | ![Codecov branch](https://img.shields.io/codecov/c/github/dylanljones/lattpy/master?logo=codecov&style=flat-square)   |
-| Dev    | ![Travis (.com) branch](https://img.shields.io/travis/com/dylanljones/lattpy/dev?style=flat-square)    | ![Codecov branch](https://img.shields.io/codecov/c/github/dylanljones/lattpy/dev?logo=codecov&style=flat-square)      |
+|        |                                        |                                         |                                   |
+|:-------|:---------------------------------------|:----------------------------------------|:----------------------------------|
+| Master | ![Travis (.com) branch][travis-master] | [![Test][img-tests-master]][link-tests] | ![Codecov branch][codecov-master] |
+| Dev    | ![Travis (.com) branch][travis-dev]    | [![Test][img-tests-dev]][link-tests]    | ![Codecov branch][codecov-dev]    |
+
+[travis-master]: https://img.shields.io/travis/com/dylanljones/lattpy/master?style=flat-square
+[travis-dev]: https://img.shields.io/travis/com/dylanljones/lattpy/dev?style=flat-square
+
+[codecov-master]: https://img.shields.io/codecov/c/github/dylanljones/lattpy/master?logo=codecov&style=flat-square
+[codecov-dev]: https://img.shields.io/codecov/c/github/dylanljones/lattpy/dev?logo=codecov&style=flat-square
+
+[img-tests-master]: https://github.com/dylanljones/lattpy/actions/workflows/test.yml/badge.svg?branch=dev&style=flat-square
+[img-tests-dev]: https://github.com/dylanljones/lattpy/actions/workflows/test.yml/badge.svg?branch=dev&style=flat-square
+[link-tests]: https://github.com/dylanljones/lattpy/actions/workflows/test.yml
 
 
 LattPy  is a simple and efficient Python package for modeling Bravais lattices and 

@@ -255,22 +255,26 @@ def test_get_neighbors():
     latt.add_atom()
     latt.add_connections(2)
     # Nearest neighbors
-    indices = np.array([[1, 0], [-1, 0]])
-    assert_array_equal(latt.get_neighbors(alpha=0, distidx=0), indices)
+    expected = np.array([[1, 0], [-1, 0]])
+    for idx in latt.get_neighbors(alpha=0, distidx=0):
+        assert any((expected == idx).all(axis=1))
     # Next nearest neighbors
-    indices = np.array([[-2, 0], [2, 0]])
-    assert_array_equal(latt.get_neighbors(alpha=0, distidx=1), indices)
+    expected = np.array([[-2, 0], [2, 0]])
+    for idx in latt.get_neighbors(alpha=0, distidx=1):
+        assert any((expected == idx).all(axis=1))
 
     # square
     latt = Lattice.square()
     latt.add_atom()
     latt.add_connections(2)
     # Nearest neighbors
-    indices = np.array([[1, 0, 0], [0, -1, 0], [0, 1, 0], [-1, 0, 0]])
-    assert_array_equal(latt.get_neighbors(alpha=0, distidx=0), indices)
+    expected = np.array([[1, 0, 0], [0, -1, 0], [0, 1, 0], [-1, 0, 0]])
+    for idx in latt.get_neighbors(alpha=0, distidx=0):
+        assert any((expected == idx).all(axis=1))
     # Next nearest neighbors
-    indices = np.array([[1, -1, 0], [-1, -1, 0], [-1, 1, 0], [1, 1, 0]])
-    assert_array_equal(latt.get_neighbors(alpha=0, distidx=1), indices)
+    expected = np.array([[1, -1, 0], [-1, -1, 0], [-1, 1, 0], [1, 1, 0]])
+    for idx in latt.get_neighbors(alpha=0, distidx=1):
+        assert any((expected == idx).all(axis=1))
 
 
 def test_get_neighbor_positions():
@@ -279,22 +283,26 @@ def test_get_neighbor_positions():
     latt.add_atom()
     latt.add_connections(2)
     # Nearest neighbors
-    pos = np.array([[1], [-1]])
-    assert_array_equal(latt.get_neighbor_positions(alpha=0, distidx=0), pos)
+    expected = np.array([[1], [-1]])
+    for idx in latt.get_neighbor_positions(alpha=0, distidx=0):
+        assert any((expected == idx).all(axis=1))
     # Next nearest neighbors
-    pos = np.array([[-2], [2]])
-    assert_array_equal(latt.get_neighbor_positions(alpha=0, distidx=1), pos)
+    expected = np.array([[-2], [2]])
+    for idx in latt.get_neighbor_positions(alpha=0, distidx=1):
+        assert any((expected == idx).all(axis=1))
 
     # square
     latt = Lattice.square()
     latt.add_atom()
     latt.add_connections(2)
     # Nearest neighbors
-    pos = np.array([[1, 0], [0, -1], [0, 1], [-1, 0]])
-    assert_array_equal(latt.get_neighbor_positions(alpha=0, distidx=0), pos)
+    expected = np.array([[1, 0], [0, -1], [0, 1], [-1, 0]])
+    for idx in latt.get_neighbor_positions(alpha=0, distidx=0):
+        assert any((expected == idx).all(axis=1))
     # Next nearest neighbors
-    pos = np.array([[1, -1], [-1, -1], [-1, 1], [1, 1]])
-    assert_array_equal(latt.get_neighbor_positions(alpha=0, distidx=1), pos)
+    expected = np.array([[1, -1], [-1, -1], [-1, 1], [1, 1]])
+    for idx in latt.get_neighbor_positions(alpha=0, distidx=1):
+        assert any((expected == idx).all(axis=1))
 
 
 def test_get_neighbor_vectors():
@@ -303,22 +311,26 @@ def test_get_neighbor_vectors():
     latt.add_atom()
     latt.add_connections(2)
     # Nearest neighbors
-    vecs = np.array([[1], [-1]])
-    assert_array_equal(latt.get_neighbor_vectors(alpha=0, distidx=0), vecs)
+    expected = np.array([[1], [-1]])
+    for idx in latt.get_neighbor_vectors(alpha=0, distidx=0):
+        assert any((expected == idx).all(axis=1))
     # Next nearest neighbors
-    vecs = np.array([[-2], [2]])
-    assert_array_equal(latt.get_neighbor_vectors(alpha=0, distidx=1), vecs)
+    expected = np.array([[-2], [2]])
+    for idx in latt.get_neighbor_vectors(alpha=0, distidx=1):
+        assert any((expected == idx).all(axis=1))
 
     # square
     latt = Lattice.square()
     latt.add_atom()
     latt.add_connections(2)
     # Nearest neighbors
-    vecs = np.array([[1, 0], [0, -1], [0, 1], [-1, 0]])
-    assert_array_equal(latt.get_neighbor_vectors(alpha=0, distidx=0), vecs)
+    expected = np.array([[1, 0], [0, -1], [0, 1], [-1, 0]])
+    for idx in latt.get_neighbor_vectors(alpha=0, distidx=0):
+        assert any((expected == idx).all(axis=1))
     # Next nearest neighbors
-    vecs = np.array([[1, -1], [-1, -1], [-1, 1], [1, 1]])
-    assert_array_equal(latt.get_neighbor_vectors(alpha=0, distidx=1), vecs)
+    expected = np.array([[1, -1], [-1, -1], [-1, 1], [1, 1]])
+    for idx in latt.get_neighbor_vectors(alpha=0, distidx=1):
+        assert any((expected == idx).all(axis=1))
 
 
 # =========================================================================

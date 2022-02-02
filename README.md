@@ -1,23 +1,11 @@
 # LattPy
 
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/lattpy?logo=python&style=flat-square)
-![PyPI](https://img.shields.io/pypi/v/lattpy?logo=pypi&style=flat-square)
-![PyPI - Status](https://img.shields.io/pypi/status/lattpy?color=yellow&style=flat-square)
-![PyPI - License](https://img.shields.io/pypi/l/lattpy?style=flat-square)
+![Python Version][pypi-python] ![Version][pypi-version] ![Status][pypi-status] ![License][pypi-license]
 
-|        |                                     |                                                          |
-|:-------|:------------------------------------|:---------------------------------------------------------|
-| Master | [![Test][tests-master]][link-tests] | [![Codecov branch][codecov-master]][codecov-master-link] |
-| Dev    | [![Test][tests-dev]][link-tests]    | [![Codecov branch][codecov-dev]][codecov-dev-link]       |
-
-[tests-master]: https://img.shields.io/github/workflow/status/dylanljones/lattpy/Test/master?label=tests&logo=github&style=flat
-[tests-dev]: https://img.shields.io/github/workflow/status/dylanljones/lattpy/Test/dev?label=tests&logo=github&style=flat
-[link-tests]: https://github.com/dylanljones/lattpy/actions/workflows/test.yml
-
-[codecov-master]: https://codecov.io/gh/dylanljones/lattpy/branch/master/graph/badge.svg?
-[codecov-master-link]: https://app.codecov.io/gh/dylanljones/lattpy/branch/master
-[codecov-dev]: https://codecov.io/gh/dylanljones/lattpy/branch/dev/graph/badge.svg?
-[codecov-dev-link]: https://app.codecov.io/gh/dylanljones/lattpy/branch/dev
+|        |                                     |                                                   |
+|:-------|:------------------------------------|:--------------------------------------------------|
+| Master | [![Test][tests-master]][link-tests] | [![Codecov][codecov-master]][codecov-master-link] |
+| Dev    | [![Test][tests-dev]][link-tests]    | [![Codecov][codecov-dev]][codecov-dev-link]       |
 
 LattPy  is a simple and efficient Python package for modeling Bravais lattices and
 constructing (finite) lattice structures in `d` dimensions.
@@ -308,3 +296,18 @@ If periodic boundary conditions are set (along axis 0) the output is:
  [0. 0. 1. 0. 1.]
  [1. 0. 0. 1. 0.]]
 ````
+
+
+[pypi-python]: https://img.shields.io/pypi/pyversions/lattpy?logo=python&style=flat-square
+[pypi-version]: https://img.shields.io/pypi/v/lattpy?logo=pypi&style=flat-square
+[pypi-status]: https://img.shields.io/pypi/status/lattpy?color=yellow&style=flat-square
+[pypi-license]: https://img.shields.io/pypi/l/lattpy?style=flat-square
+
+[tests-master]: https://img.shields.io/github/workflow/status/dylanljones/lattpy/Test/master?label=tests&logo=github&style=flat
+[tests-dev]: https://img.shields.io/github/workflow/status/dylanljones/lattpy/Test/dev?label=tests&logo=github&style=flat
+[link-tests]: https://github.com/dylanljones/lattpy/actions/workflows/test.yml
+
+[codecov-master]: https://codecov.io/gh/dylanljones/lattpy/branch/master/graph/badge.svg?
+[codecov-master-link]: https://app.codecov.io/gh/dylanljones/lattpy/branch/master
+[codecov-dev]: https://codecov.io/gh/dylanljones/lattpy/branch/dev/graph/badge.svg?
+[codecov-dev-link]: https://app.codecov.io/gh/dylanljones/lattpy/branch/dev

@@ -28,13 +28,15 @@ setup(
     cmdclass=versioneer.get_cmdclass(),
     author="Dylan Jones",
     author_email="dylanljones94@gmail.com",
-    description="Python package for modeling Bravais lattices in solid state physics.",
+    description="Simple and efficient Python package for modeling d-dimensional "
+                "Bravais lattices in solid state physics.",
     long_description=long_description(),
     long_description_content_type="text/markdown",
     url="https://github.com/dylanljones/lattpy",
     packages=find_packages(),
     license="MIT License",
     install_requires=requirements(),
+    tests_require=["pytest", "hypothesis"],
     python_requires=">=3.7",
     classifiers=[
         "Development Status :: 3 - Alpha",

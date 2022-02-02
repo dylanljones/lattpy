@@ -7,8 +7,8 @@
 # This code is licensed under the MIT License. The copyright notice in the
 # LICENSE file in the root directory and this permission notice shall
 # be included in all copies or substantial portions of the Software.
-import math
 
+import math
 import numpy as np
 from pytest import mark
 from numpy.testing import assert_array_equal, assert_allclose

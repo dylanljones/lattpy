@@ -7,9 +7,13 @@ source = lattpy
 exclude_lines =
     # Have to re-enable the standard pragma
     pragma: no cover
+
 	# Don't complain about debug-only code and print statements:
     def __repr__
     def __str__
+
+	# Don't complain about abstract methods
+    @abstract
 
     # Don't complain if tests don't hit defensive assertion code:
     raise AssertionError

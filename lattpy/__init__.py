@@ -36,7 +36,6 @@ from .spatial import (
 
 from .unitcell import (
     Atom,
-    UnitCell
 )
 
 from .data import LatticeData

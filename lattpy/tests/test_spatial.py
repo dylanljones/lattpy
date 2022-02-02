@@ -8,25 +8,42 @@
 # LICENSE file in the root directory and this permission notice shall
 # be included in all copies or substantial portions of the Software.
 
+import math
 import numpy as np
 from pytest import mark
-from numpy.testing import assert_array_equal
+from numpy.testing import assert_array_equal, assert_allclose
+from hypothesis import given, settings, assume, strategies as st
+import hypothesis.extra.numpy as hnp
 from lattpy import spatial
 
 
-@mark.parametrize("r1, r2, result", [
-    ([0],       [0],        0.0),
-    ([0],       [2],        2.0),
-    ([0],       [-2],       2.0),
-    ([0, 0],    [-2, 0],    2.0),
-    ([0, 0],    [1, 1],     np.sqrt(2)),
-    ([0, 0, 0], [1, 1, 1],  np.sqrt(3)),
-])
-def test_distance(r1, r2, result):
-    r1 = np.asarray(r1)
-    r2 = np.asarray(r2)
-    assert spatial.distance(r1, r2) == result
-    assert spatial.distance(r2, r1) == result
+finite_floats = st.floats(allow_nan=False, allow_infinity=False)
+
+
+@given(hnp.arrays(np.float64, 10, elements=finite_floats),
+       hnp.arrays(np.float64, 10, elements=finite_floats))
+def test_distance(a, b):
+    expected = math.sqrt(np.sum(np.square(a - b)))
+
+    res = spatial.distance(a, b)
+    assert res == expected
+
+    res = spatial.distance(a, b, decimals=3)
+    assert res == round(expected, 3)
+
+
+@given(hnp.arrays(np.float64, (5, 10), elements=finite_floats),
+       hnp.arrays(np.float64, (5, 10), elements=finite_floats))
+def test_distances(a, b):
+    results = spatial.distances(a, b)
+    for i in range(len(results)):
+        expected = math.sqrt(np.sum(np.square(a[i] - b[i])))
+        assert results[i] == expected
+
+    results = spatial.distances(a, b, 3)
+    for i in range(len(results)):
+        expected = math.sqrt(np.sum(np.square(a[i] - b[i])))
+        assert results[i] == np.round(expected, 3)
 
 
 @mark.parametrize("arrays, result", [
@@ -93,3 +110,24 @@ def test_cell_size(vecs, result):
 ])
 def test_cell_colume(vecs, result):
     assert spatial.cell_volume(vecs) == result
+
+
+def test_build_periodic_translation_vector():
+    pass
+
+
+def test_compute_vectors():
+    # Test square vectors
+    vecs = spatial.compute_vectors(1.0, 1.0, alpha=90)
+    assert_allclose(vecs, np.eye(2), atol=1e-16)
+
+    # Text hexagonal vectors
+    vecs = spatial.compute_vectors(1.0, 1.0, alpha=60)
+    expected = np.array([[1, 0], [0.5, math.sqrt(3)/2]])
+    assert_allclose(vecs, expected, atol=1e-16)
+
+    # Test cubic vectors
+    vecs = spatial.compute_vectors(1.0, 1.0, 1.0, alpha=90, beta=90, gamma=90)
+    assert_allclose(vecs, np.eye(3), atol=1e-16)
+
+

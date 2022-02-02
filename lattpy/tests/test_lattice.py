@@ -9,9 +9,14 @@
 # be included in all copies or substantial portions of the Software.
 
 import numpy as np
-import lattpy as lp
-from numpy.testing import assert_array_equal, assert_array_almost_equal
+import pytest
+from numpy.testing import assert_array_equal, assert_allclose
+from hypothesis import given, strategies as st
+import hypothesis.extra.numpy as hnp
+from lattpy.utils import SiteOccupiedError, NoAtomsError, NoConnectionsError
 from lattpy import Lattice
+import lattpy as lp
+
 
 PI = np.pi
 TWOPI = 2 * np.pi
@@ -41,137 +46,32 @@ rbcc = Lattice(TWOPI * np.array([[+1, +1, 0],
                                  [0, -1, +1],
                                  [-1, 0, +1]]))
 
+LATTICES = [chain, square, rect, hexagonal, sc, fcc, bcc]
+RLATTICES = [rchain, rsquare, rrect, rhexagonal, rsc, rfcc, rbcc]
+
 
 def test_is_reciprocal():
-    # Chain
-    rvecs = rchain.vectors
-    assert chain.is_reciprocal(rvecs)
-    assert not chain.is_reciprocal(-1 * rvecs)
-    assert not chain.is_reciprocal(+2 * rvecs)
-    assert not chain.is_reciprocal(0.5 * rvecs)
-    assert not chain.is_reciprocal(0.0 * rvecs)
-
-    # Square
-    rvecs = rsquare.vectors
-    assert square.is_reciprocal(rvecs)
-    assert not square.is_reciprocal(-1 * rvecs)
-    assert not square.is_reciprocal(+2 * rvecs)
-    assert not square.is_reciprocal(0.5 * rvecs)
-    assert not square.is_reciprocal(0.0 * rvecs)
-
-    # Rectangular
-    rvecs = rrect.vectors
-    assert rect.is_reciprocal(rvecs)
-    assert not rect.is_reciprocal(-1 * rvecs)
-    assert not rect.is_reciprocal(+2 * rvecs)
-    assert not rect.is_reciprocal(0.5 * rvecs)
-    assert not rect.is_reciprocal(0.0 * rvecs)
-
-    # Hexagonal
-    rvecs = rhexagonal.vectors
-    assert hexagonal.is_reciprocal(rvecs)
-    assert not hexagonal.is_reciprocal(-1 * rvecs)
-    assert not hexagonal.is_reciprocal(+2 * rvecs)
-    assert not hexagonal.is_reciprocal(0.5 * rvecs)
-    assert not hexagonal.is_reciprocal(0.0 * rvecs)
-
-    # Cubic
-    rvecs = rsc.vectors
-    assert sc.is_reciprocal(rvecs)
-    assert not sc.is_reciprocal(-1 * rvecs)
-    assert not sc.is_reciprocal(+2 * rvecs)
-    assert not sc.is_reciprocal(0.5 * rvecs)
-    assert not sc.is_reciprocal(0.0 * rvecs)
-
-    # Face-centerec-cudic (fcc)
-    rvecs = rfcc.vectors
-    assert fcc.is_reciprocal(rvecs)
-    assert not fcc.is_reciprocal(-1 * rvecs)
-    assert not fcc.is_reciprocal(+2 * rvecs)
-    assert not fcc.is_reciprocal(0.5 * rvecs)
-    assert not fcc.is_reciprocal(0.0 * rvecs)
-
-    # Body-centerec-cudic (bcc)
-    rvecs = rbcc.vectors
-    assert bcc.is_reciprocal(rvecs)
-    assert not bcc.is_reciprocal(-1 * rvecs)
-    assert not bcc.is_reciprocal(+2 * rvecs)
-    assert not bcc.is_reciprocal(0.5 * rvecs)
-    assert not bcc.is_reciprocal(0.0 * rvecs)
+    for latt, rlatt in zip(LATTICES, RLATTICES):
+        rvecs = rlatt.vectors
+        assert latt.is_reciprocal(rvecs)
+        assert not latt.is_reciprocal(-1 * rvecs)
+        assert not latt.is_reciprocal(+2 * rvecs)
+        assert not latt.is_reciprocal(0.5 * rvecs)
+        assert not latt.is_reciprocal(0.0 * rvecs)
 
 
 def test_reciprocal_vectors():
-    # Chain
-    expected = rchain.vectors
-    actual = chain.reciprocal_vectors()
-    assert_array_equal(expected, actual)
-
-    # Square
-    expected = rsquare.vectors
-    actual = square.reciprocal_vectors()
-    assert_array_equal(expected, actual)
-
-    # Rectangular
-    expected = rrect.vectors
-    actual = rect.reciprocal_vectors()
-    assert_array_equal(expected, actual)
-
-    # Hexagonal
-    expected = rhexagonal.vectors
-    actual = hexagonal.reciprocal_vectors()
-    assert_array_almost_equal(expected, actual)
-
-    # Cubic
-    expected = rsc.vectors
-    actual = sc.reciprocal_vectors()
-    assert_array_equal(expected, actual)
-
-    # Face-centerec-cudic (fcc)
-    expected = rfcc.vectors
-    actual = fcc.reciprocal_vectors()
-    assert_array_equal(expected, actual)
-
-    # Body-centerec-cudic (bcc)
-    expected = rbcc.vectors
-    actual = bcc.reciprocal_vectors()
-    assert_array_equal(expected, actual)
+    for latt, rlatt in zip(LATTICES, RLATTICES):
+        expected = rlatt.vectors
+        actual = latt.reciprocal_vectors()
+        assert_allclose(expected, actual)
 
 
 def test_reciprocal_vectors_double():
-    # Chain
-    expected = chain.vectors
-    actual = chain.reciprocal_lattice().reciprocal_vectors()
-    assert_array_equal(expected, actual)
-
-    # Square
-    expected = square.vectors
-    actual = square.reciprocal_lattice().reciprocal_vectors()
-    assert_array_equal(expected, actual)
-
-    # Rectangular
-    expected = rect.vectors
-    actual = rect.reciprocal_lattice().reciprocal_vectors()
-    assert_array_equal(expected, actual)
-
-    # Hexagonal
-    expected = hexagonal.vectors
-    actual = hexagonal.reciprocal_lattice().reciprocal_vectors()
-    assert_array_equal(expected, actual)
-
-    # Cubic
-    expected = sc.vectors
-    actual = sc.reciprocal_lattice().reciprocal_vectors()
-    assert_array_equal(expected, actual)
-
-    # Face-centerec-cudic (fcc)
-    expected = fcc.vectors
-    actual = fcc.reciprocal_lattice().reciprocal_vectors()
-    assert_array_equal(expected, actual)
-
-    # Body-centerec-cudic (bcc)
-    expected = bcc.vectors
-    actual = bcc.reciprocal_lattice().reciprocal_vectors()
-    assert_array_equal(expected, actual)
+    for latt in LATTICES:
+        expected = latt.vectors
+        actual = latt.reciprocal_lattice().reciprocal_vectors()
+        assert_array_equal(expected, actual)
 
 
 def test_translate():
@@ -230,6 +130,97 @@ def test_itranslate():
     assert_array_equal(expected, actual)
 
 
+@given(st.integers(1, 3))
+def test_add_atom(dim):
+    latt = Lattice(np.eye(dim))
+
+    latt.add_atom()
+    assert_array_equal(latt.atom_positions[0], np.zeros(dim))
+
+    with pytest.raises(SiteOccupiedError):
+        latt.add_atom()
+
+    with pytest.raises(ValueError):
+        latt.add_atom(np.zeros(4))
+
+
+def test_get_alpha():
+    latt = Lattice(np.eye(2))
+    at1 = latt.add_atom([0.0, 0.0], atom="A")
+    at2 = latt.add_atom([0.5, 0.5], atom="B")
+
+    assert latt.get_alpha("A") == [0]
+    assert latt.get_alpha(at1) == 0
+
+    assert latt.get_alpha("B") == [1]
+    assert latt.get_alpha(at2) == 1
+
+    latt = Lattice(np.eye(2))
+    latt.add_atom([0.0, 0.0], atom="A")
+    latt.add_atom([0.5, 0.5], atom="A")
+    assert latt.get_alpha("A") == [0, 1]
+
+
+def test_get_atom():
+    latt = Lattice(np.eye(2))
+    at1 = latt.add_atom([0.0, 0.0], atom="A")
+    at2 = latt.add_atom([0.5, 0.5], atom="B")
+
+    assert latt.get_atom("A") == at1
+    assert latt.get_atom(0) == at1
+
+    assert latt.get_atom("B") == at2
+    assert latt.get_atom(1) == at2
+
+
+def test_add_connection():
+    latt = Lattice(np.eye(2))
+    latt.add_atom([0.0, 0.0], atom="A")
+    latt.add_atom([0.5, 0.5], atom="B")
+
+    latt.add_connection("A", "A", 1)
+    latt.add_connection("A", "B", 1)
+    latt.analyze()
+
+    # Assert neighbor atom index is right
+    assert all(latt.get_neighbors(alpha=0, distidx=0)[:, -1] == 1)
+    assert all(latt.get_neighbors(alpha=0, distidx=1)[:, -1] == 0)
+    assert all(latt.get_neighbors(alpha=1, distidx=0)[:, -1] == 0)
+
+
+def test_analyze_exceptions():
+    latt = Lattice(np.eye(2))
+    with pytest.raises(NoAtomsError):
+        latt.analyze()
+
+    latt.add_atom()
+    with pytest.raises(NoConnectionsError):
+        latt.analyze()
+
+
+@given(hnp.arrays(np.int64, 2, elements=st.integers(0, 10)), st.integers(0, 1))
+def test_get_position(nvec, alpha):
+    latt = Lattice(np.eye(2))
+    latt.add_atom([0.0, 0.0], atom="A")
+    latt.add_atom([0.5, 0.5], atom="B")
+
+    pos = latt.translate(nvec, latt.atom_positions[alpha])
+    assert_allclose(latt.get_position(nvec, alpha), pos)
+
+
+@given(hnp.arrays(np.int64, (10, 2), elements=st.integers(0, 10)), st.integers(0, 1))
+def test_get_positions(nvecs, alpha):
+    latt = Lattice(np.eye(2))
+    latt.add_atom([0.0, 0.0], atom="A")
+    latt.add_atom([0.5, 0.5], atom="B")
+
+    indices = np.array([[*nvec, alpha] for nvec in nvecs])
+    results = latt.get_positions(indices)
+    for res, nvec in zip(results, nvecs):
+        pos = latt.translate(nvec, latt.atom_positions[alpha])
+        assert_allclose(res, pos)
+
+
 def test_estimate_index():
     # Square lattice
     expected = [2, 0]
@@ -258,8 +249,88 @@ def test_estimate_index():
     assert_array_equal(expected, actual)
 
 
-def test_get_position():
-    pass
+def test_get_neighbors():
+    # chain
+    latt = Lattice.chain()
+    latt.add_atom()
+    latt.add_connections(2)
+    # Nearest neighbors
+    expected = np.array([[1, 0], [-1, 0]])
+    for idx in latt.get_neighbors(alpha=0, distidx=0):
+        assert any((expected == idx).all(axis=1))
+    # Next nearest neighbors
+    expected = np.array([[-2, 0], [2, 0]])
+    for idx in latt.get_neighbors(alpha=0, distidx=1):
+        assert any((expected == idx).all(axis=1))
+
+    # square
+    latt = Lattice.square()
+    latt.add_atom()
+    latt.add_connections(2)
+    # Nearest neighbors
+    expected = np.array([[1, 0, 0], [0, -1, 0], [0, 1, 0], [-1, 0, 0]])
+    for idx in latt.get_neighbors(alpha=0, distidx=0):
+        assert any((expected == idx).all(axis=1))
+    # Next nearest neighbors
+    expected = np.array([[1, -1, 0], [-1, -1, 0], [-1, 1, 0], [1, 1, 0]])
+    for idx in latt.get_neighbors(alpha=0, distidx=1):
+        assert any((expected == idx).all(axis=1))
+
+
+def test_get_neighbor_positions():
+    # chain
+    latt = Lattice.chain()
+    latt.add_atom()
+    latt.add_connections(2)
+    # Nearest neighbors
+    expected = np.array([[1], [-1]])
+    for idx in latt.get_neighbor_positions(alpha=0, distidx=0):
+        assert any((expected == idx).all(axis=1))
+    # Next nearest neighbors
+    expected = np.array([[-2], [2]])
+    for idx in latt.get_neighbor_positions(alpha=0, distidx=1):
+        assert any((expected == idx).all(axis=1))
+
+    # square
+    latt = Lattice.square()
+    latt.add_atom()
+    latt.add_connections(2)
+    # Nearest neighbors
+    expected = np.array([[1, 0], [0, -1], [0, 1], [-1, 0]])
+    for idx in latt.get_neighbor_positions(alpha=0, distidx=0):
+        assert any((expected == idx).all(axis=1))
+    # Next nearest neighbors
+    expected = np.array([[1, -1], [-1, -1], [-1, 1], [1, 1]])
+    for idx in latt.get_neighbor_positions(alpha=0, distidx=1):
+        assert any((expected == idx).all(axis=1))
+
+
+def test_get_neighbor_vectors():
+    # chain
+    latt = Lattice.chain()
+    latt.add_atom()
+    latt.add_connections(2)
+    # Nearest neighbors
+    expected = np.array([[1], [-1]])
+    for idx in latt.get_neighbor_vectors(alpha=0, distidx=0):
+        assert any((expected == idx).all(axis=1))
+    # Next nearest neighbors
+    expected = np.array([[-2], [2]])
+    for idx in latt.get_neighbor_vectors(alpha=0, distidx=1):
+        assert any((expected == idx).all(axis=1))
+
+    # square
+    latt = Lattice.square()
+    latt.add_atom()
+    latt.add_connections(2)
+    # Nearest neighbors
+    expected = np.array([[1, 0], [0, -1], [0, 1], [-1, 0]])
+    for idx in latt.get_neighbor_vectors(alpha=0, distidx=0):
+        assert any((expected == idx).all(axis=1))
+    # Next nearest neighbors
+    expected = np.array([[1, -1], [-1, -1], [-1, 1], [1, 1]])
+    for idx in latt.get_neighbor_vectors(alpha=0, distidx=1):
+        assert any((expected == idx).all(axis=1))
 
 
 # =========================================================================

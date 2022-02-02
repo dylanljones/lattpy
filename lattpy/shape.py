@@ -60,7 +60,7 @@ class Shape(AbstractShape):
         mask = np.logical_and(self.pos <= points, points <= self.pos + self.shape)
         return np.all(mask, axis=1)
 
-    def plot(self, ax, color="k", lw=1.0, alpha=0.2, **kwargs):
+    def plot(self, ax, color="k", lw=1.0, alpha=0.2, **kwargs):  # pragma: no cover
         pos = self.pos
         size = self.shape
         if self.dim == 2:
@@ -121,7 +121,7 @@ class Circle(AbstractShape):
     def contains(self, points):
         return np.sqrt(np.sum(np.square(points - self.pos), axis=1)) <= self.radius
 
-    def plot(self, ax, color="k", lw=1.0, alpha=0.2, **kwargs):
+    def plot(self, ax, color="k", lw=1.0, alpha=0.2, **kwargs):  # pragma: no cover
         xy = tuple(self.pos)
         line = plt.Circle(xy, self.radius, lw=lw, color=color, fill=False)
         ax.add_artist(line)
@@ -146,7 +146,7 @@ class Donut(AbstractShape):
         dists = np.sqrt(np.sum(np.square(points - self.pos), axis=1))
         return np.logical_and(self.radii[0] <= dists, dists <= self.radii[1])
 
-    def plot(self, ax, color="k", lw=1.0, alpha=0.2, **kwargs):
+    def plot(self, ax, color="k", lw=1.0, alpha=0.2, **kwargs):  # pragma: no cover
         n = 100
 
         theta = np.linspace(0, 2 * np.pi, n, endpoint=True)
@@ -181,7 +181,7 @@ class ConvexHull(AbstractShape):
         return np.all(np.add(np.dot(points, self.hull.equations[:, :-1].T),
                              self.hull.equations[:, -1]) <= tol, axis=1)
 
-    def plot(self, ax, color="k", lw=1.0, alpha=0.2, **kwargs):
+    def plot(self, ax, color="k", lw=1.0, alpha=0.2, **kwargs):  # pragma: no cover
 
         if self.dim == 2:
             segments = self.hull.points[self.hull.simplices]

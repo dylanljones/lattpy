@@ -28,21 +28,22 @@ __all__ = [
 ]
 
 
-def distance(r1: ArrayLike, r2: ArrayLike, decimals: int = None) -> float:
-    """ Calculates the euclidian distance bewteen two points.
+def distance(r1: np.ndarray, r2: np.ndarray, decimals: int = None) -> float:
+    """Calculates the euclidian distance bewteen two points.
 
     Parameters
     ----------
-    r1: array_like
+    r1 : (D, ) np.ndarray
         First input point.
-    r2: array_like
+    r2 : (D, ) np.ndarray
         Second input point of matching size.
     decimals: int, optional
-        Optional decimals to round distance to.
+        Decimals for rounding the output.
 
     Returns
     -------
     distance: float
+        The distance between the input points.
     """
     dist = math.sqrt(np.sum(np.square(r1 - r2)))
     if decimals is not None:
@@ -51,22 +52,22 @@ def distance(r1: ArrayLike, r2: ArrayLike, decimals: int = None) -> float:
 
 
 def distances(r1: ArrayLike, r2: ArrayLike, decimals: int = None) -> np.ndarray:
-    """ Calculates the euclidian distance between multiple points.
+    """Calculates the euclidian distance between multiple points.
 
     Parameters
     ----------
-    r1: array_like
+    r1 : (N, D) array_like
         First input point.
-    r2: array_like
+    r2 : (N, D) array_like
         Second input point of matching size.
     decimals: int, optional
         Optional decimals to round distance to.
 
     Returns
     -------
-    distance: np.ndarray
+    distances : (N, ) np.ndarray
+        The distances for each pair of input points.
     """
-
     r1 = np.atleast_2d(r1)
     r2 = np.atleast_2d(r2)
     dist = np.sqrt(np.sum(np.square(r1 - r2), axis=1))

@@ -7,10 +7,23 @@ source = lattpy
 exclude_lines =
     # Have to re-enable the standard pragma
     pragma: no cover
+	# Don't complain about debug-only code and print statements:
+    def __repr__
+    def __str__
 
     # Don't complain if tests don't hit defensive assertion code:
+    raise AssertionError
     raise NotImplementedError
 
+    # Don't complain if non-runnable code isn't run:
+    if 0:
+    if __name__ == .__main__.:
+
+ignore_errors = True
+
+# Skip source files:
 omit =
   lattpy/tests/*
+  lattpy/plotting.py
+  lattpy/disptools.py
   lattpy/_version.py

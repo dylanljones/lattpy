@@ -15,9 +15,9 @@
 [link-tests]: https://github.com/dylanljones/lattpy/actions/workflows/test.yml
 
 [codecov-master]: https://codecov.io/gh/dylanljones/lattpy/branch/master/graph/badge.svg?
-[codecov-master-link]: https://codecov.io/gh/dylanljones/lattpy/branch/master
+[codecov-master-link]: https://app.codecov.io/gh/dylanljones/lattpy/branch/master
 [codecov-dev]: https://codecov.io/gh/dylanljones/lattpy/branch/dev/graph/badge.svg?
-[codecov-dev-link]: https://codecov.io/gh/dylanljones/lattpy/branch/dev
+[codecov-dev-link]: https://app.codecov.io/gh/dylanljones/lattpy/branch/dev
 
 LattPy  is a simple and efficient Python package for modeling Bravais lattices and
 constructing (finite) lattice structures in `d` dimensions.

@@ -8,8 +8,8 @@
 # LICENSE file in the root directory and this permission notice shall
 # be included in all copies or substantial portions of the Software.
 
-import numpy as np
 import pytest
+import numpy as np
 from numpy.testing import assert_array_equal, assert_allclose
 from hypothesis import given, strategies as st
 import hypothesis.extra.numpy as hnp

@@ -229,6 +229,8 @@ class LatticeData:
         self._dmap = None
 
     def remove(self, sites):
+        sites = np.atleast_1d(sites)
+
         # store current invalid index
         invalid_idx = self.invalid_idx
         invalid_distidx = self.invalid_distidx

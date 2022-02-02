@@ -2453,7 +2453,7 @@ class Lattice:
                   show_vecs: bool = True,
                   show_neighbors: bool = True,
                   ax: Union[plt.Axes, Axes3D] = None,
-                  show: bool = False) -> Union[plt.Axes, Axes3D]:
+                  show: bool = False) -> Union[plt.Axes, Axes3D]:  # pragma: no cover
         """Plot the unit cell of the lattice.
 
         Parameters
@@ -2564,7 +2564,7 @@ class Lattice:
              show_indices: bool = False,
              show_cell: bool = False,
              ax: Union[plt.Axes, Axes3D] = None,
-             show: bool = False) -> Union[plt.Axes, Axes3D]:
+             show: bool = False) -> Union[plt.Axes, Axes3D]:  # pragma: no cover
         """Plot the cached lattice.
 
         Parameters

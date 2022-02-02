@@ -24,6 +24,7 @@ ignore_errors = True
 # Skip source files:
 omit =
   lattpy/tests/*
+  lattpy/__init__.py
   lattpy/plotting.py
   lattpy/disptools.py
   lattpy/_version.py

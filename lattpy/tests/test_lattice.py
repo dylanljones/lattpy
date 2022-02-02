@@ -13,7 +13,9 @@ import numpy as np
 from numpy.testing import assert_array_equal, assert_allclose
 from hypothesis import given, strategies as st
 import hypothesis.extra.numpy as hnp
-from lattpy.utils import SiteOccupiedError, NoAtomsError, NoConnectionsError
+from lattpy.utils import (
+    SiteOccupiedError, NoAtomsError, NoConnectionsError, NotAnalyzedError
+)
 from lattpy import Lattice
 import lattpy as lp
 
@@ -331,6 +333,141 @@ def test_get_neighbor_vectors():
     expected = np.array([[1, -1], [-1, -1], [-1, 1], [1, 1]])
     for idx in latt.get_neighbor_vectors(alpha=0, distidx=1):
         assert any((expected == idx).all(axis=1))
+
+
+def test_volume():
+    latt = Lattice(np.eye(2))
+    latt.add_atom()
+    latt.add_connections()
+    latt.build((4, 4), relative=False)
+    assert latt.volume() == 25
+
+
+def test_alpha():
+    latt = Lattice(np.eye(2))
+    latt.add_atom([0.0, 0.0], "A")
+    latt.add_atom([0.5, 0.5], "B")
+    latt.add_connection("A", "A", 1)
+    latt.add_connection("A", "B", 1)
+    latt.analyze()
+    latt.build((4, 4), relative=False)
+
+    assert latt.alpha(0) == 0
+    assert latt.alpha(1) == 1
+    assert latt.alpha(2) == 0
+    assert latt.alpha(3) == 1
+
+
+def test_atom():
+    latt = Lattice(np.eye(2))
+    at1 = latt.add_atom([0.0, 0.0], "A")
+    at2 = latt.add_atom([0.5, 0.5], "B")
+    latt.add_connection("A", "A", 1)
+    latt.add_connection("A", "B", 1)
+    latt.analyze()
+    latt.build((4, 4), relative=False)
+
+    assert latt.atom(0) == at1
+    assert latt.atom(1) == at2
+    assert latt.atom(2) == at1
+    assert latt.atom(3) == at2
+
+
+def test_position():
+    latt = Lattice(np.eye(2))
+    latt.add_atom([0.0, 0.0], "A")
+    latt.add_atom([0.5, 0.5], "B")
+    latt.add_connection("A", "A", 1)
+    latt.add_connection("A", "B", 1)
+    latt.analyze()
+    latt.build((4, 4), relative=False)
+
+    assert_array_equal(latt.position(0), [0.0, 0.0])
+    assert_array_equal(latt.position(1), [0.5, 0.5])
+    assert_array_equal(latt.position(2), [0.0, 1.0])
+    assert_array_equal(latt.position(3), [0.5, 1.5])
+
+
+def test_index_from_position():
+    latt = Lattice(np.eye(2))
+    latt.add_atom()
+    latt.add_connections()
+    latt.build((4, 4), relative=False)
+    for i in range(latt.num_sites):
+        pos = latt.position(i)
+        assert latt.index_from_position(pos) == i
+
+
+def test_index_from_lattice_index():
+    latt = Lattice(np.eye(2))
+    latt.add_atom()
+    latt.add_connections()
+    latt.build((4, 4), relative=False)
+    for i in range(latt.num_sites):
+        ind = latt.indices[i]
+        assert latt.index_from_lattice_index(ind) == i
+
+
+def test_build_exceptions():
+    latt = Lattice(np.eye(2))
+    latt.add_atom()
+
+    with pytest.raises(NoConnectionsError):
+        latt.build((5, 5))
+
+    latt.add_connections(analyze=False)
+    with pytest.raises(NotAnalyzedError):
+        latt.build((5, 5))
+
+    latt.analyze()
+    with pytest.raises(ValueError):
+        latt.build((5, 5, 5))
+
+
+def test_compute_connections():
+    latt = Lattice(np.eye(2))
+    latt.add_atom()
+    latt.add_connections()
+    latt.build((4, 4), relative=False)
+
+    latt2 = Lattice(np.eye(2))
+    latt2.add_atom()
+    latt2.add_connections()
+    latt2.build((4, 4), pos=(5, 0), relative=False)
+
+    pairs, dists = latt.compute_connections(latt2)
+    expected = [[20, 0], [21, 1], [22, 2], [23, 3], [24, 4]]
+    assert_array_equal(pairs, expected)
+    assert np.all(dists) == 1
+
+    latt2.build((4, 4), pos=(5, 1), relative=False)
+
+    pairs, dists = latt.compute_connections(latt2)
+    expected = [[21, 0], [22, 1], [23, 2], [24, 3]]
+    assert_array_equal(pairs, expected)
+    assert np.all(dists) == 1
+
+
+def assert_elements_equal1d(actual, expected):
+    actual = np.unique(actual)
+    expected = np.unique(expected)
+    assert len(actual) == len(expected)
+    return all(np.isin(actual, expected))
+
+
+def test_append():
+    latt = Lattice(np.eye(2))
+    latt.add_atom()
+    latt.add_connections()
+    latt.build((4, 4), relative=False)
+    latt2 = latt.copy()
+    latt.append(latt2)
+
+    assert_elements_equal1d(latt.nearest_neighbors(20), [15, 21, 25])
+    assert_elements_equal1d(latt.nearest_neighbors(21), [16, 20, 22, 26])
+    assert_elements_equal1d(latt.nearest_neighbors(22), [17, 21, 23, 27])
+    assert_elements_equal1d(latt.nearest_neighbors(23), [18, 22, 24, 28])
+    assert_elements_equal1d(latt.nearest_neighbors(24), [19, 23, 29])
 
 
 # =========================================================================

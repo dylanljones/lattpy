@@ -99,7 +99,6 @@ def test_append():
     latt = simple_square()
     latt.build((4, 4))
     num_sites_original = latt.num_sites
-
     latt2 = simple_square()
     latt2.build((5, 4), pos=(5, 0))
 
@@ -107,7 +106,6 @@ def test_append():
 
     original_pos = latt2.positions.copy()
     pos = latt.positions[num_sites_original:]
-
     assert_array_equal(pos, original_pos)
 
 

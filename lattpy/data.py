@@ -610,7 +610,7 @@ class LatticeData:
         mask = self.site_mask(mins, maxs, invert=True)
         return np.where(mask)[0]
 
-    def __bool__(self) -> bool:
+    def __bool__(self) -> bool:  # pragma: no cover
         return bool(len(self.indices))
 
     def __str__(self) -> str:

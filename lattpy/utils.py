@@ -12,7 +12,6 @@
 
 import logging
 from typing import Iterable, List, Sequence, Union, Tuple
-import time
 import numpy as np
 
 __all__ = [
@@ -212,15 +211,15 @@ def frmt_num(num: float, dec: int = 1, unit: str = "",
         if abs(num) < div:
             return f"{num:.{dec}f}{prefix}{unit}"
         num /= div
-    return f"{num:.{dec}f}Y{unit}"
+    return f"{num:.{dec}f}Y{unit}"  # pragma: no cover
 
 
-def frmt_bytes(num: float, dec: int = 1) -> str:
+def frmt_bytes(num: float, dec: int = 1) -> str:  # pragma: no cover
     """Returns a formatted string of the number of bytes."""
     return frmt_num(num, dec, unit="iB", div=1024)
 
 
-def frmt_time(seconds: float, short: bool = False, width: int = 0) -> str:
+def frmt_time(seconds: float, short: bool = False, width: int = 0):  # pragma: no cover
     """Returns a formated string for a given time in seconds.
 
     Parameters

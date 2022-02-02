@@ -11,7 +11,7 @@
 import numpy as np
 import pytest
 from numpy.testing import assert_array_equal, assert_allclose
-from hypothesis import given, settings, assume, strategies as st
+from hypothesis import given, strategies as st
 import hypothesis.extra.numpy as hnp
 from lattpy.utils import SiteOccupiedError, NoAtomsError, NoConnectionsError
 from lattpy import Lattice

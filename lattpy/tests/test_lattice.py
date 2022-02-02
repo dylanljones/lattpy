@@ -494,6 +494,42 @@ def test_append():
     assert_elements_equal1d(latt.nearest_neighbors(24), [19, 23, 29])
 
 
+def test_to_dict():
+    latt = Lattice(np.eye(2))
+    latt.add_atom()
+    latt.add_connections()
+    latt.build((5, 5))
+    d = latt.todict()
+
+    expected = [[1., 0.], [0., 1.]]
+    assert_array_equal(d["vectors"], expected)
+
+    expected = 0
+    assert d["atoms"][0].index == expected
+
+    expected = [[0., 0.]]
+    assert_array_equal(d["positions"], expected)
+
+    expected = [[1]]
+    assert_array_equal(d["connections"], expected)
+
+    expected = [5., 5.]
+    assert_array_equal(d["shape"], expected)
+
+
+def test_hash():
+    latt = Lattice(np.eye(2))
+    latt.add_atom()
+    latt.add_connections()
+    latt.build((5, 5))
+
+    hash1 = 131921846022777738136727264275222413056
+    assert latt.__hash__() == hash1
+
+    latt.build((6, 5))
+    assert latt.__hash__() != hash1
+
+
 # =========================================================================
 # General tests
 # =========================================================================

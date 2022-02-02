@@ -5,13 +5,10 @@
 ![PyPI - Status](https://img.shields.io/pypi/status/lattpy?color=yellow&style=flat-square)
 ![PyPI - License](https://img.shields.io/pypi/l/lattpy?style=flat-square)
 
-|        |                                        |                                         |                                   |
-|:-------|:---------------------------------------|:----------------------------------------|:----------------------------------|
-| Master | ![Travis (.com) branch][travis-master] | [![Test][img-tests-master]][link-tests] | ![Codecov branch][codecov-master] |
-| Dev    | ![Travis (.com) branch][travis-dev]    | [![Test][img-tests-dev]][link-tests]    | ![Codecov branch][codecov-dev]    |
-
-[travis-master]: https://img.shields.io/travis/com/dylanljones/lattpy/master?style=flat-square
-[travis-dev]: https://img.shields.io/travis/com/dylanljones/lattpy/dev?style=flat-square
+|        |                                         |                                   |
+|:-------|:----------------------------------------|:----------------------------------|
+| Master | [![Test][img-tests-master]][link-tests] | ![Codecov branch][codecov-master] |
+| Dev    | [![Test][img-tests-dev]][link-tests]    | ![Codecov branch][codecov-dev]    |
 
 [codecov-master]: https://img.shields.io/codecov/c/github/dylanljones/lattpy/master?logo=codecov&style=flat-square
 [codecov-dev]: https://img.shields.io/codecov/c/github/dylanljones/lattpy/dev?logo=codecov&style=flat-square

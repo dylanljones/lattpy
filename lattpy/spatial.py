@@ -393,8 +393,9 @@ class VoronoiTree:
     def query(self, x, k=1, eps=0):
         return self.tree.query(x, k, eps)  # noqa
 
-    def draw(self, ax=None, color="C0", size=3, lw=1, alpha=0.15, point_color="k",
-             point_size=3, draw_data=True, points=True, draw=True, fill=True):
+    def draw(self, ax=None, color="C0", size=3, lw=1, alpha=0.15,
+             point_color="k", point_size=3, draw_data=True,
+             points=True, draw=True, fill=True):  # pragma: no cover
 
         if ax is None:
             fig = plt.figure()

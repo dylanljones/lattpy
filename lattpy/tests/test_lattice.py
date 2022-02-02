@@ -132,6 +132,17 @@ def test_itranslate():
     assert_array_equal(expected, actual)
 
 
+def test_brillouin_zone():
+    latt = Lattice.square()
+    bz = latt.brillouin_zone()
+
+    expected = [[-1., -1.], [1., -1.], [-1., 1.], [1., 1.]]
+    assert_array_equal(bz.vertices / np.pi, expected)
+
+    expected = [[0, 1], [0, 2], [1, 3], [2, 3]]
+    assert_array_equal(bz.edges, expected)
+
+
 @given(st.integers(1, 3))
 def test_add_atom(dim):
     latt = Lattice(np.eye(dim))

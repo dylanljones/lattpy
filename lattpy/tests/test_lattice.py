@@ -16,7 +16,7 @@ import hypothesis.extra.numpy as hnp
 from lattpy.utils import (
     SiteOccupiedError, NoAtomsError, NoConnectionsError, NotAnalyzedError
 )
-from lattpy import Lattice
+from lattpy import Lattice, Circle
 import lattpy as lp
 
 
@@ -417,6 +417,19 @@ def test_index_from_lattice_index():
     for i in range(latt.num_sites):
         ind = latt.indices[i]
         assert latt.index_from_lattice_index(ind) == i
+
+
+def test_build():
+    pass
+
+
+def test_build_min_neighbors():
+    latt = Lattice(np.eye(2))
+    latt.add_atom()
+    latt.add_connections()
+    shape = Circle([0, 0], radius=5)
+    latt.build(shape, min_neighbors=2)
+    assert_array_equal(latt.data.get_limits(), [[-4., -4.], [4., 4.]])
 
 
 def test_build_exceptions():

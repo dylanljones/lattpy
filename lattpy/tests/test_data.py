@@ -95,6 +95,22 @@ def test_sort():
     assert np.max(np.diff(latt.data.indices, axis=0)[:, 1]) == 1
 
 
+def test_append():
+    latt = simple_square()
+    latt.build((4, 4))
+    num_sites_original = latt.num_sites
+
+    latt2 = simple_square()
+    latt2.build((5, 4), pos=(5, 0))
+
+    latt.data.append(latt2.data)
+
+    original_pos = latt2.positions.copy()
+    pos = latt.positions[num_sites_original:]
+
+    assert_array_equal(pos, original_pos)
+
+
 def test_datamap():
     # Chain
     latt = simple_chain()

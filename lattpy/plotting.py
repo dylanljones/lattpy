@@ -188,6 +188,9 @@ def draw_sites(ax, points, size=10, color=None, alpha=1.0, zorder=3, **kwargs):
         col = CircleCollection(radius, offsets=points, transOffset=ax.transData,
                                color=color, alpha=alpha, zorder=zorder, **kwargs)
         ax.add_collection(col)
+        label = kwargs.get("label", "")
+        if label:
+            ax.plot([], [], marker='o', lw=0, color=color, label=label, markersize=10)
         datalim = col.get_datalim(ax.transData)
         ax.update_datalim(datalim)
         return col

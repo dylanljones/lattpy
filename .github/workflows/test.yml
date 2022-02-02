@@ -47,9 +47,9 @@ jobs:
       run: |
         pytest --cov=gftool --cov-report=xml -v
     - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
-        with:
-          env_vars: OS,PYTHON
-          verbose: True
-          - name: Coverage
-            run: codecov
+      uses: codecov/codecov-action@v2
+      with:
+        env_vars: OS,PYTHON
+        verbose: True
+        - name: Coverage
+          run: codecov

@@ -31,7 +31,7 @@ def test_shape(size, pos):
     assert_array_equal(s.limits(), limits)
 
     pts = np.random.uniform(-np.min(limits) - 10, +np.max(limits) + 10, size=(100, d))
-    mask = s.contains(pts, dx=0)
+    mask = s.contains(pts, tol=0)
     for point, res in zip(pts, mask):
         expected = True
         for i in range(d):

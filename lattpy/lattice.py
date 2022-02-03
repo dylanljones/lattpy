@@ -1421,7 +1421,7 @@ class Lattice:
                      shape: Union[int, Sequence[int], AbstractShape],
                      relative: bool = False,
                      pos: Union[float, Sequence[float]] = None,
-                     eps: float = 1e-3,
+                     tol: float = 1e-3,
                      ) -> np.ndarray:
         """Returns a mask for the points in the given shape.
 
@@ -1436,9 +1436,8 @@ class Lattice:
             The default is True.
         pos: (N) array_like or int, optional
             Optional position of the section to build. If ``None`` the origin is used.
-        eps: float, optional
-            Optional padding of the shape for checking the points.
-            The default is ``1e-3``.
+        tol: float, optional
+            The tolerance for checking the points. The default is ``1e-3``.
 
         Returns
         -------
@@ -1454,7 +1453,7 @@ class Lattice:
         [ True  True False]
         """
         if isinstance(shape, AbstractShape):
-            return shape.contains(points)
+            return shape.contains(points, tol)
         else:
             shape = np.atleast_1d(shape)
             if len(shape) != self.dim:
@@ -1464,8 +1463,8 @@ class Lattice:
                 shape += np.max(self.vectors, axis=0) - 0.1 * self.norms
 
             pos = np.zeros(self.dim) if pos is None else np.array(pos, dtype=np.float64)
-            pos -= eps
-            end = pos + shape + eps
+            pos -= tol
+            end = pos + shape + tol
 
             mask = (pos[0] <= points[:, 0]) & (points[:, 0] <= end[0])
             for i in range(1, self.dim):

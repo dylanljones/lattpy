@@ -30,7 +30,7 @@ class AbstractShape(ABC):
         pass
 
     @abstractmethod
-    def contains(self, points):
+    def contains(self, points, dx=0.):
         """Checks if the given points are contained in the shape."""
         pass
 
@@ -86,11 +86,11 @@ class Shape(AbstractShape):
         lims = np.array([np.min(corners, axis=0), np.max(corners, axis=0)])
         return lims.T
 
-    def contains(self, points, dx=0.):
+    def contains(self, points, tol=0.):
         if self.basis is not None:
             points = np.inner(points, np.linalg.inv(self.basis.T))
-        mask = np.logical_and(self.pos - dx <= points,
-                              points <= self.pos + self.size + dx)
+        mask = np.logical_and(self.pos - tol <= points,
+                              points <= self.pos + self.size + tol)
         return np.all(mask, axis=1)
 
     def plot(self, ax, color="C0", lw=1.0, alpha=0.2, **kwargs):  # pragma: no cover
@@ -119,8 +119,9 @@ class Circle(AbstractShape):
         lims = self.pos + np.array([-rad, +rad])
         return lims.T
 
-    def contains(self, points):
-        return np.sqrt(np.sum(np.square(points - self.pos), axis=1)) <= self.radius
+    def contains(self, points, tol=0.):
+        dists = np.sqrt(np.sum(np.square(points - self.pos), axis=1))
+        return dists <= self.radius + tol
 
     def plot(self, ax, color="k", lw=1.0, alpha=0.2, **kwargs):  # pragma: no cover
         xy = tuple(self.pos)
@@ -143,9 +144,10 @@ class Donut(AbstractShape):
         lims = self.pos + np.array([-rad, +rad])
         return lims.T
 
-    def contains(self, points):
+    def contains(self, points, tol=1e-10):
         dists = np.sqrt(np.sum(np.square(points - self.pos), axis=1))
-        return np.logical_and(self.radii[0] <= dists, dists <= self.radii[1])
+        return np.logical_and(self.radii[0] - tol <= dists,
+                              dists <= self.radii[1] + tol)
 
     def plot(self, ax, color="k", lw=1.0, alpha=0.2, **kwargs):  # pragma: no cover
         n = 100

@@ -131,3 +131,61 @@ def test_compute_vectors():
     assert_allclose(vecs, np.eye(3), atol=1e-16)
 
 
+def test_rx():
+    expected = np.eye(3)
+    assert_allclose(spatial.rx(0), expected)
+
+    expected = [[1., 0., 0.],
+                [0., 0.70710678, -0.70710678],
+                [0., 0.70710678, 0.70710678]]
+    assert_allclose(spatial.rx(np.pi/4), expected)
+
+    expected = [[1, 0, 0],
+                [0, 0, -1],
+                [0, 1, 0]]
+    assert_allclose(spatial.rx(np.pi/2), expected, atol=1e-10)
+
+    expected = [[1, 0, 0],
+                [0, -1, 0],
+                [0, 0, -1]]
+    assert_allclose(spatial.rx(np.pi), expected, atol=1e-10)
+
+
+def test_ry():
+    expected = np.eye(3)
+    assert_allclose(spatial.ry(0), expected)
+
+    expected = [[0.70710678, 0., 0.70710678],
+                [0.,  1.,  0.],
+                [-0.70710678, 0., 0.70710678]]
+    assert_allclose(spatial.ry(np.pi/4), expected)
+
+    expected = np.array([[0, 0, 1],
+                         [0, 1, 0],
+                         [-1, 0, 0]])
+    assert_allclose(spatial.ry(np.pi/2), expected, atol=1e-10)
+
+    expected = [[-1, 0, 0],
+                [0, 1, 0],
+                [0, 0, -1]]
+    assert_allclose(spatial.ry(np.pi), expected, atol=1e-10)
+
+
+def test_rz():
+    expected = np.eye(3)
+    assert_allclose(spatial.rz(0), expected)
+
+    expected = [[0.70710678, -0.70710678, 0.],
+                [0.70710678, 0.70710678, 0.],
+                [0., 0.,  1.]]
+    assert_allclose(spatial.rz(np.pi/4), expected)
+
+    expected = np.array([[0, -1, 0],
+                         [1, 0, 0],
+                         [0, 0, 1]])
+    assert_allclose(spatial.rz(np.pi/2), expected, atol=1e-10)
+
+    expected = [[-1, 0, 0],
+                [0, -1, 0],
+                [0, 0, 1]]
+    assert_allclose(spatial.rz(np.pi), expected, atol=1e-10)

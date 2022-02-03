@@ -1992,7 +1992,8 @@ class Lattice:
               num_jobs: int = -1,
               periodic: Union[bool, int, Sequence[int]] = None,
               callback: Callable = None,
-              dtype: Union[int, str, np.dtype] = None):
+              dtype: Union[int, str, np.dtype] = None,
+              relative: bool = None):
         """Constructs the indices and neighbors of a finite size lattice.
 
         Parameters
@@ -2022,6 +2023,9 @@ class Lattice:
             Optional data-type for storing the lattice indices. Using a smaller
             bit-size may help reduce memory usage. By default, the given limits are
             checked to determine the smallest possible data-type.
+        relative : bool, optional
+            Same as ``primitive`` (backwards compatibility). Will be removed in a
+            future version.
 
         Raises
         ------
@@ -2033,6 +2037,12 @@ class Lattice:
         NotAnalyzedError
             Raised if the lattice distances and base-neighbors haven't been computed.
         """
+        if relative is not None:
+            warnings.warn("``relative`` is deprecated and will be removed in a "
+                          "future version. Use ``primitive`` instead",
+                          DeprecationWarning)
+            primitive = relative
+
         self.data.reset()
         if not isinstance(shape, AbstractShape):
             basis = self.vectors if primitive else None

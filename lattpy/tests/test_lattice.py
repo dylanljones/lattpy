@@ -54,6 +54,37 @@ rbcc = Lattice(TWOPI * np.array([[+1, +1, 0],
 LATTICES = [chain, square, rect, hexagonal, sc, fcc, bcc]
 RLATTICES = [rchain, rsquare, rrect, rhexagonal, rsc, rfcc, rbcc]
 
+STRUCTURES = list()
+_latt = lp.simple_chain()
+_latt.build(4)
+STRUCTURES.append(_latt)
+_latt = lp.simple_square()
+_latt.build((4, 4))
+STRUCTURES.append(_latt)
+_latt = lp.simple_cubic()
+_latt.build((4, 4, 4))
+STRUCTURES.append(_latt)
+
+
+@st.composite
+def structures(draw):
+    return draw(st.sampled_from(STRUCTURES))
+
+
+def assert_elements_equal1d(actual, expected):
+    actual = np.unique(actual)
+    expected = np.unique(expected)
+    assert len(actual) == len(expected)
+    return all(np.isin(actual, expected))
+
+
+def assert_allclose_elements(actual, expected, atol=0., rtol=1e-7):
+    assert_allclose(np.sort(actual), np.sort(expected), rtol, atol)
+
+
+def assert_equal_elements(actual, expected):
+    assert_array_equal(np.sort(actual), np.sort(expected))
+
 
 def test_is_reciprocal():
     for latt, rlatt in zip(LATTICES, RLATTICES):
@@ -451,6 +482,29 @@ def test_build_exceptions():
         latt.build((5, 5, 5))
 
 
+@given(structures())
+def test_nearest_neighbors(latt):
+    for i in range(latt.num_sites):
+        expected = latt.neighbors(i, distidx=0)
+        actual = latt.nearest_neighbors(i)
+        assert_equal_elements(actual, expected)
+
+        expected = latt.neighbors(i, distidx=0, unique=True)
+        actual = latt.nearest_neighbors(i, unique=True)
+        assert_equal_elements(actual, expected)
+
+
+@given(structures())
+def test_iter_neighbors(latt):
+    for i in range(latt.num_sites):
+        for distidx, actual in latt.iter_neighbors(i):
+            expected = latt.neighbors(i, distidx=distidx)
+            assert_equal_elements(actual, expected)
+        for distidx, actual in latt.iter_neighbors(i, unique=True):
+            expected = latt.neighbors(i, distidx=distidx, unique=True)
+            assert_equal_elements(actual, expected)
+
+
 def test_compute_connections():
     latt = Lattice(np.eye(2))
     latt.add_atom()
@@ -473,13 +527,6 @@ def test_compute_connections():
     expected = [[21, 0], [22, 1], [23, 2], [24, 3]]
     assert_array_equal(pairs, expected)
     assert np.all(dists) == 1
-
-
-def assert_elements_equal1d(actual, expected):
-    actual = np.unique(actual)
-    expected = np.unique(expected)
-    assert len(actual) == len(expected)
-    return all(np.isin(actual, expected))
 
 
 def test_periodic_nearest():

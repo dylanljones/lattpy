@@ -10,6 +10,8 @@
 
 from lattpy.unitcell import Atom
 
+ATOM = Atom("A", energy=1.0)
+
 
 def test_atom_uniqueness():
     atom1 = Atom("A")
@@ -63,9 +65,8 @@ def test_atom_copy():
 
 
 def test_atom_to_dict():
-    atom = Atom("A", energy=1.0)
     expected = {"index": 0, "name": "A", "color": None, "size": 10, "energy": 1.0}
-    assert atom.dict() == expected
+    assert ATOM.dict() == expected
 
 
 def test_atom_param_length():

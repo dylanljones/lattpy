@@ -22,7 +22,7 @@ from .plotting import draw_points, draw_vectors, draw_lines, draw_surfaces
 
 __all__ = [
     "distance", "distances", "interweave", "vindices", "vrange", "cell_size",
-    "cell_volume", "compute_vectors", "compute_neighbors", "KDTree", "VoronoiTree",
+    "cell_volume", "compute_vectors", "KDTree", "VoronoiTree",
     "WignerSeitzCell", "rx", "ry", "rz", "rotate2d", "rotate3d",
     "build_periodic_translation_vector", "periodic_translation_vectors"
 ]
@@ -347,15 +347,6 @@ class KDTree(scipy.spatial.cKDTree):
             dists = np.round(dists, decimals=decimals)
 
         return neighbors, dists
-
-
-def compute_neighbors(positions, k=20, max_dist=np.inf, num_jobs=1, decimals=None,
-                      eps=0., include_zero=False, compact=True, x=None):
-    # Build tree and query neighbors
-    x = positions if x is None else x
-    tree = KDTree(positions, k=k, max_dist=max_dist, eps=eps)
-    dists, neighbors = tree.query(x, num_jobs, decimals, include_zero, compact)
-    return neighbors, dists
 
 
 def build_periodic_translation_vector(indices, axs):

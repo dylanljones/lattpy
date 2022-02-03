@@ -29,7 +29,6 @@ from .spatial import (
     cell_size,
     cell_volume,
     compute_vectors,
-    compute_neighbors,
     VoronoiTree,
     WignerSeitzCell
 )

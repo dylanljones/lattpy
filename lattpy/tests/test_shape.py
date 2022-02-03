@@ -51,7 +51,7 @@ def test_shape_basis(size):
     assert_allclose(s.limits(), limits, atol=1e-10)
 
     pts = np.random.uniform(-np.min(limits) - 10, +np.max(limits) + 10, size=(100, d))
-    mask = s.contains(pts, dx=1e-3)
+    mask = s.contains(pts)
     for point, res in zip(pts, mask):
         expected = True
         for i in range(d):

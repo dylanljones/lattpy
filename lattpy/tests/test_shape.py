@@ -21,7 +21,7 @@ dim = st.shared(st.integers(1, 3), key="d")
 
 
 @given(
-    hnp.arrays(np.float64, dim, elements=st.floats(-100, 100)),
+    hnp.arrays(np.float64, dim, elements=st.floats(0.1, 100)),
     hnp.arrays(np.float64, dim, elements=st.floats(-100, 100)))
 def test_shape(size, pos):
     s = shape.Shape(size, pos)

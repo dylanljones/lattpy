@@ -668,8 +668,9 @@ class Lattice:
 
     def add_atom(self, pos: Union[float, Sequence[float]] = None,
                  atom: Union[str, Dict[str, Any], Atom] = None,
-                 relative: bool = False,
+                 primitive: bool = False,
                  neighbors: int = 0,
+                 relative: bool = None,
                  **kwargs) -> Atom:
         """Adds a site to the basis of the lattice unit cell.
 
@@ -681,7 +682,7 @@ class Lattice:
         atom : str or dict or Atom, optional
             Identifier of the site. If a string is passed, a new Atom instance is
             created.
-        relative : bool, optional
+        primitive : bool, optional
             Flag if the specified position is in cartesian or lattice coordinates.
             If True the passed position will be multiplied with the lattice vectors.
             The default is ``False`` (cartesian coordinates).
@@ -689,6 +690,9 @@ class Lattice:
             The number of neighbor distance to calculate. If the number is 0 the
             distances have to be calculated manually after configuring the
             lattice basis.
+        relative : bool, optional
+            Same as ``primitive`` (backwards compatibility). Will be removed in a
+            future version.
         **kwargs
             Keyword arguments for ´Atom´ constructor. Only used if a new ``Atom``
             instance is created.
@@ -726,8 +730,14 @@ class Lattice:
         >>> latt.get_atom(1)
         Atom(B, size=15, 1)
         """
+        if relative is not None:
+            warnings.warn("``relative`` is deprecated and will be removed in a "
+                          "future version. Use ``primitive`` instead",
+                          DeprecationWarning)
+            primitive = relative
+
         pos = np.zeros(self.dim) if pos is None else np.atleast_1d(pos)
-        if relative:
+        if primitive:
             pos = self.translate(pos)
 
         if len(pos) != self._dim:

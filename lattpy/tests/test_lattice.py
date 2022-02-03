@@ -353,7 +353,7 @@ def test_volume():
     latt = Lattice(np.eye(2))
     latt.add_atom()
     latt.add_connections()
-    latt.build((4, 4), relative=False)
+    latt.build((4, 4), primitive=False)
     assert latt.volume() == 25
 
 
@@ -364,7 +364,7 @@ def test_alpha():
     latt.add_connection("A", "A", 1)
     latt.add_connection("A", "B", 1)
     latt.analyze()
-    latt.build((4, 4), relative=False)
+    latt.build((4, 4), primitive=False)
 
     assert latt.alpha(0) == 0
     assert latt.alpha(1) == 1
@@ -379,7 +379,7 @@ def test_atom():
     latt.add_connection("A", "A", 1)
     latt.add_connection("A", "B", 1)
     latt.analyze()
-    latt.build((4, 4), relative=False)
+    latt.build((4, 4), primitive=False)
 
     assert latt.atom(0) == at1
     assert latt.atom(1) == at2
@@ -394,7 +394,7 @@ def test_position():
     latt.add_connection("A", "A", 1)
     latt.add_connection("A", "B", 1)
     latt.analyze()
-    latt.build((4, 4), relative=False)
+    latt.build((4, 4), primitive=False)
 
     assert_array_equal(latt.position(0), [0.0, 0.0])
     assert_array_equal(latt.position(1), [0.5, 0.5])
@@ -406,7 +406,7 @@ def test_index_from_position():
     latt = Lattice(np.eye(2))
     latt.add_atom()
     latt.add_connections()
-    latt.build((4, 4), relative=False)
+    latt.build((4, 4), primitive=False)
     for i in range(latt.num_sites):
         pos = latt.position(i)
         assert latt.index_from_position(pos) == i
@@ -416,7 +416,7 @@ def test_index_from_lattice_index():
     latt = Lattice(np.eye(2))
     latt.add_atom()
     latt.add_connections()
-    latt.build((4, 4), relative=False)
+    latt.build((4, 4), primitive=False)
     for i in range(latt.num_sites):
         ind = latt.indices[i]
         assert latt.index_from_lattice_index(ind) == i
@@ -455,19 +455,19 @@ def test_compute_connections():
     latt = Lattice(np.eye(2))
     latt.add_atom()
     latt.add_connections()
-    latt.build((4, 4), relative=False)
+    latt.build((4, 4), primitive=False)
 
     latt2 = Lattice(np.eye(2))
     latt2.add_atom()
     latt2.add_connections()
-    latt2.build((4, 4), pos=(5, 0), relative=False)
+    latt2.build((4, 4), pos=(5, 0), primitive=False)
 
     pairs, dists = latt.compute_connections(latt2)
     expected = [[20, 0], [21, 1], [22, 2], [23, 3], [24, 4]]
     assert_array_equal(pairs, expected)
     assert np.all(dists) == 1
 
-    latt2.build((4, 4), pos=(5, 1), relative=False)
+    latt2.build((4, 4), pos=(5, 1), primitive=False)
 
     pairs, dists = latt.compute_connections(latt2)
     expected = [[21, 0], [22, 1], [23, 2], [24, 3]]
@@ -555,7 +555,7 @@ def test_append():
     latt = Lattice(np.eye(2))
     latt.add_atom()
     latt.add_connections()
-    latt.build((4, 4), relative=False)
+    latt.build((4, 4), primitive=False)
     latt2 = latt.copy()
     latt.append(latt2)
 
@@ -569,17 +569,17 @@ def test_append():
 def test_extend():
     # Only check size, connections are handled by append
     latt = lp.simple_chain()
-    latt.build(4, relative=False)
+    latt.build(4, primitive=False)
     latt.extend(2)
     assert latt.num_sites == 8
 
     latt = lp.simple_square()
-    latt.build((4, 4), relative=False)
+    latt.build((4, 4), primitive=False)
     latt.extend(2, ax=0)
     assert_array_equal(latt.shape, (7, 4))
 
     latt = lp.simple_square()
-    latt.build((4, 4), relative=False)
+    latt.build((4, 4), primitive=False)
     latt.extend(2, ax=1)
     assert_array_equal(latt.shape, (4, 7))
 
@@ -587,17 +587,17 @@ def test_extend():
 def test_repeat():
     # Only check size, connections are handled by append
     latt = lp.simple_chain()
-    latt.build(4, relative=False)
+    latt.build(4, primitive=False)
     latt.repeat()
     assert latt.num_sites == 10
 
     latt = lp.simple_square()
-    latt.build((4, 4), relative=False)
+    latt.build((4, 4), primitive=False)
     latt.repeat(1, ax=0)
     assert_array_equal(latt.shape, (9, 4))
 
     latt = lp.simple_square()
-    latt.build((4, 4), relative=False)
+    latt.build((4, 4), primitive=False)
     latt.repeat(1, ax=1)
     assert_array_equal(latt.shape, (4, 9))
 

@@ -86,7 +86,7 @@ class Shape(AbstractShape):
         lims = np.array([np.min(corners, axis=0), np.max(corners, axis=0)])
         return lims.T
 
-    def contains(self, points, dx=1e-3):
+    def contains(self, points, dx=0.):
         if self.basis is not None:
             points = np.inner(points, np.linalg.inv(self.basis.T))
         mask = np.logical_and(self.pos - dx <= points,

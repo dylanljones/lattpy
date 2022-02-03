@@ -49,7 +49,7 @@ from .plotting import (
 )
 from .unitcell import Atom
 from .data import LatticeData, DataMap
-from .shape import AbstractShape
+from .shape import AbstractShape, Shape
 
 
 __all__ = ["Lattice"]
@@ -1406,102 +1406,6 @@ class Lattice:
                 atom_pos[atom] = [pos]
         return atom_pos
 
-    def build_translation_vectors(self, shape: Union[int, Sequence[int]],
-                                  relative: bool = False,
-                                  pos: Union[float, Sequence[float]] = None,
-                                  check: bool = True,
-                                  dtype: Union[int, np.dtype] = None,
-                                  oversample: float = 0.0,
-                                  ) -> np.ndarray:
-        """Constructs the translation vectors :math:`n` in a given shape.
-
-        Raises
-        ------
-        ValueError
-            Raised if the dimension of the position doesn't match the dimension of
-            the lattice.
-
-        Parameters
-        ----------
-        shape: (N) array_like or int
-            shape of finite size lattice to build.
-        relative: bool, optional
-            If True the shape will be multiplied by the cell size of the model.
-            The default is True.
-        pos: (N) array_like or int, optional
-            Optional position of the section to build. If ``None`` the origin is used.
-        check: bool, optional
-            If `True` the positions of the translation vectors are checked and
-            filtered. The default is True. This should only be disabled if
-            filtered later.
-        dtype: int or np.dtype, optional
-            Optional data-type for storing the lattice indices. By default, the given
-            limits are checked to determine the smallest possible data-type.
-        oversample: float, optional
-            Faktor for upscaling limits for initial index grid. This ensures that all
-            positions are included. Only needed if corner points are missing.
-            The default is 0.
-
-        Returns
-        -------
-        nvecs: (M, N) np.ndarray
-            The translation-vectors in lattice-coordinates.
-
-        Examples
-        --------
-        >>> latt = Lattice(np.eye(2))
-        >>> latt.build_translation_vectors((2, 2))
-        [[0 0]
-         [0 1]
-         [0 2]
-         [1 0]
-         [1 1]
-         [1 2]
-         [2 0]
-         [2 1]
-         [2 2]]
-        """
-        shape = np.atleast_1d(shape)
-        if len(shape) != self.dim:
-            raise ValueError(f"Dimension of shape {len(shape)} doesn't "
-                             f"match the dimension of the lattice {self.dim}")
-        logger.debug("Building nvecs: %s at %s", shape, pos)
-
-        if relative:
-            shape = np.array(shape) * np.max(self.vectors, axis=0) - 0.1 * self.norms
-        if pos is None:
-            pos = np.zeros(self.dim)
-        end = pos + shape
-
-        # Estimate the maximum needed translation vector to reach all points
-        max_nvecs = np.array([self.itranslate(pos)[0], self.itranslate(end)[0]],
-                             dtype=np.float64)
-        for i in range(1, self.dim):
-            for idx in itertools.combinations(range(self.dim), r=i):
-                _pos = end.copy()
-                _pos[np.array(idx)] = 0
-                index = self.itranslate(_pos)[0]
-                max_nvecs[0] = np.min([index, max_nvecs[0]], axis=0)
-                max_nvecs[1] = np.max([index, max_nvecs[1]], axis=0)
-        # Pad maximum translation vectors and create index limits
-        padding = oversample * shape + 1
-        max_nvecs += [-padding, +padding]
-        limits = max_nvecs.astype(np.int64).T
-        logger.debug("Limits: %s, %s", limits[:, 0], limits[:, 1])
-
-        # Generate translation vectors with too many points to reach each corner
-        nvecs = vindices(limits, sort_axis=0, dtype=dtype)
-        logger.debug("%s Translation vectors built", len(nvecs))
-        if check:
-            logger.debug("Filtering nvec's")
-            # Filter points in the given volume
-            positions = np.dot(nvecs, self.vectors[np.newaxis, :, :])[:, 0, :]
-            mask = (pos[0] <= positions[:, 0]) & (positions[:, 0] <= end[0])
-            for i in range(1, self.dim):
-                mask = mask & (pos[i] <= positions[:, i]) & (positions[:, i] <= end[i])
-            nvecs = nvecs[mask]
-        return nvecs
-
     # noinspection PyShadowingNames
     def check_points(self, points: np.ndarray,
                      shape: Union[int, Sequence[int], AbstractShape],
@@ -1558,9 +1462,107 @@ class Lattice:
                 mask = mask & (pos[i] <= points[:, i]) & (points[:, i] <= end[i])
             return mask
 
+    def build_translation_vectors(self, shape: Union[int, Sequence[int], AbstractShape],
+                                  primitive: bool = False,
+                                  pos: Union[float, Sequence[float]] = None,
+                                  check: bool = True,
+                                  dtype: Union[int, np.dtype] = None,
+                                  oversample: float = 0.0,
+                                  ) -> np.ndarray:
+        """Constructs the translation vectors :math:`n` in a given shape.
+
+        Raises
+        ------
+        ValueError
+            Raised if the dimension of the position doesn't match the dimension of
+            the lattice.
+
+        Parameters
+        ----------
+        shape: (N) array_like or int
+            shape of finite size lattice to build.
+        primitive: bool, optional
+            If True the shape will be multiplied by the cell size of the model.
+            The default is True.
+        pos: (N) array_like or int, optional
+            Optional position of the section to build. If ``None`` the origin is used.
+        check: bool, optional
+            If `True` the positions of the translation vectors are checked and
+            filtered. The default is True. This should only be disabled if
+            filtered later.
+        dtype: int or np.dtype, optional
+            Optional data-type for storing the lattice indices. By default, the given
+            limits are checked to determine the smallest possible data-type.
+        oversample: float, optional
+            Faktor for upscaling limits for initial index grid. This ensures that all
+            positions are included. Only needed if corner points are missing.
+            The default is 0.
+
+        Returns
+        -------
+        nvecs: (M, N) np.ndarray
+            The translation-vectors in lattice-coordinates.
+
+        Examples
+        --------
+        >>> latt = Lattice(np.eye(2))
+        >>> latt.build_translation_vectors((2, 2))
+        [[0 0]
+         [0 1]
+         [0 2]
+         [1 0]
+         [1 1]
+         [1 2]
+         [2 0]
+         [2 1]
+         [2 2]]
+        """
+        # Build lattice indices
+        if isinstance(shape, AbstractShape):
+            pos, stop = shape.limits().T
+            shape = stop - pos
+        shape = np.atleast_1d(shape)
+        if len(shape) != self.dim:
+            raise ValueError(f"Dimension of shape {len(shape)} doesn't "
+                             f"match the dimension of the lattice {self.dim}")
+        logger.debug("Building nvecs: %s at %s", shape, pos)
+
+        if primitive:
+            shape = np.array(shape) * np.max(self.vectors, axis=0) - 0.1 * self.norms
+        if pos is None:
+            pos = np.zeros(self.dim)
+        end = pos + shape
+
+        # Estimate the maximum needed translation vector to reach all points
+        max_nvecs = np.array([self.itranslate(pos)[0], self.itranslate(end)[0]],
+                             dtype=np.float64)
+        for i in range(1, self.dim):
+            for idx in itertools.combinations(range(self.dim), r=i):
+                _pos = end.copy()
+                _pos[np.array(idx)] = 0
+                index = self.itranslate(_pos)[0]
+                max_nvecs[0] = np.min([index, max_nvecs[0]], axis=0)
+                max_nvecs[1] = np.max([index, max_nvecs[1]], axis=0)
+        # Pad maximum translation vectors and create index limits
+        padding = oversample * shape + 1
+        max_nvecs += [-padding, +padding]
+        limits = max_nvecs.astype(np.int64).T
+        logger.debug("Limits: %s, %s", limits[:, 0], limits[:, 1])
+
+        # Generate translation vectors with too many points to reach each corner
+        nvecs = vindices(limits, sort_axis=0, dtype=dtype)
+        logger.debug("%s Translation vectors built", len(nvecs))
+        if check:
+            logger.debug("Filtering nvec's")
+            # Filter points in the given volume
+            positions = np.dot(nvecs, self.vectors[np.newaxis, :, :])[:, 0, :]
+            mask = self.check_points(positions, shape, primitive, pos)
+            nvecs = nvecs[mask]
+        return nvecs
+
     # noinspection PyShadowingNames
     def build_indices(self, shape: Union[int, Sequence[int], AbstractShape],
-                      relative: bool = False,
+                      primitive: bool = False,
                       pos: Union[float, Sequence[float]] = None,
                       check: bool = True,
                       callback: Callable = None,
@@ -1579,7 +1581,7 @@ class Lattice:
         ----------
         shape: (N) array_like or int or AbstractShape
             shape of finite size lattice to build.
-        relative: bool, optional
+        primitive: bool, optional
             If True the shape will be multiplied by the cell size of the model.
             The default is True.
         pos: (N) array_like or int, optional
@@ -1643,12 +1645,7 @@ class Lattice:
         logger.debug("Building lattice-indices: %s at %s", shape, pos)
 
         # Build lattice indices
-        if isinstance(shape, AbstractShape):
-            pos, stop = shape.limits().T
-            outer_shape = stop - pos
-        else:
-            outer_shape = shape
-        nvecs = self.build_translation_vectors(outer_shape, relative, pos, check, dtype)
+        nvecs = self.build_translation_vectors(shape, primitive, pos, False, dtype)
         ones = np.ones(nvecs.shape[0], dtype=nvecs.dtype)
         arrays = [np.c_[nvecs, i * ones] for i in range(self.num_base)]
         cols = self.dim + 1
@@ -1660,11 +1657,12 @@ class Lattice:
         positions = [self.translate(nvecs, pos) for pos in self.atom_positions]
         positions = interweave(positions)
 
-        # Filter points in the given volume
-        logger.debug("Filtering points")
-        mask = self.check_points(positions, shape, relative, pos)
-        indices = indices[mask]
-        positions = positions[mask]
+        if check:
+            # Filter points in the given volume
+            logger.debug("Filtering points")
+            mask = self.check_points(positions, shape, primitive, pos)
+            indices = indices[mask]
+            positions = positions[mask]
 
         # Filter points with user method
         if callback is not None:
@@ -1987,22 +1985,21 @@ class Lattice:
         self.pos = limits[0]
 
     def build(self, shape: Union[int, Sequence[int], AbstractShape],
-              relative: bool = False,
+              primitive: bool = False,
               pos: Union[float, Sequence[float]] = None,
               check: bool = True,
               min_neighbors: int = None,
               num_jobs: int = -1,
               periodic: Union[bool, int, Sequence[int]] = None,
               callback: Callable = None,
-              dtype: Union[int, str, np.dtype] = None
-              ) -> LatticeData:
+              dtype: Union[int, str, np.dtype] = None):
         """Constructs the indices and neighbors of a finite size lattice.
 
         Parameters
         ----------
         shape : (N, ) array_like or int or AbstractShape
             shape of finite size lattice to build.
-        relative : bool, optional
+        primitive : bool, optional
             If True the shape will be multiplied by the cell size of the model.
             The default is True.
         pos : (N, ) array_like or int, optional
@@ -2038,7 +2035,9 @@ class Lattice:
         """
         self.data.reset()
         if not isinstance(shape, AbstractShape):
-            shape = np.atleast_1d(shape)
+            basis = self.vectors if primitive else None
+            shape = Shape(shape, pos=pos, basis=basis)
+            # shape = np.atleast_1d(shape)
 
         self._assert_connections()
         self._assert_analyzed()
@@ -2046,7 +2045,7 @@ class Lattice:
         logger.debug("Building lattice: %s at %s", shape, pos)
 
         # Build indices and positions
-        indices, positions = self.build_indices(shape, relative, pos, check,
+        indices, positions = self.build_indices(shape, primitive, pos, check,
                                                 callback, dtype, True)
 
         # Compute the neighbors and distances between the sites
@@ -2065,7 +2064,7 @@ class Lattice:
 
         logger.debug("Lattice shape: %s (%s)", self.shape,
                      frmt_num(self.data.nbytes, unit="iB", div=1024))
-        return self.data
+        return shape
 
     def _build_periodic(self, indices, positions, nvec, out_ind=None, out_pos=None):
         delta_pos = self.translate(nvec)
@@ -2339,7 +2338,7 @@ class Lattice:
         # Build indices and positions of new section
         shape = np.copy(self.shape)
         shape[ax] = size
-        ind, pos = self.build_indices(shape, relative=False, return_pos=True)
+        ind, pos = self.build_indices(shape, primitive=False, return_pos=True)
         # Compute the neighbors and distances between the sites of new section
         neighbors, dists = self.compute_neighbors(ind, pos, num_jobs)
         # Append new section

@@ -14,7 +14,7 @@ from pytest import mark
 from numpy.testing import assert_array_equal, assert_allclose
 from hypothesis import given, settings, assume, strategies as st
 import hypothesis.extra.numpy as hnp
-from lattpy import spatial, simple_square
+from lattpy import spatial, simple_chain, simple_square, simple_cubic
 
 
 finite_floats = st.floats(allow_nan=False, allow_infinity=False)
@@ -112,11 +112,17 @@ def test_cell_colume(vecs, result):
     assert spatial.cell_volume(vecs) == result
 
 
-def test_build_periodic_translation_vector():
-    pass
-
-
 def test_wignerseitz_symmetry_points():
+    # Test 1D
+    latt = simple_chain()
+    ws = latt.wigner_seitz_cell()
+    origin, corners, edge_centers, face_centers = ws.symmetry_points()
+    assert_array_equal(origin, [0.0])
+    assert_array_equal(corners, [[-0.5], [0.5]])
+    assert edge_centers is None
+    assert face_centers is None
+
+    # Test 2D
     latt = simple_square()
     ws = latt.wigner_seitz_cell()
     origin, corners, edge_centers, face_centers = ws.symmetry_points()
@@ -125,6 +131,62 @@ def test_wignerseitz_symmetry_points():
     assert_array_equal(2 * corners, [[-1., -1.], [1., -1.], [-1., 1.], [1., 1.]])
     assert_array_equal(2 * edge_centers, [[0., -1.], [-1., 0.], [1., 0.], [0., 1.]])
     assert face_centers is None
+
+    # Test 3D
+    latt = simple_cubic()
+    ws = latt.wigner_seitz_cell()
+    origin, corners, edge_centers, face_centers = ws.symmetry_points()
+
+    c = [
+        [-0.5, -0.5, -0.5],
+        [0.5, -0.5, -0.5],
+        [-0.5, -0.5, 0.5],
+        [0.5, -0.5, 0.5],
+        [-0.5, 0.5, -0.5],
+        [0.5, 0.5, -0.5],
+        [0.5, 0.5, 0.5],
+        [-0.5, 0.5, 0.5],
+    ]
+    e = [
+        [-0.5, -0.5, 0.0],
+        [0.0, -0.5, -0.5],
+        [0.5, -0.5, 0.0],
+        [0.0, -0.5, 0.5],
+        [-0.5, 0.5, 0.0],
+        [0.0, 0.5, 0.5],
+        [0.5, 0.5, 0.0],
+        [0.0, 0.5, -0.5],
+        [0.5, 0.0, 0.5],
+        [0.0, 0.5, 0.5],
+        [-0.5, 0.0, 0.5],
+        [0.0, -0.5, 0.5],
+        [-0.5, -0.5, 0.0],
+        [-0.5, 0.0, -0.5],
+        [-0.5, 0.5, 0.0],
+        [-0.5, 0.0, 0.5],
+        [0.5, 0.0, -0.5],
+        [0.0, 0.5, -0.5],
+        [-0.5, 0.0, -0.5],
+        [0.0, -0.5, -0.5],
+        [0.5, -0.5, 0.0],
+        [0.5, 0.0, -0.5],
+        [0.5, 0.5, 0.0],
+        [0.5, 0.0, 0.5],
+    ]
+
+    f = [
+        [0.0, -0.5, 0.0],
+        [0.0, 0.5, 0.0],
+        [0.0, 0.0, 0.5],
+        [-0.5, 0.0, 0.0],
+        [0.0, 0.0, -0.5],
+        [0.5, 0.0, 0.0],
+    ]
+
+    assert_array_equal(origin, [0., 0., 0.])
+    assert_array_equal(corners, c)
+    assert_array_equal(edge_centers, e)
+    assert_array_equal(face_centers, f)
 
 
 def test_compute_vectors():

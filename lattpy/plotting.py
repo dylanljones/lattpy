@@ -14,6 +14,7 @@ import itertools
 import numpy as np
 from collections.abc import Iterable
 from scipy.interpolate import griddata
+import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 from matplotlib.collections import LineCollection, Collection
 from mpl_toolkits.mplot3d.art3d import Line3DCollection, Line3D, Poly3DCollection
@@ -71,6 +72,14 @@ def set_limits(ax, dim, padding=None, margins=0.1):
 # =========================================================================
 # Plotting
 # =========================================================================
+
+
+def subplot(dim, adjustable="datalim"):
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection="3d" if dim == 3 else None)
+    if dim < 3:
+        ax.set_aspect("equal", adjustable)
+    return fig, ax
 
 
 def draw_lines(ax, segments, *args, **kwargs):
@@ -248,8 +257,8 @@ def interpolate_to_grid(positions, values, num=(100, 100), offset=(0., 0.),
     x, y = positions.T
 
     # Create regular grid
-    xi = np.linspace(min(x)-offset[0], max(x)+offset[0], num[0])
-    yi = np.linspace(min(y)-offset[1], max(y)+offset[1], num[1])
+    xi = np.linspace(min(x) - offset[0], max(x) + offset[0], num[0])
+    yi = np.linspace(min(y) - offset[1], max(y) + offset[1], num[1])
 
     # Interpolate data to grid
     xx, yy = np.meshgrid(xi, yi)

@@ -30,7 +30,7 @@ class AbstractShape(ABC):
         pass
 
     @abstractmethod
-    def contains(self, points):
+    def contains(self, points, dx=0.):
         """Checks if the given points are contained in the shape."""
         pass
 
@@ -46,61 +46,62 @@ class AbstractShape(ABC):
 class Shape(AbstractShape):
     """General shape object."""
 
-    def __init__(self, shape, pos=None):
+    def __init__(self, shape, pos=None, basis=None):
         if not hasattr(shape, "__len__"):
             shape = [shape]
         super().__init__(len(shape), pos)
-        self.shape = np.array(shape)
+        self.size = np.array(shape)
+        self.basis = None if basis is None else np.array(basis)
 
-    def limits(self):
-        lims = self.pos + np.array([np.zeros(self.dim), self.shape])
-        return lims.T
-
-    def contains(self, points):
-        mask = np.logical_and(self.pos <= points, points <= self.pos + self.shape)
-        return np.all(mask, axis=1)
-
-    def plot(self, ax, color="k", lw=1.0, alpha=0.2, **kwargs):  # pragma: no cover
-        pos = self.pos
-        size = self.shape
+    def build(self):
+        corners = list(itertools.product(*zip(np.zeros(self.dim), self.size)))
+        corners = self.pos + np.array(corners)
+        edges = None
+        surfs = None
         if self.dim == 2:
-            vertices = pos + np.array([
-                [0, 0], [size[0], 0], [size[0], size[1]], [0, size[1]]
-            ])
-            edges = np.array([[0, 1], [1, 2], [2, 3], [3, 0]])
-
-            segments = vertices[edges]
-            lines = draw_lines(ax, segments, color=color, lw=lw)
-
-            surf = [0, 1, 2, 3, 0]
-            segments = vertices[surf]
-            surfaces = ax.fill(*segments.T, color="k", alpha=alpha)
-
+            edges = np.array([[0, 1], [0, 2], [2, 3], [3, 1]])
+            surfs = np.array([[0, 1, 3, 2, 0]])
         elif self.dim == 3:
-            # Build vertices
-            vertices = pos + np.array(list(itertools.product(*self.limits())))
             # Edge indices
             edges = np.array([
                 [0, 2], [2, 3], [3, 1], [1, 0],
                 [4, 6], [6, 7], [7, 5], [5, 4],
                 [0, 4], [2, 6], [3, 7], [1, 5]
             ])
-            segments = vertices[edges]
-            lines = draw_lines(ax, segments, color=color, lw=lw)
+            # Surface indices
+            surfs = np.array([
+                [0, 2, 3, 1],
+                [4, 6, 7, 5],
+                [0, 4, 6, 2],
+                [2, 6, 7, 3],
+                [3, 7, 5, 1],
+                [1, 5, 4, 0]
+            ])
+        if self.basis is not None:
+            corners = np.inner(corners, self.basis.T)
+        return corners, edges, surfs
 
-            surfaces = None
-            if alpha > 0:
-                # Surface indices
-                surfs = np.array([
-                    [0, 2, 3, 1],
-                    [4, 6, 7, 5],
-                    [0, 4, 6, 2],
-                    [2, 6, 7, 3],
-                    [3, 7, 5, 1],
-                    [1, 5, 4, 0]
-                ])
-                segments = vertices[surfs]
-                surfaces = draw_surfaces(ax, segments, color=color, alpha=alpha)
+    def limits(self):
+        corners, _, _ = self.build()
+        lims = np.array([np.min(corners, axis=0), np.max(corners, axis=0)])
+        return lims.T
+
+    def contains(self, points, tol=0.):
+        if self.basis is not None:
+            points = np.inner(points, np.linalg.inv(self.basis.T))
+        mask = np.logical_and(self.pos - tol <= points,
+                              points <= self.pos + self.size + tol)
+        return np.all(mask, axis=1)
+
+    def plot(self, ax, color="C0", lw=1.0, alpha=0.2, **kwargs):  # pragma: no cover
+        corners, edges, surfs = self.build()
+        segments = corners[edges]
+        lines = draw_lines(ax, segments, color=color, lw=lw)
+        segments = corners[surfs]
+        if self.dim < 3:
+            surfaces = ax.fill(*segments.T, color=color, alpha=alpha)
+        elif self.dim == 3:
+            surfaces = draw_surfaces(ax, segments, color=color, alpha=alpha)
         else:
             raise NotImplementedError("Can't plot shape in D>3!")
         return lines, surfaces
@@ -118,8 +119,9 @@ class Circle(AbstractShape):
         lims = self.pos + np.array([-rad, +rad])
         return lims.T
 
-    def contains(self, points):
-        return np.sqrt(np.sum(np.square(points - self.pos), axis=1)) <= self.radius
+    def contains(self, points, tol=0.):
+        dists = np.sqrt(np.sum(np.square(points - self.pos), axis=1))
+        return dists <= self.radius + tol
 
     def plot(self, ax, color="k", lw=1.0, alpha=0.2, **kwargs):  # pragma: no cover
         xy = tuple(self.pos)
@@ -142,9 +144,10 @@ class Donut(AbstractShape):
         lims = self.pos + np.array([-rad, +rad])
         return lims.T
 
-    def contains(self, points):
+    def contains(self, points, tol=1e-10):
         dists = np.sqrt(np.sum(np.square(points - self.pos), axis=1))
-        return np.logical_and(self.radii[0] <= dists, dists <= self.radii[1])
+        return np.logical_and(self.radii[0] - tol <= dists,
+                              dists <= self.radii[1] + tol)
 
     def plot(self, ax, color="k", lw=1.0, alpha=0.2, **kwargs):  # pragma: no cover
         n = 100

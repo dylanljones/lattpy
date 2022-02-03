@@ -21,7 +21,7 @@ dim = st.shared(st.integers(1, 3), key="d")
 
 
 @given(
-    hnp.arrays(np.float64, dim, elements=st.floats(-100, 100)),
+    hnp.arrays(np.float64, dim, elements=st.floats(0.1, 100)),
     hnp.arrays(np.float64, dim, elements=st.floats(-100, 100)))
 def test_shape(size, pos):
     s = shape.Shape(size, pos)
@@ -29,6 +29,26 @@ def test_shape(size, pos):
     d = len(pos)
     limits = (pos + np.array([np.zeros(d), size])).T
     assert_array_equal(s.limits(), limits)
+
+    pts = np.random.uniform(-np.min(limits) - 10, +np.max(limits) + 10, size=(100, d))
+    mask = s.contains(pts, tol=0)
+    for point, res in zip(pts, mask):
+        expected = True
+        for i in range(d):
+            expected = expected and (limits[i, 0] <= point[i] <= limits[i, 1])
+        assert res == expected
+
+
+@given(hnp.arrays(np.float64, dim, elements=st.floats(0.1, 100)))
+def test_shape_basis(size):
+    basis = np.eye(len(size))
+    basis[0, 0] = 2
+    s = shape.Shape(size, basis=basis)
+
+    d = len(size)
+    size[0] = size[0] * 2
+    limits = (np.array([np.zeros(d), size])).T
+    assert_allclose(s.limits(), limits, atol=1e-10)
 
     pts = np.random.uniform(-np.min(limits) - 10, +np.max(limits) + 10, size=(100, d))
     mask = s.contains(pts)

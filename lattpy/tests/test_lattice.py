@@ -54,6 +54,37 @@ rbcc = Lattice(TWOPI * np.array([[+1, +1, 0],
 LATTICES = [chain, square, rect, hexagonal, sc, fcc, bcc]
 RLATTICES = [rchain, rsquare, rrect, rhexagonal, rsc, rfcc, rbcc]
 
+STRUCTURES = list()
+_latt = lp.simple_chain()
+_latt.build(4)
+STRUCTURES.append(_latt)
+_latt = lp.simple_square()
+_latt.build((4, 4))
+STRUCTURES.append(_latt)
+_latt = lp.simple_cubic()
+_latt.build((4, 4, 4))
+STRUCTURES.append(_latt)
+
+
+@st.composite
+def structures(draw):
+    return draw(st.sampled_from(STRUCTURES))
+
+
+def assert_elements_equal1d(actual, expected):
+    actual = np.unique(actual)
+    expected = np.unique(expected)
+    assert len(actual) == len(expected)
+    return all(np.isin(actual, expected))
+
+
+def assert_allclose_elements(actual, expected, atol=0., rtol=1e-7):
+    assert_allclose(np.sort(actual), np.sort(expected), rtol, atol)
+
+
+def assert_equal_elements(actual, expected):
+    assert_array_equal(np.sort(actual), np.sort(expected))
+
 
 def test_is_reciprocal():
     for latt, rlatt in zip(LATTICES, RLATTICES):
@@ -353,7 +384,7 @@ def test_volume():
     latt = Lattice(np.eye(2))
     latt.add_atom()
     latt.add_connections()
-    latt.build((4, 4), relative=False)
+    latt.build((4, 4), primitive=False)
     assert latt.volume() == 25
 
 
@@ -364,7 +395,7 @@ def test_alpha():
     latt.add_connection("A", "A", 1)
     latt.add_connection("A", "B", 1)
     latt.analyze()
-    latt.build((4, 4), relative=False)
+    latt.build((4, 4), primitive=False)
 
     assert latt.alpha(0) == 0
     assert latt.alpha(1) == 1
@@ -379,7 +410,7 @@ def test_atom():
     latt.add_connection("A", "A", 1)
     latt.add_connection("A", "B", 1)
     latt.analyze()
-    latt.build((4, 4), relative=False)
+    latt.build((4, 4), primitive=False)
 
     assert latt.atom(0) == at1
     assert latt.atom(1) == at2
@@ -394,7 +425,7 @@ def test_position():
     latt.add_connection("A", "A", 1)
     latt.add_connection("A", "B", 1)
     latt.analyze()
-    latt.build((4, 4), relative=False)
+    latt.build((4, 4), primitive=False)
 
     assert_array_equal(latt.position(0), [0.0, 0.0])
     assert_array_equal(latt.position(1), [0.5, 0.5])
@@ -406,7 +437,7 @@ def test_index_from_position():
     latt = Lattice(np.eye(2))
     latt.add_atom()
     latt.add_connections()
-    latt.build((4, 4), relative=False)
+    latt.build((4, 4), primitive=False)
     for i in range(latt.num_sites):
         pos = latt.position(i)
         assert latt.index_from_position(pos) == i
@@ -416,7 +447,7 @@ def test_index_from_lattice_index():
     latt = Lattice(np.eye(2))
     latt.add_atom()
     latt.add_connections()
-    latt.build((4, 4), relative=False)
+    latt.build((4, 4), primitive=False)
     for i in range(latt.num_sites):
         ind = latt.indices[i]
         assert latt.index_from_lattice_index(ind) == i
@@ -451,23 +482,46 @@ def test_build_exceptions():
         latt.build((5, 5, 5))
 
 
+@given(structures())
+def test_nearest_neighbors(latt):
+    for i in range(latt.num_sites):
+        expected = latt.neighbors(i, distidx=0)
+        actual = latt.nearest_neighbors(i)
+        assert_equal_elements(actual, expected)
+
+        expected = latt.neighbors(i, distidx=0, unique=True)
+        actual = latt.nearest_neighbors(i, unique=True)
+        assert_equal_elements(actual, expected)
+
+
+@given(structures())
+def test_iter_neighbors(latt):
+    for i in range(latt.num_sites):
+        for distidx, actual in latt.iter_neighbors(i):
+            expected = latt.neighbors(i, distidx=distidx)
+            assert_equal_elements(actual, expected)
+        for distidx, actual in latt.iter_neighbors(i, unique=True):
+            expected = latt.neighbors(i, distidx=distidx, unique=True)
+            assert_equal_elements(actual, expected)
+
+
 def test_compute_connections():
     latt = Lattice(np.eye(2))
     latt.add_atom()
     latt.add_connections()
-    latt.build((4, 4), relative=False)
+    latt.build((4, 4), primitive=False)
 
     latt2 = Lattice(np.eye(2))
     latt2.add_atom()
     latt2.add_connections()
-    latt2.build((4, 4), pos=(5, 0), relative=False)
+    latt2.build((4, 4), pos=(5, 0), primitive=False)
 
     pairs, dists = latt.compute_connections(latt2)
     expected = [[20, 0], [21, 1], [22, 2], [23, 3], [24, 4]]
     assert_array_equal(pairs, expected)
     assert np.all(dists) == 1
 
-    latt2.build((4, 4), pos=(5, 1), relative=False)
+    latt2.build((4, 4), pos=(5, 1), primitive=False)
 
     pairs, dists = latt.compute_connections(latt2)
     expected = [[21, 0], [22, 1], [23, 2], [24, 3]]
@@ -475,18 +529,80 @@ def test_compute_connections():
     assert np.all(dists) == 1
 
 
-def assert_elements_equal1d(actual, expected):
-    actual = np.unique(actual)
-    expected = np.unique(expected)
-    assert len(actual) == len(expected)
-    return all(np.isin(actual, expected))
+def test_periodic_nearest():
+    # Lattice chain
+    latt = lp.simple_chain()
+    latt.build(9)
+    latt.set_periodic(0)
+    assert 9 in latt.neighbors(0)
+
+    # Square lattice
+    latt = lp.simple_square()
+    latt.build((4, 4))
+
+    latt.set_periodic(0)
+    assert_elements_equal1d(latt.nearest_neighbors(0), [1, 5, 20])
+    assert_elements_equal1d(latt.nearest_neighbors(1), [0, 2, 6, 21])
+    assert_elements_equal1d(latt.nearest_neighbors(2), [1, 3, 7, 22])
+    assert_elements_equal1d(latt.nearest_neighbors(3), [2, 4, 8, 23])
+    assert_elements_equal1d(latt.nearest_neighbors(4), [3, 9, 24])
+    latt.set_periodic(1)
+    assert_elements_equal1d(latt.nearest_neighbors(0), [1, 5, 4])
+    assert_elements_equal1d(latt.nearest_neighbors(5), [0, 6, 10, 9])
+    assert_elements_equal1d(latt.nearest_neighbors(10), [5, 11, 15, 14])
+    assert_elements_equal1d(latt.nearest_neighbors(15), [10, 16, 20, 19])
+    assert_elements_equal1d(latt.nearest_neighbors(20), [15, 21, 24])
+    # Only check corners for both axis periodic
+    latt.set_periodic([0, 1])
+    assert_elements_equal1d(latt.nearest_neighbors(0), [1, 5, 20, 24])
+    assert_elements_equal1d(latt.nearest_neighbors(4), [3, 9, 20, 24])
+    assert_elements_equal1d(latt.nearest_neighbors(20), [0, 15, 21, 24])
+    assert_elements_equal1d(latt.nearest_neighbors(24), [4, 19, 20, 23])
+
+
+def test_periodic_next_nearest():
+    # Lattice chain
+    latt = lp.simple_chain(neighbors=2)
+    latt.build(9)
+    latt.set_periodic(0)
+    assert 8 in latt.neighbors(0, distidx=1)
+
+    # Square lattice
+    latt = lp.simple_square(neighbors=2)
+    latt.build((4, 4))
+    latt.set_periodic(0)
+    assert_elements_equal1d(latt.neighbors(0, 1), [6, 21])
+    assert_elements_equal1d(latt.neighbors(1, 1), [7, 5, 20, 22])
+    assert_elements_equal1d(latt.neighbors(2, 1), [8, 6, 21, 23])
+    assert_elements_equal1d(latt.neighbors(3, 1), [9, 7, 22, 24])
+    assert_elements_equal1d(latt.neighbors(4, 1), [8, 23])
+    latt.set_periodic(1)
+    assert_elements_equal1d(latt.neighbors(0, 1), [6, 9])
+    assert_elements_equal1d(latt.neighbors(5, 1), [1, 4, 11, 14])
+    assert_elements_equal1d(latt.neighbors(10, 1), [6, 9, 16, 19])
+    assert_elements_equal1d(latt.neighbors(15, 1), [11, 14, 21, 24])
+    assert_elements_equal1d(latt.neighbors(20, 1), [16, 19])
+    # Only check corners for both axis periodic
+    latt.set_periodic([0, 1])
+    assert_elements_equal1d(latt.neighbors(0, 1), [6, 9, 21, 24])
+    assert_elements_equal1d(latt.neighbors(4, 1), [5, 8, 20, 23])
+    assert_elements_equal1d(latt.neighbors(20, 1), [1, 4, 16, 19])
+    assert_elements_equal1d(latt.neighbors(23, 1), [0, 3, 15, 18])
+
+
+def test_remove_periodic():
+    latt = lp.simple_chain()
+    latt.build(9)
+    latt.set_periodic(0)
+    latt.set_periodic(None)
+    assert 9 not in latt.neighbors(0)
 
 
 def test_append():
     latt = Lattice(np.eye(2))
     latt.add_atom()
     latt.add_connections()
-    latt.build((4, 4), relative=False)
+    latt.build((4, 4), primitive=False)
     latt2 = latt.copy()
     latt.append(latt2)
 
@@ -495,6 +611,42 @@ def test_append():
     assert_elements_equal1d(latt.nearest_neighbors(22), [17, 21, 23, 27])
     assert_elements_equal1d(latt.nearest_neighbors(23), [18, 22, 24, 28])
     assert_elements_equal1d(latt.nearest_neighbors(24), [19, 23, 29])
+
+
+def test_extend():
+    # Only check size, connections are handled by append
+    latt = lp.simple_chain()
+    latt.build(4, primitive=False)
+    latt.extend(2)
+    assert latt.num_sites == 8
+
+    latt = lp.simple_square()
+    latt.build((4, 4), primitive=False)
+    latt.extend(2, ax=0)
+    assert_array_equal(latt.shape, (7, 4))
+
+    latt = lp.simple_square()
+    latt.build((4, 4), primitive=False)
+    latt.extend(2, ax=1)
+    assert_array_equal(latt.shape, (4, 7))
+
+
+def test_repeat():
+    # Only check size, connections are handled by append
+    latt = lp.simple_chain()
+    latt.build(4, primitive=False)
+    latt.repeat()
+    assert latt.num_sites == 10
+
+    latt = lp.simple_square()
+    latt.build((4, 4), primitive=False)
+    latt.repeat(1, ax=0)
+    assert_array_equal(latt.shape, (9, 4))
+
+    latt = lp.simple_square()
+    latt.build((4, 4), primitive=False)
+    latt.repeat(1, ax=1)
+    assert_array_equal(latt.shape, (4, 9))
 
 
 def test_to_dict():

@@ -13,6 +13,10 @@ from .utils import (
     ArrayLike,
     LatticeError,
     ConfigurationError,
+    SiteOccupiedError,
+    NoConnectionsError,
+    NotAnalyzedError,
+    NotBuiltError,
     min_dtype,
     chain,
     frmt_num,
@@ -29,7 +33,6 @@ from .spatial import (
     cell_size,
     cell_volume,
     compute_vectors,
-    compute_neighbors,
     VoronoiTree,
     WignerSeitzCell
 )

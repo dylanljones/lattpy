@@ -12,7 +12,7 @@
 
 import logging
 from copy import deepcopy
-from typing import Iterable, Union, Sequence
+from typing import Union, Sequence
 import numpy as np
 from .utils import ArrayLike, create_lookup_table, min_dtype
 
@@ -147,8 +147,9 @@ class LatticeData:
         self.positions = np.array([])
         self.neighbors = np.array([])
         self.distances = np.array([])
-
         self.distvals = np.array([])
+        self.pnvecs = np.array([])
+        self.pmask = np.array([])
         self.paxes = np.array([])
 
         self.invalid_idx = -1
@@ -179,6 +180,7 @@ class LatticeData:
         size = self.indices.nbytes + self.positions.nbytes
         size += self.neighbors.nbytes + self.distances.nbytes
         size += self.distvals.nbytes + self.paxes.nbytes
+        size += self.pnvecs.nbytes + self.pmask.nbytes
         return size
 
     def copy(self) -> 'LatticeData':
@@ -192,26 +194,28 @@ class LatticeData:
         self.neighbors = np.array([])
         self.distances = np.array([])
         self.distvals = np.array([])
+        self.pnvecs = np.array([])
         self.paxes = np.array([])
+        self.pmask = np.array([])
         self._dmap = None
         self.invalid_idx = -1
         self.invalid_distidx = -1
 
-    def set(self, indices: Sequence[Iterable[int]],
-            positions: Sequence[Iterable[float]],
-            neighbors: Iterable[Iterable[Iterable[int]]],
-            distances: Iterable[Iterable[Iterable[float]]]) -> None:
+    def set(self, indices: np.ndarray,
+            positions: np.ndarray,
+            neighbors: np.ndarray,
+            distances: np.ndarray) -> None:
         """Sets the data of the `LatticeData` instance.
 
         Parameters
         ----------
-        indices : array_like of iterable of int
+        indices : (N, D+1) np.ndarray
             The lattice indices of the sites.
-        positions : array_like of iterable of int
+        positions : (N, D) np.ndarray
             The positions of the sites.
-        neighbors : iterable of iterable of of int
+        neighbors : (N, M) np.ndarray
             The neighbors of the sites.
-        distances : iterabe of iterable of int
+        distances : (N, M) iterabe of iterable of int
             The distances of the neighbors.
         """
         logger.debug("Setting data")
@@ -222,7 +226,9 @@ class LatticeData:
         self.neighbors = neighbors
         self.distances = distidx
         self.distvals = distvals
-        self.paxes = np.full_like(self.distances, fill_value=self.dim)
+        self.paxes = np.zeros((*self.neighbors.shape, self.dim), dtype=np.int8)
+        self.pnvecs = np.zeros((*self.neighbors.shape, self.dim), dtype=indices.dtype)
+        self.pmask = np.zeros_like(self.neighbors, dtype=np.bool)
 
         self.invalid_idx = self.num_sites
         self.invalid_distidx = np.max(self.distances)
@@ -322,37 +328,43 @@ class LatticeData:
             mask &= self.neighbors[site] > site
 
         if periodic is not None:
-            if periodic:
-                mask &= self.paxes[site] != self.dim
-            else:
-                mask &= self.paxes[site] == self.dim
+            mask &= self.pmask[site] if periodic else ~self.pmask[site]
         return mask
 
-    def set_periodic(self, indices: dict, distances: dict, axes: dict) -> None:
+    def set_periodic(self, indices: dict,
+                     distances: dict,
+                     nvecs: dict,
+                     axes: dict) -> None:
         """Adds periodic neighbors to the invalid slots of the neighbor data
 
         Parameters
         ----------
         indices : dict
-            Indices of the periodic neighbors.
+            Indices of the periodic neighbors. All dictionaries have the site as key
+            and a list of ``np.ndarray`` as values.
         distances : dict
             The distances of the periodic neighbors.
+        nvecs : dict
+            The translation vectors of the periodic neighbors.
         axes : dict
             Index of the translation axis of the periodic neighbors.
         """
+        # remove previous periodic neighbors
+        self.remove_periodic()
+        # Set new periodic neighbors
         for i, pidx in indices.items():
             # compute invalid slots of normal data
-            # and remove previous periodic neighbors
             i0 = len(self.get_neighbors(i, periodic=False))
             i1 = i0 + len(pidx)
-            self.paxes[i, i0:] = self.dim
             # translate distances to indices
             dists = distances[i]
             distidx = [np.searchsorted(self.distvals, d) for d in dists]
             # add periodic data
             self.neighbors[i, i0:i1] = pidx
             self.distances[i, i0:i1] = distidx
-            self.paxes[i, i0:i1] = axes[i]
+            self.paxes[i, i0:i1, :axes[i].shape[1]] = axes[i]
+            self.pnvecs[i, i0:i1] = nvecs[i]
+            self.pmask[i, i0:i1] = 1
 
     def sort(self, ax=None, indices=None, reverse=False):
         if ax is not None:
@@ -365,6 +377,9 @@ class LatticeData:
         self.neighbors = self.neighbors[indices]
         self.distances = self.distances[indices]
         self.paxes = self.paxes[indices]
+        self.pnvecs = self.pnvecs[indices]
+        self.pmask = self.pmask[indices]
+
         # Translate neighbor indices
         old_neighbors = self.neighbors.copy()
         for new, old in enumerate(indices):
@@ -372,9 +387,11 @@ class LatticeData:
             self.neighbors[mask] = new
 
     def remove_periodic(self):
-        mask = self.paxes != self.dim
+        mask = self.pmask
         self.neighbors[mask] = self.invalid_idx
         self.distances[mask] = self.invalid_distidx
+        self.pnvecs.fill(0)
+        self.pmask.fill(0)
         self.paxes.fill(self.dim)
 
     def sort_neighbors(self):
@@ -384,6 +401,8 @@ class LatticeData:
         self.neighbors = self.neighbors[i, j]
         self.distances = self.distances[i, j]
         self.paxes = self.paxes[i, j]
+        self.pnvecs = self.pnvecs[i, j]
+        self.pmask = self.pmask[i, j]
 
     def add_neighbors(self, site, neighbors, distances):
         neighbors = np.atleast_2d(neighbors)
@@ -410,10 +429,7 @@ class LatticeData:
             indices2, positions2, neighbors2, distances2 = args
 
         # Remove periodic neighbors
-        mask = self.paxes != self.dim
-        neighbors1[mask] = self.invalid_idx
-        distances1[mask] = self.invalid_distidx
-        self.paxes[:] = self.dim
+        self.remove_periodic()
 
         # Convert invalid indices of neighbor data
         invalid_idx = self.num_sites + len(indices2)

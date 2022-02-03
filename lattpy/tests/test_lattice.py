@@ -566,6 +566,42 @@ def test_append():
     assert_elements_equal1d(latt.nearest_neighbors(24), [19, 23, 29])
 
 
+def test_extend():
+    # Only check size, connections are handled by append
+    latt = lp.simple_chain()
+    latt.build(4, relative=False)
+    latt.extend(2)
+    assert latt.num_sites == 8
+
+    latt = lp.simple_square()
+    latt.build((4, 4), relative=False)
+    latt.extend(2, ax=0)
+    assert_array_equal(latt.shape, (7, 4))
+
+    latt = lp.simple_square()
+    latt.build((4, 4), relative=False)
+    latt.extend(2, ax=1)
+    assert_array_equal(latt.shape, (4, 7))
+
+
+def test_repeat():
+    # Only check size, connections are handled by append
+    latt = lp.simple_chain()
+    latt.build(4, relative=False)
+    latt.repeat()
+    assert latt.num_sites == 10
+
+    latt = lp.simple_square()
+    latt.build((4, 4), relative=False)
+    latt.repeat(1, ax=0)
+    assert_array_equal(latt.shape, (9, 4))
+
+    latt = lp.simple_square()
+    latt.build((4, 4), relative=False)
+    latt.repeat(1, ax=1)
+    assert_array_equal(latt.shape, (4, 9))
+
+
 def test_to_dict():
     latt = Lattice(np.eye(2))
     latt.add_atom()

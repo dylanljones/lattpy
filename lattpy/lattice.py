@@ -2067,24 +2067,6 @@ class Lattice:
                      frmt_num(self.data.nbytes, unit="iB", div=1024))
         return self.data
 
-    def _build_periodic2(self, indices, positions, axs, out_ind=None, out_pos=None):
-        limits = np.array([np.min(indices, axis=0), np.max(indices, axis=0)])
-        idx_size = (limits[1] - limits[0])[:-1]
-        nvec = np.zeros_like(idx_size, dtype=np.int64)
-        for ax in np.atleast_1d(axs):
-            nvec[ax] = np.floor(idx_size[ax]) + 1
-
-        delta_pos = self.translate(nvec)
-        delta_idx = np.append(nvec, 0)
-        if out_ind is not None and out_pos is not None:
-            out_ind[:] = indices + delta_idx
-            out_pos[:] = positions + delta_pos
-            return nvec
-
-        out_ind = indices + delta_idx
-        out_pos = positions + delta_pos
-        return nvec, out_ind, out_pos
-
     def _build_periodic(self, indices, positions, nvec, out_ind=None, out_pos=None):
         delta_pos = self.translate(nvec)
         delta_idx = np.append(nvec, 0)

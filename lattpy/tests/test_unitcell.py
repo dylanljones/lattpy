@@ -58,7 +58,33 @@ def test_atom_copy():
     copy = atom.copy()
     assert copy.name == atom.name
     assert copy.energy == atom.energy
-
     atom.energy = 2.0
-
     assert copy.energy != atom.energy
+
+
+def test_atom_to_dict():
+    atom = Atom("A", energy=1.0)
+    expected = {"index": 0, "name": "A", "color": None, "size": 10, "energy": 1.0}
+    assert atom.dict() == expected
+
+
+def test_atom_param_length():
+    atom = Atom("A", energy=1.0)
+    assert len(atom) == 3
+
+
+def test_atom_iter():
+    atom = Atom("A", energy=1.0)
+    assert list(atom) == ["color", "size", "energy"]
+
+
+def test_atoms_equal():
+    atom1 = Atom("A", energy=1.0)
+    atom2 = Atom("B")
+    atom3 = Atom("B", energy=1.0)
+    assert atom1 != atom2
+    assert atom2 == atom3
+    assert atom1 == "A"
+    assert atom1 != "B"
+    assert atom2 == "B"
+    assert atom3 == "B"

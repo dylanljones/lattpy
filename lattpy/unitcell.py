@@ -112,11 +112,11 @@ class Atom(abc.MutableMapping):
         """Make ``Atom`` instance hashable."""
         return hash(self._name)
 
-    def __dict__(self) -> Dict[str, Any]:
+    def __dict__(self) -> Dict[str, Any]:  # pragma: no cover
         """Return the information of the atom as a dictionary"""
         return self.dict()
 
-    def __copy__(self) -> 'Atom':
+    def __copy__(self) -> 'Atom':  # pragma: no cover
         """Creates a deep copy of the ``Atom`` instance."""
         return self.copy()
 

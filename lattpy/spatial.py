@@ -24,7 +24,7 @@ __all__ = [
     "distance", "distances", "interweave", "vindices", "vrange", "cell_size",
     "cell_volume", "compute_vectors", "compute_neighbors", "KDTree", "VoronoiTree",
     "WignerSeitzCell", "rx", "ry", "rz", "rotate2d", "rotate3d",
-    "build_periodic_translation_vector"
+    "build_periodic_translation_vector", "periodic_translation_vectors"
 ]
 
 
@@ -259,14 +259,6 @@ def cell_volume(vectors: ArrayLike) -> float:
     return abs(v)
 
 
-def build_periodic_translation_vector(indices, axs):
-    limits = np.array([np.min(indices, axis=0), np.max(indices, axis=0)])
-    nvec = np.zeros(indices.shape[1] - 1, dtype=np.int64)
-    for ax in np.atleast_1d(axs):
-        nvec[ax] = np.floor(limits[1][ax]) + 1
-    return nvec
-
-
 def compute_vectors(a: float, b: float = None, c: float = None,
                     alpha: float = None, beta: float = None,
                     gamma: float = None,
@@ -313,6 +305,9 @@ class KDTree(scipy.spatial.cKDTree):
         self.k = k
         self.p = p
         self.eps = eps
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(k: {self.k}, p: {self.p}, eps: {self.eps})"
 
     def query_ball_point(self, x, r, *_):
         return super().query_ball_point(x, r, self.p, self.eps)
@@ -361,6 +356,32 @@ def compute_neighbors(positions, k=20, max_dist=np.inf, num_jobs=1, decimals=Non
     tree = KDTree(positions, k=k, max_dist=max_dist, eps=eps)
     dists, neighbors = tree.query(x, num_jobs, decimals, include_zero, compact)
     return neighbors, dists
+
+
+def build_periodic_translation_vector(indices, axs):
+    limits = np.array([np.min(indices, axis=0), np.max(indices, axis=0)])
+    idx_size = (limits[1] - limits[0])[:-1]
+    nvec = np.zeros_like(idx_size, dtype=np.int64)
+    for ax in np.atleast_1d(axs):
+        nvec[ax] = np.floor(idx_size[ax]) + 1
+    return nvec
+
+
+def periodic_translation_vectors(indices, axs):
+    # One axis: No combinations needed
+    if isinstance(axs, int) or len(axs) == 1:
+        return [(axs, build_periodic_translation_vector(indices, axs))]
+    # Add all combinations of the periodic axis
+    items = list()
+    for ax in itertools.combinations_with_replacement(axs, r=2):
+        nvec = build_periodic_translation_vector(indices, ax)
+        items.append((ax, nvec))
+        # Use +/- for every axis exept the first one to ensure all corners are hit
+        if not np.all(np.array(ax) == axs[0]):
+            nvec2 = np.copy(nvec)
+            nvec2[1:] *= -1
+            items.append((ax, nvec2))
+    return items
 
 
 class VoronoiTree:

@@ -33,6 +33,7 @@ from .utils import (
 )
 from .spatial import (
     build_periodic_translation_vector,
+    periodic_translation_vectors,
     vindices,
     interweave,
     cell_size,
@@ -2066,8 +2067,7 @@ class Lattice:
                      frmt_num(self.data.nbytes, unit="iB", div=1024))
         return self.data
 
-    def _build_periodic_segment(self, indices, positions, axs, out_ind=None,
-                                out_pos=None):
+    def _build_periodic2(self, indices, positions, axs, out_ind=None, out_pos=None):
         limits = np.array([np.min(indices, axis=0), np.max(indices, axis=0)])
         idx_size = (limits[1] - limits[0])[:-1]
         nvec = np.zeros_like(idx_size, dtype=np.int64)
@@ -2085,7 +2085,29 @@ class Lattice:
         out_pos = positions + delta_pos
         return nvec, out_ind, out_pos
 
-    def _compute_periodic_neighbors(self, indices, positions, axis, num_jobs=-1):
+    def _build_periodic(self, indices, positions, nvec, out_ind=None, out_pos=None):
+        delta_pos = self.translate(nvec)
+        delta_idx = np.append(nvec, 0)
+        if out_ind is not None and out_pos is not None:
+            out_ind[:] = indices + delta_idx
+            out_pos[:] = positions + delta_pos
+        else:
+            out_ind = indices + delta_idx
+            out_pos = positions + delta_pos
+        return out_ind, out_pos
+
+    def kdtree(self, positions=None):
+        if positions is None:
+            positions = self.data.positions
+        k = np.sum(np.sum(self._raw_num_neighbors, axis=1)) + 1
+        max_dist = np.max(self.distances) + 0.1 * np.min(self._raw_distance_matrix)
+        return KDTree(positions, k, max_dist)
+
+    def _compute_pneighbors(self, axis, indices=None, positions=None, num_jobs=-1):
+        if indices is None:
+            indices = self.data.indices
+            positions = self.data.positions
+
         axis = np.atleast_1d(axis)
         invald_idx = len(indices)
 
@@ -2098,11 +2120,10 @@ class Lattice:
         ind_t = np.zeros_like(indices)
         pos_t = np.zeros_like(positions)
 
-        pidx, pdists, paxs = dict(), dict(), dict()
-        for ax in axis:
+        pidx, pdists, pnvecs, paxs = dict(), dict(), dict(), dict()
+        for ax, nvec in periodic_translation_vectors(indices, axis):
             # Translate positions along periodic axis
-            self._build_periodic_segment(indices, positions, ax, out_ind=ind_t,
-                                         out_pos=pos_t)
+            self._build_periodic(indices, positions, nvec, ind_t, pos_t)
 
             # Query neighbors with translated points and filter
             neighbors, distances = tree.query(pos_t, num_jobs, self.DIST_DECIMALS)
@@ -2117,24 +2138,28 @@ class Lattice:
                 mask = i, neighbors[i] < invald_idx
                 inds = neighbors[mask]
                 dists = distances[mask]
-
+                # Update dict for indices `inds`
                 pidx.setdefault(site, list()).extend(inds)  # noqa
                 pdists.setdefault(site, list()).extend(dists)
                 paxs.setdefault(site, list()).extend([ax] * len(inds))
+                pnvecs.setdefault(site, list()).extend([nvec] * len(inds))
+                # Update dict for neighbor indices of `inds`
                 for j, d in zip(inds, dists):
                     pidx.setdefault(j, list()).append(site)  # noqa
                     pdists.setdefault(j, list()).append(d)
                     paxs.setdefault(j, list()).append(ax)
+                    pnvecs.setdefault(j, list()).append(-nvec)
 
+        # Convert values of dict to np.ndarray's
         for k in pidx.keys():
             vals, ind = np.unique(pidx[k], return_index=True)
             pidx[k] = np.array(vals)
             pdists[k] = np.array(pdists[k])[ind]
             paxs[k] = np.array(paxs[k])[ind]
+            pnvecs[k] = np.array(pnvecs[k])[ind]
+        return pidx, pdists, pnvecs, paxs
 
-        return pidx, pdists, paxs
-
-    def set_periodic(self, axis: Union[bool, int, Sequence[int]]):
+    def set_periodic(self, axis: Union[bool, int, Sequence[int]] = None):
         """Sets periodic boundary conditions along the given axis.
 
         Parameters
@@ -2160,14 +2185,14 @@ class Lattice:
         logger.debug("Computing periodic neighbors along axis %s", axis)
         if self.shape is None:
             raise NotBuiltError()
-        axis = np.atleast_1d(axis)
-
-        indices = self.data.indices
-        positions = self.data.positions
-        pidx, pdists, paxs = self._compute_periodic_neighbors(indices, positions, axis)
-
-        self.data.set_periodic(pidx, pdists, paxs)
-        self.periodic_axes = axis
+        if axis is None:
+            self.data.remove_periodic()
+            self.periodic_axes = list()
+        else:
+            axis = np.atleast_1d(axis)
+            pidx, pdists, pnvecs, paxs = self._compute_pneighbors(axis)
+            self.data.set_periodic(pidx, pdists, pnvecs, paxs)
+            self.periodic_axes = axis
 
     def _compute_connection_neighbors(self, positions1, positions2):
         # Set neighbor query parameters
@@ -2607,10 +2632,6 @@ class Lattice:
             draw_cell(ax, vectors, color='k', lw=2, outlines=True)
 
         # Draw connections
-        limits = self.data.get_translation_limits()
-        idx_size = limits[1] - limits[0]
-        nvecs_diag = np.floor(idx_size) + 1
-        nvecs = np.diag(nvecs_diag)
         for i in range(self.num_sites):
             pos = self.data.positions[i]
             neighbor_pos = self.data.get_neighbor_pos(i, periodic=False)
@@ -2620,12 +2641,10 @@ class Lattice:
                 if show_periodic:
                     mask = self.data.neighbor_mask(i, periodic=True)
                     idx = self.data.neighbors[i, mask]
-                    paxes = self.data.paxes[i, mask]
+                    pnvecs = self.data.pnvecs[i, mask]
                     neighbor_pos = self.data.positions[idx]
-                    for pax, x in zip(paxes, neighbor_pos):
-                        nvec = nvecs[pax]
-                        sign = +1 if x[pax] < pos[pax] else -1
-                        x = self.translate(sign * nvec, x)
+                    for j, x in enumerate(neighbor_pos):
+                        x = self.translate(-pnvecs[j], x)
                         vec = 0.5 * (x - pos)
                         draw_vectors(ax, vec, pos=pos, color="0.5", lw=lw, zorder=1)
 

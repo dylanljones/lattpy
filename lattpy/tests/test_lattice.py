@@ -482,6 +482,75 @@ def assert_elements_equal1d(actual, expected):
     return all(np.isin(actual, expected))
 
 
+def test_periodic_nearest():
+    # Lattice chain
+    latt = lp.simple_chain()
+    latt.build(9)
+    latt.set_periodic(0)
+    assert 9 in latt.neighbors(0)
+
+    # Square lattice
+    latt = lp.simple_square()
+    latt.build((4, 4))
+
+    latt.set_periodic(0)
+    assert_elements_equal1d(latt.nearest_neighbors(0), [1, 5, 20])
+    assert_elements_equal1d(latt.nearest_neighbors(1), [0, 2, 6, 21])
+    assert_elements_equal1d(latt.nearest_neighbors(2), [1, 3, 7, 22])
+    assert_elements_equal1d(latt.nearest_neighbors(3), [2, 4, 8, 23])
+    assert_elements_equal1d(latt.nearest_neighbors(4), [3, 9, 24])
+    latt.set_periodic(1)
+    assert_elements_equal1d(latt.nearest_neighbors(0), [1, 5, 4])
+    assert_elements_equal1d(latt.nearest_neighbors(5), [0, 6, 10, 9])
+    assert_elements_equal1d(latt.nearest_neighbors(10), [5, 11, 15, 14])
+    assert_elements_equal1d(latt.nearest_neighbors(15), [10, 16, 20, 19])
+    assert_elements_equal1d(latt.nearest_neighbors(20), [15, 21, 24])
+    # Only check corners for both axis periodic
+    latt.set_periodic([0, 1])
+    assert_elements_equal1d(latt.nearest_neighbors(0), [1, 5, 20, 24])
+    assert_elements_equal1d(latt.nearest_neighbors(4), [3, 9, 20, 24])
+    assert_elements_equal1d(latt.nearest_neighbors(20), [0, 15, 21, 24])
+    assert_elements_equal1d(latt.nearest_neighbors(24), [4, 19, 20, 23])
+
+
+def test_periodic_next_nearest():
+    # Lattice chain
+    latt = lp.simple_chain(neighbors=2)
+    latt.build(9)
+    latt.set_periodic(0)
+    assert 8 in latt.neighbors(0, distidx=1)
+
+    # Square lattice
+    latt = lp.simple_square(neighbors=2)
+    latt.build((4, 4))
+    latt.set_periodic(0)
+    assert_elements_equal1d(latt.neighbors(0, 1), [6, 21])
+    assert_elements_equal1d(latt.neighbors(1, 1), [7, 5, 20, 22])
+    assert_elements_equal1d(latt.neighbors(2, 1), [8, 6, 21, 23])
+    assert_elements_equal1d(latt.neighbors(3, 1), [9, 7, 22, 24])
+    assert_elements_equal1d(latt.neighbors(4, 1), [8, 23])
+    latt.set_periodic(1)
+    assert_elements_equal1d(latt.neighbors(0, 1), [6, 9])
+    assert_elements_equal1d(latt.neighbors(5, 1), [1, 4, 11, 14])
+    assert_elements_equal1d(latt.neighbors(10, 1), [6, 9, 16, 19])
+    assert_elements_equal1d(latt.neighbors(15, 1), [11, 14, 21, 24])
+    assert_elements_equal1d(latt.neighbors(20, 1), [16, 19])
+    # Only check corners for both axis periodic
+    latt.set_periodic([0, 1])
+    assert_elements_equal1d(latt.neighbors(0, 1), [6, 9, 21, 24])
+    assert_elements_equal1d(latt.neighbors(4, 1), [5, 8, 20, 23])
+    assert_elements_equal1d(latt.neighbors(20, 1), [1, 4, 16, 19])
+    assert_elements_equal1d(latt.neighbors(23, 1), [0, 3, 15, 18])
+
+
+def test_remove_periodic():
+    latt = lp.simple_chain()
+    latt.build(9)
+    latt.set_periodic(0)
+    latt.set_periodic(None)
+    assert 9 not in latt.neighbors(0)
+
+
 def test_append():
     latt = Lattice(np.eye(2))
     latt.add_atom()

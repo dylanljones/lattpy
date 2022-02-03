@@ -93,7 +93,7 @@ class Shape(AbstractShape):
                               points <= self.pos + self.size + dx)
         return np.all(mask, axis=1)
 
-    def plot(self, ax, color="C0", lw=1.0, alpha=0.2, **kwargs):
+    def plot(self, ax, color="C0", lw=1.0, alpha=0.2, **kwargs):  # pragma: no cover
         corners, edges, surfs = self.build()
         segments = corners[edges]
         lines = draw_lines(ax, segments, color=color, lw=lw)

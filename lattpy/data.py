@@ -362,7 +362,7 @@ class LatticeData:
             # add periodic data
             self.neighbors[i, i0:i1] = pidx
             self.distances[i, i0:i1] = distidx
-            self.paxes[i, i0:i1] = axes[i]
+            self.paxes[i, i0:i1, :axes[i].shape[1]] = axes[i]
             self.pnvecs[i, i0:i1] = nvecs[i]
             self.pmask[i, i0:i1] = 1
 

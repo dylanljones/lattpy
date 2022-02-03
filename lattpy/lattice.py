@@ -2400,14 +2400,14 @@ class Lattice:
         d["shape"] = self.shape
         return d
 
-    def dumps(self):
+    def dumps(self):  # pragma: no cover
         lines = list()
         for key, values in self.todict().items():
             head = key + ":"
             lines.append(f"{head:<15}" + "; ".join(str(x) for x in values))
         return "\n".join(lines)
 
-    def dump(self, file: Union[str, int, bytes] = "tmp.latt") -> None:
+    def dump(self, file: Union[str, int, bytes]) -> None:  # pragma: no cover
         """Save the data of the ``Lattice`` instance.
 
         Parameters
@@ -2421,7 +2421,7 @@ class Lattice:
             pickle.dump(self, f)
 
     @classmethod
-    def load(cls, file: Union[str, int, bytes] = "tmp.latt") -> 'Lattice':
+    def load(cls, file: Union[str, int, bytes]) -> 'Lattice':  # pragma: no cover
         """Load data of a saved ``Lattice`` instance.
 
         Parameters

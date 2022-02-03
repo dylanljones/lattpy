@@ -14,7 +14,7 @@ from pytest import mark
 from numpy.testing import assert_array_equal, assert_allclose
 from hypothesis import given, settings, assume, strategies as st
 import hypothesis.extra.numpy as hnp
-from lattpy import spatial
+from lattpy import spatial, simple_square
 
 
 finite_floats = st.floats(allow_nan=False, allow_infinity=False)
@@ -116,6 +116,17 @@ def test_build_periodic_translation_vector():
     pass
 
 
+def test_wignerseitz_symmetry_points():
+    latt = simple_square()
+    ws = latt.wigner_seitz_cell()
+    origin, corners, edge_centers, face_centers = ws.symmetry_points()
+
+    assert_array_equal(origin, [0.0, 0.0])
+    assert_array_equal(2 * corners, [[-1., -1.], [1., -1.], [-1., 1.], [1., 1.]])
+    assert_array_equal(2 * edge_centers, [[0., -1.], [-1., 0.], [1., 0.], [0., 1.]])
+    assert face_centers is None
+
+
 def test_compute_vectors():
     # Test square vectors
     vecs = spatial.compute_vectors(1.0, 1.0, alpha=90)
@@ -131,3 +142,61 @@ def test_compute_vectors():
     assert_allclose(vecs, np.eye(3), atol=1e-16)
 
 
+def test_rx():
+    expected = np.eye(3)
+    assert_allclose(spatial.rx(0), expected)
+
+    expected = [[1., 0., 0.],
+                [0., 0.70710678, -0.70710678],
+                [0., 0.70710678, 0.70710678]]
+    assert_allclose(spatial.rx(np.pi/4), expected)
+
+    expected = [[1, 0, 0],
+                [0, 0, -1],
+                [0, 1, 0]]
+    assert_allclose(spatial.rx(np.pi/2), expected, atol=1e-10)
+
+    expected = [[1, 0, 0],
+                [0, -1, 0],
+                [0, 0, -1]]
+    assert_allclose(spatial.rx(np.pi), expected, atol=1e-10)
+
+
+def test_ry():
+    expected = np.eye(3)
+    assert_allclose(spatial.ry(0), expected)
+
+    expected = [[0.70710678, 0., 0.70710678],
+                [0.,  1.,  0.],
+                [-0.70710678, 0., 0.70710678]]
+    assert_allclose(spatial.ry(np.pi/4), expected)
+
+    expected = np.array([[0, 0, 1],
+                         [0, 1, 0],
+                         [-1, 0, 0]])
+    assert_allclose(spatial.ry(np.pi/2), expected, atol=1e-10)
+
+    expected = [[-1, 0, 0],
+                [0, 1, 0],
+                [0, 0, -1]]
+    assert_allclose(spatial.ry(np.pi), expected, atol=1e-10)
+
+
+def test_rz():
+    expected = np.eye(3)
+    assert_allclose(spatial.rz(0), expected)
+
+    expected = [[0.70710678, -0.70710678, 0.],
+                [0.70710678, 0.70710678, 0.],
+                [0., 0.,  1.]]
+    assert_allclose(spatial.rz(np.pi/4), expected)
+
+    expected = np.array([[0, -1, 0],
+                         [1, 0, 0],
+                         [0, 0, 1]])
+    assert_allclose(spatial.rz(np.pi/2), expected, atol=1e-10)
+
+    expected = [[-1, 0, 0],
+                [0, -1, 0],
+                [0, 0, 1]]
+    assert_allclose(spatial.rz(np.pi), expected, atol=1e-10)

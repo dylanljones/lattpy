@@ -34,13 +34,10 @@ from .spatial import (
     WignerSeitzCell
 )
 
-from .unitcell import (
-    Atom,
-    UnitCell
-)
-
+from .shape import AbstractShape, Shape, Circle, Donut, ConvexHull
 from .data import LatticeData
 from .disptools import DispersionPath
+from .unitcell import Atom
 from .lattice import Lattice
 
 from ._version import get_versions

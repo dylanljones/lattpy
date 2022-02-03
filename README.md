@@ -1,25 +1,13 @@
 # LattPy
 
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/lattpy?logo=python&style=flat-square)
-![PyPI](https://img.shields.io/pypi/v/lattpy?logo=pypi&style=flat-square)
-![PyPI - Status](https://img.shields.io/pypi/status/lattpy?color=yellow&style=flat-square)
-![PyPI - License](https://img.shields.io/pypi/l/lattpy?style=flat-square)
+![Python Version][pypi-python] ![Version][pypi-version] ![Status][pypi-status] ![License][pypi-license]
 
-|        |                                     |                                                          |
-|:-------|:------------------------------------|:---------------------------------------------------------|
-| Master | [![Test][tests-master]][link-tests] | [![Codecov branch][codecov-master]][codecov-master-link] |
-| Dev    | [![Test][tests-dev]][link-tests]    | [![Codecov branch][codecov-dev]][codecov-dev-link]       |
+|        |                                     |                                                   |
+|:-------|:------------------------------------|:--------------------------------------------------|
+| Master | [![Test][tests-master]][link-tests] | [![Codecov][codecov-master]][codecov-master-link] |
+| Dev    | [![Test][tests-dev]][link-tests]    | [![Codecov][codecov-dev]][codecov-dev-link]       |
 
-[tests-master]: https://img.shields.io/github/workflow/status/dylanljones/lattpy/Test/master?label=tests&logo=github&style=flat-square
-[tests-dev]: https://img.shields.io/github/workflow/status/dylanljones/lattpy/Test/dev?label=tests&logo=github&style=flat-square
-[link-tests]: https://github.com/dylanljones/lattpy/actions/workflows/test.yml
-
-[codecov-master]: https://img.shields.io/codecov/c/github/dylanljones/lattpy/master?logo=codecov&style=flat-square
-[codecov-master-link]: https://app.codecov.io/gh/dylanljones/lattpy/branch/master
-[codecov-dev]: https://img.shields.io/codecov/c/github/dylanljones/lattpy/dev?logo=codecov&style=flat-square
-[codecov-dev-link]: https://app.codecov.io/gh/dylanljones/lattpy/branch/dev
-
-LattPy  is a simple and efficient Python package for modeling Bravais lattices and 
+LattPy  is a simple and efficient Python package for modeling Bravais lattices and
 constructing (finite) lattice structures in `d` dimensions.
 
 | :warning: **WARNING**: This project is still in development and might change significantly in the future! |
@@ -187,8 +175,8 @@ neighbor_indices = latt.nearest_neighbors(i)
 
 Even though `lattpy` is written in pure python, it achieves high performance and
 a low memory footprint by making heavy use of numpy's vectorized operations.
-As an example the build-times, the maximal memory used in the build process and the 
-size of the stored lattice data of a square lattice for different number of 
+As an example the build-times, the maximal memory used in the build process and the
+size of the stored lattice data of a square lattice for different number of
 sites are shown in the following plots:
 
 
@@ -308,3 +296,18 @@ If periodic boundary conditions are set (along axis 0) the output is:
  [0. 0. 1. 0. 1.]
  [1. 0. 0. 1. 0.]]
 ````
+
+
+[pypi-python]: https://img.shields.io/pypi/pyversions/lattpy?logo=python&style=flat-square
+[pypi-version]: https://img.shields.io/pypi/v/lattpy?logo=pypi&style=flat-square
+[pypi-status]: https://img.shields.io/pypi/status/lattpy?color=yellow&style=flat-square
+[pypi-license]: https://img.shields.io/pypi/l/lattpy?style=flat-square
+
+[tests-master]: https://img.shields.io/github/workflow/status/dylanljones/lattpy/Test/master?label=tests&logo=github&style=flat
+[tests-dev]: https://img.shields.io/github/workflow/status/dylanljones/lattpy/Test/dev?label=tests&logo=github&style=flat
+[link-tests]: https://github.com/dylanljones/lattpy/actions/workflows/test.yml
+
+[codecov-master]: https://codecov.io/gh/dylanljones/lattpy/branch/master/graph/badge.svg?
+[codecov-master-link]: https://app.codecov.io/gh/dylanljones/lattpy/branch/master
+[codecov-dev]: https://codecov.io/gh/dylanljones/lattpy/branch/dev/graph/badge.svg?
+[codecov-dev-link]: https://app.codecov.io/gh/dylanljones/lattpy/branch/dev

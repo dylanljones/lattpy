@@ -393,8 +393,9 @@ class VoronoiTree:
     def query(self, x, k=1, eps=0):
         return self.tree.query(x, k, eps)  # noqa
 
-    def draw(self, ax=None, color="C0", size=3, lw=1, alpha=0.15, point_color="k",
-             point_size=3, draw_data=True, points=True, draw=True, fill=True):
+    def draw(self, ax=None, color="C0", size=3, lw=1, alpha=0.15,
+             point_color="k", point_size=3, draw_data=True,
+             points=True, draw=True, fill=True):  # pragma: no cover
 
         if ax is None:
             fig = plt.figure()
@@ -485,7 +486,7 @@ class WignerSeitzCell(VoronoiTree):
         return grid
 
     def symmetry_points(self):
-        origin = np.zeros((1,))
+        origin = np.zeros(self.dim)
         corners = self.vertices.copy()
         face_centers = None
         if self.dim == 1:
@@ -530,7 +531,7 @@ def rz(theta: float) -> np.ndarray:
     return np.array([[cos, -sin, 0], [sin, cos, 0], [0, 0, 1]])
 
 
-def rot(thetax: float = 0., thetay: float = 0., thetaz: float = 0.) -> np.ndarray:
+def rot(thetax: float = 0., thetay: float = 0., thetaz: float = 0.):  # pragma: no cover
     """General rotation matrix"""
     r = np.eye(3)
     if thetaz:
@@ -542,14 +543,14 @@ def rot(thetax: float = 0., thetay: float = 0., thetaz: float = 0.) -> np.ndarra
     return r
 
 
-def rotate2d(a, theta, degree=True):
+def rotate2d(a, theta, degree=True):  # pragma: no cover
     """Applies the z-rotation matrix to a 2D point"""
     if degree:
         theta = np.deg2rad(theta)
     return np.dot(a, rz(theta)[:2, :2])
 
 
-def rotate3d(a, thetax=0., thetay=0., thetaz=0., degree=True):
+def rotate3d(a, thetax=0., thetay=0., thetaz=0., degree=True):  # pragma: no cover
     """Applies the general rotation matrix to a 3D point"""
     if degree:
         thetax = np.deg2rad(thetax)

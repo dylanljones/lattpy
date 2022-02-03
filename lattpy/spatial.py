@@ -486,7 +486,7 @@ class WignerSeitzCell(VoronoiTree):
         return grid
 
     def symmetry_points(self):
-        origin = np.zeros((1,))
+        origin = np.zeros(self.dim)
         corners = self.vertices.copy()
         face_centers = None
         if self.dim == 1:

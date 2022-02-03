@@ -14,7 +14,7 @@ from pytest import mark
 from numpy.testing import assert_array_equal, assert_allclose
 from hypothesis import given, settings, assume, strategies as st
 import hypothesis.extra.numpy as hnp
-from lattpy import spatial
+from lattpy import spatial, simple_square
 
 
 finite_floats = st.floats(allow_nan=False, allow_infinity=False)
@@ -114,6 +114,17 @@ def test_cell_colume(vecs, result):
 
 def test_build_periodic_translation_vector():
     pass
+
+
+def test_wignerseitz_symmetry_points():
+    latt = simple_square()
+    ws = latt.wigner_seitz_cell()
+    origin, corners, edge_centers, face_centers = ws.symmetry_points()
+
+    assert_array_equal(origin, [0.0, 0.0])
+    assert_array_equal(2 * corners, [[-1., -1.], [1., -1.], [-1., 1.], [1., 1.]])
+    assert_array_equal(2 * edge_centers, [[0., -1.], [-1., 0.], [1., 0.], [0., 1.]])
+    assert face_centers is None
 
 
 def test_compute_vectors():

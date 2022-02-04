@@ -2511,7 +2511,8 @@ class Lattice:
             ax = fig.add_subplot(111, projection="3d" if self.dim == 3 else None)
         else:
             fig = ax.get_figure()
-
+        hopz = 1
+        atomz = 2
         # prefetch colors
         colors = list()
         for i in range(self.num_base):
@@ -2534,7 +2535,7 @@ class Lattice:
                     try:
                         indices = self.get_neighbors(alpha=i, distidx=distidx)
                         positions = self.get_positions(indices)
-                        draw_vectors(ax, positions - pos, pos=pos, zorder=1,
+                        draw_vectors(ax, positions - pos, pos=pos, zorder=hopz,
                                      color=color, lw=lw)
                         for idx, pos1 in zip(indices, positions):
                             if np.any(idx[:-1]):
@@ -2548,17 +2549,18 @@ class Lattice:
                 positions = position_arr[i]
                 if positions:
                     pos = np.unique(positions, axis=0)
-                    size = 0.6 * atom.size
+                    rad = 0.6 * atom.radius
                     col = colors[i]
-                    draw_sites(ax, pos, size=size, color=col, label=atom.name,
-                               alpha=alpha, zorder=2)
+                    draw_sites(ax, pos, radius=rad, color=col, label=atom.name,
+                               alpha=alpha, zorder=atomz)
 
         # Plot atoms in the unit cell
         for i in range(self.num_base):
             atom = self.get_atom(i)
             pos = self.atom_positions[i]
             col = colors[i]
-            draw_sites(ax, pos, size=atom.size, color=col, label=atom.name, zorder=2)
+            rad = atom.radius
+            draw_sites(ax, pos, radius=rad, color=col, label=atom.name, zorder=atomz)
 
         # Format plot
         if legend and self._num_base > 1:
@@ -2616,7 +2618,8 @@ class Lattice:
             If True, show the resulting plot.
         """
         logger.debug("Plotting lattice")
-
+        hopz = 1
+        atomz = 2
         if self.dim > 3:
             raise ValueError(f"Plotting in {self.dim} dimensions is not supported!")
 
@@ -2637,7 +2640,7 @@ class Lattice:
             neighbor_pos = self.data.get_neighbor_pos(i, periodic=False)
             if len(neighbor_pos):
                 draw_vectors(ax, neighbor_pos - pos, pos=pos, color=color, lw=lw,
-                             zorder=1)
+                             zorder=hopz)
                 if show_periodic:
                     mask = self.data.neighbor_mask(i, periodic=True)
                     idx = self.data.neighbors[i, mask]
@@ -2646,14 +2649,15 @@ class Lattice:
                     for j, x in enumerate(neighbor_pos):
                         x = self.translate(-pnvecs[j], x)
                         vec = 0.5 * (x - pos)
-                        draw_vectors(ax, vec, pos=pos, color="0.5", lw=lw, zorder=1)
+                        draw_vectors(ax, vec, pos=pos, color="0.5", lw=lw, zorder=hopz)
 
         # Draw sites
         for alpha in range(self.num_base):
             atom = self.atoms[alpha]
             col = atom.color or f"C{alpha}"
             points = self.data.get_positions(alpha)
-            draw_sites(ax, points, size=atom.size, color=col, label=atom.name)
+            draw_sites(ax, points, radius=atom.radius, color=col, label=atom.name,
+                       zorder=atomz)
 
         if show_indices:
             positions = [self.position(i) for i in range(self.num_sites)]

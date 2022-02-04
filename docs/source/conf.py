@@ -25,7 +25,6 @@ project = 'lattpy'
 copyright = '2022, Dylan L. Jones'
 author = 'Dylan L. Jones'
 
-
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
@@ -52,7 +51,8 @@ templates_path = ['_templates']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'tests']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'tests',
+                    'generated/lattpy.rst', 'generated/modules.rst']
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -78,7 +78,13 @@ autodoc_typehints = "none"
 # Preserve order
 autodoc_member_order = 'bysource'
 
-# -- OAutosummary ------------------------------------------------------------
+# -- Apidoc ------------------------------------------------------------------
+
+add_module_names = True
+
+
+# -- Autosummary -------------------------------------------------------------
+
 autosummary_generate = True
 # autosummary_imported_members = True
 

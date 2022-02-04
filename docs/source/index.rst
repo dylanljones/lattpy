@@ -44,9 +44,10 @@ constructing (finite) lattice structures in ``d`` dimensions.
 
 .. toctree::
    :maxdepth: 1
+   :titlesonly:
    :caption: API Reference
 
-   generated/lattpy
+   lattpy
    generated/lattpy.data
    generated/lattpy.disptools
    generated/lattpy.lattice

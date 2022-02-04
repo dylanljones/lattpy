@@ -1,0 +1,4 @@
+lattpy
+======
+
+.. automodule:: lattpy

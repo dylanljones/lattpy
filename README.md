@@ -7,7 +7,7 @@
 | Master | [![Test][tests-master]][link-tests] | [![Codecov][codecov-master]][codecov-master-link] |
 | Dev    | [![Test][tests-dev]][link-tests]    | [![Codecov][codecov-dev]][codecov-dev-link]       |
 
-LattPy  is a simple and efficient Python package for modeling Bravais lattices and
+LattPy is a simple and efficient Python package for modeling Bravais lattices and
 constructing (finite) lattice structures in `d` dimensions.
 
 | :warning: **WARNING**: This project is still in development and might change significantly in the future! |

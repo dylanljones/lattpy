@@ -8,6 +8,22 @@
 # LICENSE file in the root directory and this permission notice shall
 # be included in all copies or substantial portions of the Software.
 
+"""Package for modeling Bravais lattices and finite lattice structures.
+
+Submodules
+----------
+
+.. autosummary::
+   lattpy.data
+   lattpy.disptools
+   lattpy.lattice
+   lattpy.shape
+   lattpy.spatial
+   lattpy.unitcell
+   lattpy.utils
+
+"""
+
 from .utils import (
     logger,
     ArrayLike,

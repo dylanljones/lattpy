@@ -2563,7 +2563,7 @@ class Lattice:
                     pos = np.unique(positions, axis=0)
                     rad = 0.6 * atom.radius
                     col = colors[i]
-                    draw_sites(ax, pos, radius=rad, color=col, label=atom.name,
+                    draw_sites(ax, pos, radius=rad, color=col,
                                alpha=alpha, zorder=atomz)
 
         # Plot atoms in the unit cell
@@ -2574,6 +2574,7 @@ class Lattice:
             rad = atom.radius
             draw_sites(ax, pos, radius=rad, color=col, label=atom.name, zorder=atomz)
 
+        rad = max([at.radius for at in self._atoms]) if self._atoms else 0
         # Format plot
         if legend and self._num_base > 1:
             ax.legend()
@@ -2581,6 +2582,9 @@ class Lattice:
             margins = [margins] * self.dim
         if self.dim == 1:
             w = self.cell_size[0]
+            xmin, xmax = ax.get_xlim()
+            ax.margins(*margins)
+            ax.set_xlim(xmin - rad, xmax + rad)
             ax.set_ylim(-w / 2, +w / 2)
         else:
             ax.margins(*margins)

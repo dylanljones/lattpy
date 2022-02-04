@@ -21,15 +21,17 @@ constructing (finite) lattice structures in `d` dimensions.
 
 ## Installation
 
-Install via pip
+LattPy is available on [PyPI](https://pypi.org/project/lattpy/):
 ````commandline
 pip install lattpy
 ````
-or Github
+
+Alternatively, it can be installed via [GitHub](https://github.com/dylanljones/lattpy)
 ```commandline
 pip install git+https://github.com/dylanljones/lattpy.git@VERSION
 ```
-or download/clone the package, navigate to the root directory and install via
+where `VERSION` is a release or tag (e.g. `0.6.5`). The project can also be
+cloned/forked and installed via
 ````commandline
 python setup.py install
 ````

@@ -36,6 +36,17 @@ can also be created with
 >>> from lattpy import simple_square
 >>> latt = simple_square(a=1.0, neighbors=1)
 
+.. autosummary::
+
+   lattpy.simple_chain
+   lattpy.alternating_chain
+   lattpy.simple_square
+   lattpy.simple_rectangular
+   lattpy.graphene
+   lattpy.simple_cubic
+   lattpy.nacl_structure
+
+
 So far only the lattice structure has been configured. To actually construct a (finite) model of the lattice
 the model has to be built:
 

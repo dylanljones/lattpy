@@ -36,7 +36,7 @@ class AbstractShape(ABC):
         pass
 
     @abstractmethod
-    def plot(self, ax, color="k", lw=1.0, alpha=0.2, **kwargs):
+    def plot(self, ax, color="k", lw=0.0, alpha=0.2, **kwargs):
         """Plots the contour of the shape."""
         pass
 
@@ -129,7 +129,7 @@ class Shape(AbstractShape):
                               points <= self.pos + self.size + tol)
         return np.all(mask, axis=1)
 
-    def plot(self, ax, color="k", lw=1.0, alpha=0.2, **kwargs):  # pragma: no cover
+    def plot(self, ax, color="k", lw=0.0, alpha=0.2, **kwargs):  # pragma: no cover
         corners, edges, surfs = self._build()
         segments = corners[edges]
         lines = draw_lines(ax, segments, color=color, lw=lw)
@@ -179,7 +179,7 @@ class Circle(AbstractShape):
         dists = np.sqrt(np.sum(np.square(points - self.pos), axis=1))
         return dists <= self.radius + tol
 
-    def plot(self, ax, color="k", lw=1.0, alpha=0.2, **kwargs):  # pragma: no cover
+    def plot(self, ax, color="k", lw=0.0, alpha=0.2, **kwargs):  # pragma: no cover
         xy = tuple(self.pos)
         line = plt.Circle(xy, self.radius, lw=lw, color=color, fill=False)
         ax.add_artist(line)
@@ -225,7 +225,7 @@ class Donut(AbstractShape):
         return np.logical_and(self.radii[0] - tol <= dists,
                               dists <= self.radii[1] + tol)
 
-    def plot(self, ax, color="k", lw=1.0, alpha=0.2, **kwargs):  # pragma: no cover
+    def plot(self, ax, color="k", lw=0.0, alpha=0.2, **kwargs):  # pragma: no cover
         n = 100
 
         theta = np.linspace(0, 2 * np.pi, n, endpoint=True)
@@ -279,7 +279,7 @@ class ConvexHull(AbstractShape):
         return np.all(np.add(np.dot(points, self.hull.equations[:, :-1].T),
                              self.hull.equations[:, -1]) <= tol, axis=1)
 
-    def plot(self, ax, color="k", lw=1.0, alpha=0.2, **kwargs):  # pragma: no cover
+    def plot(self, ax, color="k", lw=0.0, alpha=0.2, **kwargs):  # pragma: no cover
 
         if self.dim == 2:
             segments = self.hull.points[self.hull.simplices]

@@ -1415,8 +1415,8 @@ class Lattice:
         >>> latt.add_atom([0.5, 0.5], atom="B")
         >>> latt.get_base_atom_dict()
         {
-            Atom(A, size=10, 0): [array([0, 0])],
-            Atom(B, size=10, 1): [array([0.5, 0. ]), array([0.5, 0.5])]
+            Atom(A, radius=0.2, 0): [array([0, 0])],
+            Atom(B, radius=0.2, 1): [array([0.5, 0. ]), array([0.5, 0.5])]
         }
         """
         atom_pos = dict()

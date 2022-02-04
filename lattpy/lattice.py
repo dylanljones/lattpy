@@ -147,6 +147,20 @@ class Lattice:
         logger.debug("Lattice initialized (D=%i)\nvectors:\n%s",
                      self.dim, self._vectors)
 
+        if "atoms" in kwargs:
+            atom_dict = kwargs["atoms"]
+            for pos, atom in atom_dict.items():
+                self.add_atom(pos, atom)
+        if "cons" in kwargs:
+            cons = kwargs["cons"]
+            if isinstance(cons, int):
+                self.add_connections(cons)
+            else:
+                cons_dict = kwargs["cons"]
+                for pair, num in cons_dict.items():
+                    self.add_connection(*pair, num)
+                self.analyze()
+
     @classmethod
     def chain(cls, a: float = 1.0, **kwargs) -> 'Lattice':
         """Initializes a one-dimensional lattice."""

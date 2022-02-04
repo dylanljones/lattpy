@@ -2470,7 +2470,6 @@ class Lattice:
 
     def plot_cell(self,
                   lw: float = 1.,
-                  color: Union[str, float] = "k",
                   alpha: float = 0.5,
                   legend: bool = True,
                   margins: Union[Sequence[float], float] = 0.25,
@@ -2485,8 +2484,6 @@ class Lattice:
         ----------
         lw : float, default: 1
             Line width of the hopping connections.
-        color : str, optional
-            Optional string for color of cell-lines.
         alpha : float, optional
             Optional alpha value of neighbors.
         legend : bool, optional
@@ -2527,6 +2524,7 @@ class Lattice:
             vectors = self.vectors
             draw_cell(ax, vectors, color="k", lw=1., outlines=show_cell)
 
+        color = "k"
         if show_neighbors:
             position_arr = [list() for _ in range(self.num_base)]
             for i in range(self.num_base):
@@ -2583,7 +2581,6 @@ class Lattice:
 
     def plot(self,
              lw: float = 1.,
-             color: Union[str, float, int] = "k",
              margins: Union[Sequence[float], float] = 0.1,
              legend: bool = True,
              grid: bool = False,
@@ -2598,8 +2595,6 @@ class Lattice:
         ----------
         lw : float, default: 1
             Line width of the hopping connections.
-        color : str or float or int
-            Line color of the hopping connections.
         margins : Sequence[float] or float, optional
             Optional margins of the plot.
         legend : bool, optional
@@ -2634,6 +2629,7 @@ class Lattice:
             vectors = self.vectors
             draw_cell(ax, vectors, color='k', lw=2, outlines=True)
 
+        color = "k"
         # Draw connections
         for i in range(self.num_sites):
             pos = self.data.positions[i]

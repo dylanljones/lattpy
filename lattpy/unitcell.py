@@ -25,13 +25,13 @@ class Atom(abc.MutableMapping):
     __slots__ = ["_index", "_name", "_weight", "_params"]
 
     def __init__(self, name: str = None, weight: float = 1.0, color: str = None,
-                 size: int = 10, **kwargs):
+                 radius=0.2, **kwargs):
         super().__init__()
         index = next(Atom._counter)
         self._index = index
         self._name = name or str(index)
         self._weight = weight
-        self._params = dict(color=color, size=size, **kwargs)
+        self._params = dict(color=color, radius=radius, **kwargs)
 
     @property
     def id(self):

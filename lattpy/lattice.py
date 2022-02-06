@@ -147,6 +147,20 @@ class Lattice:
         logger.debug("Lattice initialized (D=%i)\nvectors:\n%s",
                      self.dim, self._vectors)
 
+        if "atoms" in kwargs:
+            atom_dict = kwargs["atoms"]
+            for pos, atom in atom_dict.items():
+                self.add_atom(pos, atom)
+        if "cons" in kwargs:
+            cons = kwargs["cons"]
+            if isinstance(cons, int):
+                self.add_connections(cons)
+            else:
+                cons_dict = kwargs["cons"]
+                for pair, num in cons_dict.items():
+                    self.add_connection(*pair, num)
+                self.analyze()
+
     @classmethod
     def chain(cls, a: float = 1.0, **kwargs) -> 'Lattice':
         """Initializes a one-dimensional lattice."""
@@ -1401,8 +1415,8 @@ class Lattice:
         >>> latt.add_atom([0.5, 0.5], atom="B")
         >>> latt.get_base_atom_dict()
         {
-            Atom(A, size=10, 0): [array([0, 0])],
-            Atom(B, size=10, 1): [array([0.5, 0. ]), array([0.5, 0.5])]
+            Atom(A, radius=0.2, 0): [array([0, 0])],
+            Atom(B, radius=0.2, 1): [array([0.5, 0. ]), array([0.5, 0.5])]
         }
         """
         atom_pos = dict()
@@ -2470,7 +2484,6 @@ class Lattice:
 
     def plot_cell(self,
                   lw: float = 1.,
-                  color: Union[str, float] = "k",
                   alpha: float = 0.5,
                   legend: bool = True,
                   margins: Union[Sequence[float], float] = 0.25,
@@ -2485,8 +2498,6 @@ class Lattice:
         ----------
         lw : float, default: 1
             Line width of the hopping connections.
-        color : str, optional
-            Optional string for color of cell-lines.
         alpha : float, optional
             Optional alpha value of neighbors.
         legend : bool, optional
@@ -2511,7 +2522,8 @@ class Lattice:
             ax = fig.add_subplot(111, projection="3d" if self.dim == 3 else None)
         else:
             fig = ax.get_figure()
-
+        hopz = 1
+        atomz = 2
         # prefetch colors
         colors = list()
         for i in range(self.num_base):
@@ -2526,6 +2538,7 @@ class Lattice:
             vectors = self.vectors
             draw_cell(ax, vectors, color="k", lw=1., outlines=show_cell)
 
+        color = "k"
         if show_neighbors:
             position_arr = [list() for _ in range(self.num_base)]
             for i in range(self.num_base):
@@ -2534,7 +2547,7 @@ class Lattice:
                     try:
                         indices = self.get_neighbors(alpha=i, distidx=distidx)
                         positions = self.get_positions(indices)
-                        draw_vectors(ax, positions - pos, pos=pos, zorder=1,
+                        draw_vectors(ax, positions - pos, pos=pos, zorder=hopz,
                                      color=color, lw=lw)
                         for idx, pos1 in zip(indices, positions):
                             if np.any(idx[:-1]):
@@ -2548,18 +2561,20 @@ class Lattice:
                 positions = position_arr[i]
                 if positions:
                     pos = np.unique(positions, axis=0)
-                    size = 0.6 * atom.size
+                    rad = 0.6 * atom.radius
                     col = colors[i]
-                    draw_sites(ax, pos, size=size, color=col, label=atom.name,
-                               alpha=alpha, zorder=2)
+                    draw_sites(ax, pos, radius=rad, color=col,
+                               alpha=alpha, zorder=atomz)
 
         # Plot atoms in the unit cell
         for i in range(self.num_base):
             atom = self.get_atom(i)
             pos = self.atom_positions[i]
             col = colors[i]
-            draw_sites(ax, pos, size=atom.size, color=col, label=atom.name, zorder=2)
+            rad = atom.radius
+            draw_sites(ax, pos, radius=rad, color=col, label=atom.name, zorder=atomz)
 
+        rad = max([at.radius for at in self._atoms]) if self._atoms else 0
         # Format plot
         if legend and self._num_base > 1:
             ax.legend()
@@ -2567,6 +2582,9 @@ class Lattice:
             margins = [margins] * self.dim
         if self.dim == 1:
             w = self.cell_size[0]
+            xmin, xmax = ax.get_xlim()
+            ax.margins(*margins)
+            ax.set_xlim(xmin - rad, xmax + rad)
             ax.set_ylim(-w / 2, +w / 2)
         else:
             ax.margins(*margins)
@@ -2581,7 +2599,6 @@ class Lattice:
 
     def plot(self,
              lw: float = 1.,
-             color: Union[str, float, int] = "k",
              margins: Union[Sequence[float], float] = 0.1,
              legend: bool = True,
              grid: bool = False,
@@ -2596,8 +2613,6 @@ class Lattice:
         ----------
         lw : float, default: 1
             Line width of the hopping connections.
-        color : str or float or int
-            Line color of the hopping connections.
         margins : Sequence[float] or float, optional
             Optional margins of the plot.
         legend : bool, optional
@@ -2616,7 +2631,8 @@ class Lattice:
             If True, show the resulting plot.
         """
         logger.debug("Plotting lattice")
-
+        hopz = 1
+        atomz = 2
         if self.dim > 3:
             raise ValueError(f"Plotting in {self.dim} dimensions is not supported!")
 
@@ -2631,13 +2647,14 @@ class Lattice:
             vectors = self.vectors
             draw_cell(ax, vectors, color='k', lw=2, outlines=True)
 
+        color = "k"
         # Draw connections
         for i in range(self.num_sites):
             pos = self.data.positions[i]
             neighbor_pos = self.data.get_neighbor_pos(i, periodic=False)
             if len(neighbor_pos):
                 draw_vectors(ax, neighbor_pos - pos, pos=pos, color=color, lw=lw,
-                             zorder=1)
+                             zorder=hopz)
                 if show_periodic:
                     mask = self.data.neighbor_mask(i, periodic=True)
                     idx = self.data.neighbors[i, mask]
@@ -2646,14 +2663,15 @@ class Lattice:
                     for j, x in enumerate(neighbor_pos):
                         x = self.translate(-pnvecs[j], x)
                         vec = 0.5 * (x - pos)
-                        draw_vectors(ax, vec, pos=pos, color="0.5", lw=lw, zorder=1)
+                        draw_vectors(ax, vec, pos=pos, color="0.5", lw=lw, zorder=hopz)
 
         # Draw sites
         for alpha in range(self.num_base):
             atom = self.atoms[alpha]
             col = atom.color or f"C{alpha}"
             points = self.data.get_positions(alpha)
-            draw_sites(ax, points, size=atom.size, color=col, label=atom.name)
+            draw_sites(ax, points, radius=atom.radius, color=col, label=atom.name,
+                       zorder=atomz)
 
         if show_indices:
             positions = [self.position(i) for i in range(self.num_sites)]

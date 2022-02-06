@@ -64,7 +64,7 @@ def test_atom_copy():
 
 def test_atom_to_dict():
     atom = Atom("A", energy=1.0)
-    expected = {"name": "A", "color": None, "size": 10, "energy": 1.0}
+    expected = {"name": "A", "color": None, "radius": 0.2, "energy": 1.0}
     actual = atom.dict()
     actual.pop("index")
     assert actual == expected
@@ -77,7 +77,7 @@ def test_atom_param_length():
 
 def test_atom_iter():
     atom = Atom("A", energy=1.0)
-    assert list(atom) == ["color", "size", "energy"]
+    assert list(atom) == ["color", "radius", "energy"]
 
 
 def test_atoms_equal():

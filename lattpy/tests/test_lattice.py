@@ -453,6 +453,18 @@ def test_index_from_lattice_index():
         assert latt.index_from_lattice_index(ind) == i
 
 
+def test_get_base_atom_dict():
+    latt = Lattice(np.eye(2))
+    ata = latt.add_atom([0, 0], atom="A")
+    atb = latt.add_atom([0.5, 0], atom="B")
+    latt.add_atom([0.5, 0.5], atom="B")
+    result = latt.get_base_atom_dict()
+
+    assert len(result) == 2
+    assert_array_equal(result[ata], [[0, 0]])
+    assert_array_equal(result[atb], [[0.5, 0.], [0.5, 0.5]])
+
+
 def test_build():
     pass
 
@@ -503,6 +515,19 @@ def test_iter_neighbors(latt):
         for distidx, actual in latt.iter_neighbors(i, unique=True):
             expected = latt.neighbors(i, distidx=distidx, unique=True)
             assert_equal_elements(actual, expected)
+
+
+@given(structures())
+def test_check_neighbors(latt):
+    for i in range(latt.num_sites):
+        for distidx, neighbors in latt.iter_neighbors(i):
+            # Check neighbors
+            for j in neighbors:
+                assert latt.check_neighbors(i, j) == distidx
+            # Check not neighbors
+            for j in np.random.uniform(0, latt.num_sites, size=20):
+                if j not in list(neighbors):
+                    assert latt.check_neighbors(i, j) is None
 
 
 def test_compute_connections():

@@ -27,15 +27,16 @@ class AbstractShape(ABC):
 
     @abstractmethod
     def limits(self):
+        """Returns the limits of the shape."""
         pass
 
     @abstractmethod
-    def contains(self, points, dx=0.):
+    def contains(self, points, tol=0.):
         """Checks if the given points are contained in the shape."""
         pass
 
     @abstractmethod
-    def plot(self, ax, color="k", lw=1.0, alpha=0.2, **kwargs):
+    def plot(self, ax, color="k", lw=0.0, alpha=0.2, **kwargs):
         """Plots the contour of the shape."""
         pass
 
@@ -43,8 +44,43 @@ class AbstractShape(ABC):
         return self.__class__.__name__
 
 
+# noinspection PyUnresolvedReferences,PyShadowingNames
 class Shape(AbstractShape):
-    """General shape object."""
+    """General shape object.
+
+    Examples
+    --------
+
+    Cartesian coordinates
+
+    >>> points = np.random.uniform(-0.5, 2.5, size=(500, 2))
+    >>> s = lp.Shape((2, 2))
+    >>> s.limits()
+    [[0.  2. ]
+     [0.  2.]]
+
+    >>> import matplotlib.pyplot as plt
+    >>> mask = s.contains(points)
+    >>> s.plot(plt.gca())
+    >>> plt.scatter(*points[mask].T, s=3, color="g")
+    >>> plt.scatter(*points[~mask].T, s=3, color="r")
+    >>> plt.gca().set_aspect("equal")
+    >>> plt.show()
+
+    Angled coordinate system
+
+    >>> s = lp.Shape((2, 2), basis=[[1, 0.2], [0, 1]])
+    >>> s.limits()
+    [[0.  2. ]
+     [0.  2.4]]
+
+    >>> mask = s.contains(points)
+    >>> s.plot(plt.gca())
+    >>> plt.scatter(*points[mask].T, s=3, color="g")
+    >>> plt.scatter(*points[~mask].T, s=3, color="r")
+    >>> plt.gca().set_aspect("equal")
+    >>> plt.show()
+    """
 
     def __init__(self, shape, pos=None, basis=None):
         if not hasattr(shape, "__len__"):
@@ -53,7 +89,7 @@ class Shape(AbstractShape):
         self.size = np.array(shape)
         self.basis = None if basis is None else np.array(basis)
 
-    def build(self):
+    def _build(self):
         corners = list(itertools.product(*zip(np.zeros(self.dim), self.size)))
         corners = self.pos + np.array(corners)
         edges = None
@@ -82,7 +118,7 @@ class Shape(AbstractShape):
         return corners, edges, surfs
 
     def limits(self):
-        corners, _, _ = self.build()
+        corners, _, _ = self._build()
         lims = np.array([np.min(corners, axis=0), np.max(corners, axis=0)])
         return lims.T
 
@@ -93,8 +129,8 @@ class Shape(AbstractShape):
                               points <= self.pos + self.size + tol)
         return np.all(mask, axis=1)
 
-    def plot(self, ax, color="C0", lw=1.0, alpha=0.2, **kwargs):  # pragma: no cover
-        corners, edges, surfs = self.build()
+    def plot(self, ax, color="k", lw=0.0, alpha=0.2, **kwargs):  # pragma: no cover
+        corners, edges, surfs = self._build()
         segments = corners[edges]
         lines = draw_lines(ax, segments, color=color, lw=lw)
         segments = corners[surfs]
@@ -107,8 +143,28 @@ class Shape(AbstractShape):
         return lines, surfaces
 
 
+# noinspection PyUnresolvedReferences,PyShadowingNames
 class Circle(AbstractShape):
-    """Circle shape."""
+    """Circle shape.
+
+    Examples
+    --------
+
+    >>> s = lp.Circle((0, 0), radius=2)
+    >>> s.limits()
+    [[-2.  2.]
+     [-2.  2.]]
+
+    >>> import matplotlib.pyplot as plt
+    >>> points = np.random.uniform(-2, 2, size=(500, 2))
+    >>> mask = s.contains(points)
+    >>> s.plot(plt.gca())
+    >>> plt.scatter(*points[mask].T, s=3, color="g")
+    >>> plt.scatter(*points[~mask].T, s=3, color="r")
+    >>> plt.gca().set_aspect("equal")
+    >>> plt.show()
+
+    """
 
     def __init__(self, pos, radius):
         super().__init__(len(pos), pos)
@@ -123,7 +179,7 @@ class Circle(AbstractShape):
         dists = np.sqrt(np.sum(np.square(points - self.pos), axis=1))
         return dists <= self.radius + tol
 
-    def plot(self, ax, color="k", lw=1.0, alpha=0.2, **kwargs):  # pragma: no cover
+    def plot(self, ax, color="k", lw=0.0, alpha=0.2, **kwargs):  # pragma: no cover
         xy = tuple(self.pos)
         line = plt.Circle(xy, self.radius, lw=lw, color=color, fill=False)
         ax.add_artist(line)
@@ -132,8 +188,28 @@ class Circle(AbstractShape):
         return line, surf
 
 
+# noinspection PyUnresolvedReferences,PyShadowingNames
 class Donut(AbstractShape):
-    """Circle shape with cut-out in the middle."""
+    """Circle shape with cut-out in the middle.
+
+    Examples
+    --------
+
+    >>> s = lp.Donut((0, 0), radius_outer=2, radius_inner=1)
+    >>> s.limits()
+    [[-2.  2.]
+     [-2.  2.]]
+
+    >>> import matplotlib.pyplot as plt
+    >>> points = np.random.uniform(-2, 2, size=(500, 2))
+    >>> mask = s.contains(points)
+    >>> s.plot(plt.gca())
+    >>> plt.scatter(*points[mask].T, s=3, color="g")
+    >>> plt.scatter(*points[~mask].T, s=3, color="r")
+    >>> plt.gca().set_aspect("equal")
+    >>> plt.show()
+
+    """
 
     def __init__(self, pos, radius_outer, radius_inner):
         super().__init__(len(pos), pos)
@@ -149,7 +225,7 @@ class Donut(AbstractShape):
         return np.logical_and(self.radii[0] - tol <= dists,
                               dists <= self.radii[1] + tol)
 
-    def plot(self, ax, color="k", lw=1.0, alpha=0.2, **kwargs):  # pragma: no cover
+    def plot(self, ax, color="k", lw=0.0, alpha=0.2, **kwargs):  # pragma: no cover
         n = 100
 
         theta = np.linspace(0, 2 * np.pi, n, endpoint=True)
@@ -167,9 +243,28 @@ class Donut(AbstractShape):
         return [line1, line2], surf
 
 
-# noinspection PyUnresolvedReferences
+# noinspection PyUnresolvedReferences,PyShadowingNames
 class ConvexHull(AbstractShape):
-    """Shape defined by convex hull of arbitrary points."""
+    """Shape defined by convex hull of arbitrary points.
+
+    Examples
+    --------
+
+    >>> s = lp.ConvexHull([[0, 0], [2, 0], [2, 1], [1, 2], [0, 2]])
+    >>> s.limits()
+    [[0.  2.]
+     [0.  2.]]
+
+    >>> import matplotlib.pyplot as plt
+    >>> points = np.random.uniform(-0.5, 2.5, size=(500, 2))
+    >>> mask = s.contains(points)
+    >>> s.plot(plt.gca())
+    >>> plt.scatter(*points[mask].T, s=3, color="g")
+    >>> plt.scatter(*points[~mask].T, s=3, color="r")
+    >>> plt.gca().set_aspect("equal")
+    >>> plt.show()
+
+    """
 
     def __init__(self, points):
         dim = len(points[0])
@@ -184,7 +279,7 @@ class ConvexHull(AbstractShape):
         return np.all(np.add(np.dot(points, self.hull.equations[:, :-1].T),
                              self.hull.equations[:, -1]) <= tol, axis=1)
 
-    def plot(self, ax, color="k", lw=1.0, alpha=0.2, **kwargs):  # pragma: no cover
+    def plot(self, ax, color="k", lw=0.0, alpha=0.2, **kwargs):  # pragma: no cover
 
         if self.dim == 2:
             segments = self.hull.points[self.hull.simplices]

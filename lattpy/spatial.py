@@ -299,8 +299,8 @@ def compute_vectors(a: float, b: float = None, c: float = None,
 class KDTree(scipy.spatial.cKDTree):
     """Simple wrapper of scipy's cKTree with global query settings."""
 
-    def __init__(self, points, k=1, max_dist=np.inf, eps=0., p=2):
-        super().__init__(points)
+    def __init__(self, points, k=1, max_dist=np.inf, eps=0., p=2, boxsize=None):
+        super().__init__(points, boxsize=boxsize)
         self.max_dist = max_dist
         self.k = k
         self.p = p

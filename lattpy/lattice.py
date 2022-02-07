@@ -2110,12 +2110,12 @@ class Lattice:
             out_pos = positions + delta_pos
         return out_ind, out_pos
 
-    def kdtree(self, positions=None):
+    def kdtree(self, positions=None, eps=0., boxsize=None):
         if positions is None:
             positions = self.data.positions
         k = np.sum(np.sum(self._raw_num_neighbors, axis=1)) + 1
         max_dist = np.max(self.distances) + 0.1 * np.min(self._raw_distance_matrix)
-        return KDTree(positions, k, max_dist)
+        return KDTree(positions, k, max_dist, eps=eps, boxsize=boxsize)
 
     def _compute_pneighbors(self, axis, indices=None, positions=None, num_jobs=-1):
         if indices is None:

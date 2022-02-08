@@ -2510,6 +2510,9 @@ class Lattice:
         sha = hashlib.md5(self.dumps().encode("utf-8"))
         return int(sha.hexdigest(), 16)
 
+    def __eq__(self, other):
+        return self.__hash__() == other.__hash__()
+
     def plot_cell(self,
                   lw: float = 1.,
                   alpha: float = 0.5,

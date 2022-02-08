@@ -1,7 +1,7 @@
 # LattPy
 
-![Python Version][pypi-python] ![Version][pypi-version] ![Status][pypi-status] ![License][pypi-license]
-
+![Python Version][pypi-python] ![Version][pypi-version] ![Status][pypi-status]
+![License][pypi-license] [![LGTM Grade][lgtm-badge]][lgtm-link]
 
 |        |                                     |                                                   |                                                   |
 |:-------|:------------------------------------|:--------------------------------------------------|:--------------------------------------------------|
@@ -304,6 +304,8 @@ If periodic boundary conditions are set (along axis 0) the output is:
 [pypi-version]: https://img.shields.io/pypi/v/lattpy?logo=pypi&style=flat-square
 [pypi-status]: https://img.shields.io/pypi/status/lattpy?color=yellow&style=flat-square
 [pypi-license]: https://img.shields.io/pypi/l/lattpy?style=flat-square
+[lgtm-badge]: https://img.shields.io/lgtm/grade/python/github/dylanljones/lattpy?label=code%20quality&logo=lgtm&style=flat-square
+[lgtm-link]: https://lgtm.com/projects/g/dylanljones/lattpy/context:python
 
 
 [tests-master]: https://img.shields.io/github/workflow/status/dylanljones/lattpy/Test/master?label=tests&logo=github&style=flat

@@ -74,9 +74,14 @@ def set_limits(ax, dim, padding=None, margins=0.1):
 # =========================================================================
 
 
-def subplot(dim, adjustable="datalim"):
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection="3d" if dim == 3 else None)
+def subplot(dim, adjustable="datalim", ax=None):
+    if dim > 3:
+        raise ValueError(f"Plotting in {dim} dimensions is not supported!")
+    if ax is None:
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection="3d" if dim == 3 else None)
+    else:
+        fig = ax.get_figure()
     if dim < 3:
         ax.set_aspect("equal", adjustable)
     return fig, ax

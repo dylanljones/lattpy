@@ -6,7 +6,6 @@
 [![License][license-badge]][license-link]
 [![LGTM Grade][lgtm-badge]][lgtm-link]
 
-
 |        |                                     |                                                   |                                                   |
 |:-------|:------------------------------------|:--------------------------------------------------|:--------------------------------------------------|
 | Master | [![Test][tests-master]][link-tests] | [![Codecov][codecov-master]][codecov-master-link] | [![Read the Docs][docs-master]][docs-master-link] |

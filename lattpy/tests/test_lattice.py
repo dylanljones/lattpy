@@ -694,6 +694,17 @@ def test_to_dict():
     assert_array_equal(d["shape"], expected)
 
 
+@given(structures())
+def test_fromdict(latt):
+    d = latt.todict()
+    latt2 = Lattice.fromdict(d)
+
+    assert_array_equal(latt.vectors, latt2.vectors)
+    assert_array_equal(latt.atom_positions, latt2.atom_positions)
+    assert_array_equal(latt._connections, latt2._connections)
+    assert_array_equal(latt.num_neighbors, latt2.num_neighbors)
+
+
 def test_hash():
     latt = Lattice(np.eye(2))
     latt.add_atom(atom=atom)

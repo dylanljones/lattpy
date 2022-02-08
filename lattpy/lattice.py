@@ -2431,6 +2431,13 @@ class Lattice:
         return deepcopy(self)
 
     def todict(self) -> dict:
+        """Creates a dictionary containing the information of the lattice instance.
+
+        Returns
+        -------
+        d : dict
+            The information defining the current instance.
+        """
         d = dict()
         d["vectors"] = self.vectors
         d["atoms"] = self._atoms
@@ -2438,6 +2445,27 @@ class Lattice:
         d["connections"] = self._connections
         d["shape"] = self.shape
         return d
+
+    @classmethod
+    def fromdict(cls, d):
+        """Creates a new instance from information stored in a dictionary.
+
+        Parameters
+        ----------
+        d : dict
+            The information defining the current instance.
+
+        Returns
+        -------
+        latt : Lattice
+            The restored lattice instance.
+        """
+        self = cls(d["vectors"])
+        for pos, at in zip(d["positions"], d["atoms"]):
+            self.add_atom(pos, at)
+        self._connections = d["connections"]
+        self.analyze()
+        return self
 
     def dumps(self):  # pragma: no cover
         lines = list()

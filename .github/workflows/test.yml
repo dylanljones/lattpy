@@ -21,6 +21,8 @@ jobs:
 
 
   tests:
+    needs: code-change
+    if: ${{ needs.code-change.outputs.should_skip != 'true'}}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]

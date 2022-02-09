@@ -1,18 +1,21 @@
 # LattPy
 
-![Python Version][pypi-python] ![Version][pypi-version] ![Status][pypi-status] ![License][pypi-license]
+[![Python Version][python-badge]][pypi-link]
+[![Version][pypi-badge]][pypi-link]
+[![Status][status-badge]][pypi-link]
+[![License][license-badge]][license-link]
+[![LGTM Grade][lgtm-badge]][lgtm-link]
 
-|        |                                     |                                                   |
-|:-------|:------------------------------------|:--------------------------------------------------|
-| Master | [![Test][tests-master]][link-tests] | [![Codecov][codecov-master]][codecov-master-link] |
-| Dev    | [![Test][tests-dev]][link-tests]    | [![Codecov][codecov-dev]][codecov-dev-link]       |
+
+| Master | [![Test][tests-master]][link-tests] | [![Codecov][codecov-master]][codecov-master-link] | [![Read the Docs][docs-master]][docs-master-link] |
+|:-------|:------------------------------------|:--------------------------------------------------|:--------------------------------------------------|
+| Dev    | [![Test][tests-dev]][link-tests]    | [![Codecov][codecov-dev]][codecov-dev-link]       | [![Read the Docs][docs-dev]][docs-dev-link]       |
 
 LattPy is a simple and efficient Python package for modeling Bravais lattices and
 constructing (finite) lattice structures in `d` dimensions.
 
 | :warning: **WARNING**: This project is still in development and might change significantly in the future! |
 |-----------------------------------------------------------------------------------------------------------|
-
 
 1. [Installation](#installation)
 2. [Usage](#usage)
@@ -300,10 +303,14 @@ If periodic boundary conditions are set (along axis 0) the output is:
 ````
 
 
-[pypi-python]: https://img.shields.io/pypi/pyversions/lattpy?logo=python&style=flat-square
-[pypi-version]: https://img.shields.io/pypi/v/lattpy?logo=pypi&style=flat-square
-[pypi-status]: https://img.shields.io/pypi/status/lattpy?color=yellow&style=flat-square
-[pypi-license]: https://img.shields.io/pypi/l/lattpy?style=flat-square
+[pypi-link]: https://pypi.org/project/lattpy/
+[python-badge]: https://img.shields.io/pypi/pyversions/lattpy?logo=python&style=flat-square
+[pypi-badge]: https://img.shields.io/pypi/v/lattpy?logo=pypi&style=flat-square
+[status-badge]: https://img.shields.io/pypi/status/lattpy?color=yellow&style=flat-square
+[license-badge]: https://img.shields.io/pypi/l/lattpy?style=flat-square
+[license-link]: https://github.com/dylanljones/lattpy/blob/master/LICENSE
+[lgtm-badge]: https://img.shields.io/lgtm/grade/python/github/dylanljones/lattpy?label=code%20quality&logo=lgtm&style=flat-square
+[lgtm-link]: https://lgtm.com/projects/g/dylanljones/lattpy/context:python
 
 [tests-master]: https://img.shields.io/github/workflow/status/dylanljones/lattpy/Test/master?label=tests&logo=github&style=flat
 [tests-dev]: https://img.shields.io/github/workflow/status/dylanljones/lattpy/Test/dev?label=tests&logo=github&style=flat
@@ -313,3 +320,7 @@ If periodic boundary conditions are set (along axis 0) the output is:
 [codecov-master-link]: https://app.codecov.io/gh/dylanljones/lattpy/branch/master
 [codecov-dev]: https://codecov.io/gh/dylanljones/lattpy/branch/dev/graph/badge.svg?
 [codecov-dev-link]: https://app.codecov.io/gh/dylanljones/lattpy/branch/dev
+[docs-master]: https://img.shields.io/readthedocs/lattpy/latest?style=flat
+[docs-master-link]: https://lattpy.readthedocs.io/en/latest/
+[docs-dev]: https://img.shields.io/readthedocs/lattpy/dev?style=flat
+[docs-dev-link]: https://lattpy.readthedocs.io/en/dev/

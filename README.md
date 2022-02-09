@@ -6,9 +6,9 @@
 [![License][license-badge]][license-link]
 [![LGTM Grade][lgtm-badge]][lgtm-link]
 
-|        |                                     |                                                   |                                                   |
-|:-------|:------------------------------------|:--------------------------------------------------|:--------------------------------------------------|
+
 | Master | [![Test][tests-master]][link-tests] | [![Codecov][codecov-master]][codecov-master-link] | [![Read the Docs][docs-master]][docs-master-link] |
+|:-------|:------------------------------------|:--------------------------------------------------|:--------------------------------------------------|
 | Dev    | [![Test][tests-dev]][link-tests]    | [![Codecov][codecov-dev]][codecov-dev-link]       | [![Read the Docs][docs-dev]][docs-dev-link]       |
 
 LattPy is a simple and efficient Python package for modeling Bravais lattices and

@@ -115,7 +115,7 @@ except:
 
 plot_include_source = True
 plot_html_show_source_link = False
-plot_formats = [('png', 200), 'pdf']
+plot_formats = [('png', 100), 'pdf']
 
 phi = (math.sqrt(5) + 1)/2
 

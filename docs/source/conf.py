@@ -43,6 +43,8 @@ extensions = [
     'sphinx.ext.extlinks',  # define roles for links
     'sphinx_toggleprompt',  # toggle `>>>`
     'sphinx_rtd_theme',
+    'sphinx.ext.graphviz',
+    'sphinx.ext.inheritance_diagram'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -53,6 +55,12 @@ templates_path = ['_templates']
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'tests',
                     'generated/lattpy.rst', 'generated/modules.rst']
+# -- Graphviz options --------------------------------------------------------
+
+graphviz_output_format = 'svg'
+
+inheritance_graph_attrs = dict(rankdir="TB", size='""')
+
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -160,8 +168,7 @@ def run_apidoc(_):
     module = os.path.join(proj_dir, "lattpy")
     exclude = os.path.join(module, "tests")
     template_dir = os.path.join(doc_dir, "source", "_templates", "apidoc")
-    main(["-fMeT", "-o", output_path, module, exclude, "--templatedir", template_dir,
-          "--force"])
+    main(["-fMeT", "-o", output_path, module, exclude, "--templatedir", template_dir])
 
 
 def setup(app):

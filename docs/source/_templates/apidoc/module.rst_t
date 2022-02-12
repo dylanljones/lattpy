@@ -6,3 +6,6 @@
 {%- for option in automodule_options %}
    :{{ option }}:
 {%- endfor %}
+
+   .. inheritance-diagram:: lattpy.spatial.KDTree
+      :parts: 1

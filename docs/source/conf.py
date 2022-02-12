@@ -115,7 +115,7 @@ except:
 
 plot_include_source = True
 plot_html_show_source_link = False
-plot_formats = [('png', 100), 'pdf']
+plot_formats = [('png', 200), 'pdf']
 
 phi = (math.sqrt(5) + 1)/2
 
@@ -126,7 +126,7 @@ plot_rcparams = {
     'xtick.labelsize': 8,
     'ytick.labelsize': 8,
     'legend.fontsize': 8,
-    'figure.figsize': (3*phi, 3),
+    'figure.figsize': (2*phi, 2),
     'figure.subplot.bottom': 0.2,
     'figure.subplot.left': 0.2,
     'figure.subplot.right': 0.9,

@@ -17,6 +17,7 @@ Features:
 - Basis transformations
 - Configurable unit cell
 - Easy neighbor configuration
+- General lattice structures
 - Finite lattice models
 - Periodic boundary conditions for finite lattice models
 

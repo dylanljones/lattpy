@@ -2007,7 +2007,7 @@ class Lattice:
         self.shape = limits[1] - limits[0]
         self.pos = limits[0]
 
-    def build(self, shape: Union[int, Sequence[int], AbstractShape],
+    def build(self, shape: Union[float, Sequence[float], AbstractShape],
               primitive: bool = False,
               pos: Union[float, Sequence[float]] = None,
               check: bool = True,
@@ -2021,7 +2021,7 @@ class Lattice:
 
         Parameters
         ----------
-        shape : (N, ) array_like or int or AbstractShape
+        shape : (N, ) array_like or float or AbstractShape
             shape of finite size lattice to build.
         primitive : bool, optional
             If True the shape will be multiplied by the cell size of the model.

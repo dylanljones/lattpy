@@ -48,7 +48,6 @@ constructing (finite) lattice structures in ``d`` dimensions.
    :caption: API Reference
 
    lattpy
-   generated/lattpy.basis
    generated/lattpy.data
    generated/lattpy.disptools
    generated/lattpy.lattice

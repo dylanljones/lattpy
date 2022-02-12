@@ -7,5 +7,5 @@
    :{{ option }}:
 {%- endfor %}
 
-   .. inheritance-diagram:: lattpy.spatial.KDTree
+   .. inheritance-diagram:: {{ qualname }}
       :parts: 1

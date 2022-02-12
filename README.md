@@ -6,13 +6,20 @@
 [![License][license-badge]][license-link]
 [![LGTM Grade][lgtm-badge]][lgtm-link]
 
-
 | Master | [![Test][tests-master]][link-tests] | [![Codecov][codecov-master]][codecov-master-link] | [![Read the Docs][docs-master]][docs-master-link] |
 |:-------|:------------------------------------|:--------------------------------------------------|:--------------------------------------------------|
 | Dev    | [![Test][tests-dev]][link-tests]    | [![Codecov][codecov-dev]][codecov-dev-link]       | [![Read the Docs][docs-dev]][docs-dev-link]       |
 
 LattPy is a simple and efficient Python package for modeling Bravais lattices and
 constructing (finite) lattice structures in `d` dimensions.
+
+Features:
+- Basis transformations
+- Configurable unit cell
+- Easy neighbor configuration
+- General lattice structures
+- Finite lattice models
+- Periodic boundary conditions for finite lattice models
 
 | :warning: **WARNING**: This project is still in development and might change significantly in the future! |
 |-----------------------------------------------------------------------------------------------------------|
@@ -311,6 +318,7 @@ If periodic boundary conditions are set (along axis 0) the output is:
 [license-link]: https://github.com/dylanljones/lattpy/blob/master/LICENSE
 [lgtm-badge]: https://img.shields.io/lgtm/grade/python/github/dylanljones/lattpy?label=code%20quality&logo=lgtm&style=flat-square
 [lgtm-link]: https://lgtm.com/projects/g/dylanljones/lattpy/context:python
+[pypi-downloads]: https://img.shields.io/pypi/dm/lattpy?style=flat-square
 
 [tests-master]: https://img.shields.io/github/workflow/status/dylanljones/lattpy/Test/master?label=tests&logo=github&style=flat
 [tests-dev]: https://img.shields.io/github/workflow/status/dylanljones/lattpy/Test/dev?label=tests&logo=github&style=flat

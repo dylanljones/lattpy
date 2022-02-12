@@ -7,17 +7,17 @@
 Welcome to LattPy's documentation!
 ==================================
 
-|pypi-python-version| |pypi-version| |pypi-status| |pypi-license|
-
-+---------+---------------+-----------------+
-| Master  ||tests-master| ||codecov-master| |
-+---------+---------------+-----------------+
-| Dev     ||tests-dev|    ||codecov-dev|    |
-+---------+---------------+-----------------+
-
+|pypi-python-version| |pypi-version| |pypi-status| |pypi-license| |lgtm-grade|
 
 LattPy is a simple and efficient Python package for modeling Bravais lattices and
 constructing (finite) lattice structures in ``d`` dimensions.
+
++---------+---------------+-----------------+---------------+
+| Master  ||tests-master| ||codecov-master| | |docs-master| |
++---------+---------------+-----------------+---------------+
+| Dev     ||tests-dev|    ||codecov-dev|    | |docs-dev|    |
++---------+---------------+-----------------+---------------+
+
 
 .. plot::
    :format: doctest
@@ -68,12 +68,19 @@ Indices and tables
 
 .. |pypi-python-version| image:: https://img.shields.io/pypi/pyversions/lattpy?logo=python&style=flat-square
    :alt: PyPI - Python Version
+   :target: https://pypi.org/project/lattpy/
 .. |pypi-version| image:: https://img.shields.io/pypi/v/lattpy?logo=pypi&style=flat-square
    :alt: PyPI - Version
+   :target: https://pypi.org/project/lattpy/
 .. |pypi-status| image:: https://img.shields.io/pypi/status/lattpy?color=yellow&style=flat-square
    :alt: PyPI - Status
+   :target: https://pypi.org/project/lattpy/
 .. |pypi-license| image:: https://img.shields.io/pypi/l/lattpy?style=flat-square
    :alt: PyPI - License
+   :target: https://github.com/dylanljones/lattpy/blob/master/LICENSE
+.. |lgtm-grade| image:: https://img.shields.io/lgtm/grade/python/github/dylanljones/lattpy?label=code%20quality&logo=lgtm&style=flat-square
+   :alt: LGTM Grade
+   :target: https://lgtm.com/projects/g/dylanljones/lattpy/context:python
 .. |tests-master| image:: https://img.shields.io/github/workflow/status/dylanljones/lattpy/Test/master?label=tests&logo=github&style=flat
    :alt: Test status master
    :target: https://github.com/dylanljones/lattpy/actions/workflows/test.yml
@@ -86,3 +93,9 @@ Indices and tables
 .. |codecov-dev| image:: https://codecov.io/gh/dylanljones/lattpy/branch/dev/graph/badge.svg?token=P61R3IQKXC
    :alt: Coverage dev
    :target: https://app.codecov.io/gh/dylanljones/lattpy/branch/dev
+.. |docs-master| image:: https://img.shields.io/readthedocs/lattpy/latest?style=flat
+   :alt: Docs master
+   :target: https://lattpy.readthedocs.io/en/latest/
+.. |docs-dev| image:: https://img.shields.io/readthedocs/lattpy/dev?style=flat
+   :alt: Docs dev
+   :target: https://lattpy.readthedocs.io/en/dev/

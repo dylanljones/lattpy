@@ -144,3 +144,25 @@ intersphinx_mapping = {'python': (r'https://docs.python.org', None),
                        'np': (r'https://docs.scipy.org/doc/numpy/', None),
                        'matplotlib': (r'https://matplotlib.org/', None),
                        }
+
+
+# -- Auto-run sphinx-apidoc --------------------------------------------------
+
+def run_apidoc(_):
+    from sphinx.ext.apidoc import main
+    import os
+    import sys
+    sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+    cur_dir = os.path.abspath(os.path.dirname(__file__))
+    proj_dir = os.path.dirname(os.path.dirname(cur_dir))
+    doc_dir = os.path.join(proj_dir, "docs")
+    output_path = os.path.join(doc_dir, "source", "generated")
+    module = os.path.join(proj_dir, "lattpy")
+    exclude = os.path.join(module, "tests")
+    template_dir = os.path.join(doc_dir, "source", "_templates", "apidoc")
+    main(["-fMeT", "-o", output_path, module, exclude, "--templatedir", template_dir,
+          "--force"])
+
+
+def setup(app):
+    app.connect('builder-inited', run_apidoc)

@@ -32,8 +32,6 @@ from .utils import (
     NotBuiltError
 )
 from .spatial import (
-    build_periodic_translation_vector,
-    periodic_translation_vectors,
     vindices,
     interweave,
     cell_size,
@@ -2093,11 +2091,74 @@ class Lattice:
         self._update_shape()
 
         if periodic is not None:
-            self.set_periodic(periodic)
+            self.set_periodic(periodic, primitive)
 
         logger.debug("Lattice shape: %s (%s)", self.shape,
                      frmt_num(self.data.nbytes, unit="iB", div=1024))
         return shape
+
+    def _build_periodic_translation_vector(self, axes, primitive=False, indices=None):
+        if indices is None:
+            indices = self.indices.copy()
+
+        axes = np.atleast_1d(axes)
+        if not primitive:
+            # Get lattice points limits
+            indices = indices.copy()[:, :-1]  # strip alpha
+            indices = np.unique(indices, axis=0)
+            positions = self.transform(indices)
+            limits = np.array([np.min(positions, axis=0), np.max(positions, axis=0)])
+            shape = limits[1] - limits[0]
+            # Get periodic point
+            ppoint = np.zeros(self.dim)
+            for ax in axes:
+                ppoint[ax] = shape[ax] + self.cell_size[ax] * 2 / 3
+            # Get periodic translation vector from point
+            pnvec = self.itransform(ppoint)
+            pnvec = np.round(pnvec, decimals=0)
+        else:
+            # Get index limits
+            limits = np.array([np.min(indices, axis=0), np.max(indices, axis=0)])
+            idx_size = (limits[1] - limits[0])[:-1]
+            # Get periodic translation vector from limits
+            pnvec = np.zeros_like(idx_size, dtype=np.int64)
+            for ax in axes:
+                pnvec[ax] = np.floor(idx_size[ax]) + 1
+        return pnvec.astype(np.int64)
+
+    def periodic_translation_vectors(self, axes, primitive=False):
+        """Constrcuts all translation vectors for periodic boundary conditions.
+
+        Parameters
+        ----------
+        axes : int or (N, ) array_like
+            One or multiple axises to compute the translation vectors for.
+        primitive : bool, optional
+            Flag if the specified axes are in cartesian or lattice coordinates.
+            If ``True`` the passed position will be multiplied with the lattice vectors.
+            The default is ``False`` (cartesian coordinates).
+
+        Returns
+        -------
+        nvecs : list of tuple
+            The translation vectors for the periodic boundary conditions.
+            The first item of each element is the axis, the second the
+            corresponding translation vector.
+        """
+        # One axis: No combinations needed
+        if isinstance(axes, int) or len(axes) == 1:
+            return [(axes, self._build_periodic_translation_vector(axes, primitive))]
+        # Add all combinations of the periodic axis
+        items = list()
+        for ax in itertools.combinations_with_replacement(axes, r=2):
+            nvec = self._build_periodic_translation_vector(ax, primitive)
+            items.append((ax, nvec))
+            # Use +/- for every axis exept the first one to ensure all corners are hit
+            if not np.all(np.array(ax) == axes[0]):
+                nvec2 = np.copy(nvec)
+                nvec2[1:] *= -1
+                items.append((ax, nvec2))
+        return items
 
     def _build_periodic(self, indices, positions, nvec, out_ind=None, out_pos=None):
         delta_pos = self.translate(nvec)
@@ -2117,7 +2178,8 @@ class Lattice:
         max_dist = np.max(self.distances) + 0.1 * np.min(self._raw_distance_matrix)
         return KDTree(positions, k, max_dist, eps=eps, boxsize=boxsize)
 
-    def _compute_pneighbors(self, axis, indices=None, positions=None, num_jobs=-1):
+    def _compute_pneighbors(self, axis, primitive=False, indices=None, positions=None,
+                            num_jobs=-1):
         if indices is None:
             indices = self.data.indices
             positions = self.data.positions
@@ -2135,7 +2197,7 @@ class Lattice:
         pos_t = np.zeros_like(positions)
 
         pidx, pdists, pnvecs, paxs = dict(), dict(), dict(), dict()
-        for ax, nvec in periodic_translation_vectors(indices, axis):
+        for ax, nvec in self.periodic_translation_vectors(axis, primitive):
             # Translate positions along periodic axis
             self._build_periodic(indices, positions, nvec, ind_t, pos_t)
 
@@ -2173,7 +2235,8 @@ class Lattice:
             pnvecs[k] = np.array(pnvecs[k])[ind]
         return pidx, pdists, pnvecs, paxs
 
-    def set_periodic(self, axis: Union[bool, int, Sequence[int]] = None):
+    def set_periodic(self, axis: Union[bool, int, Sequence[int]] = None,
+                     primitive: bool = False):
         """Sets periodic boundary conditions along the given axis.
 
         Parameters
@@ -2182,6 +2245,10 @@ class Lattice:
             One or multiple axises to apply the periodic boundary conditions.
             If the axis is ``None`` the perodic boundary
             conditions will be removed.
+        primitive : bool, optional
+            Flag if the specified axes are in cartesian or lattice coordinates.
+            If ``True`` the passed position will be multiplied with the lattice vectors.
+            The default is ``False`` (cartesian coordinates).
 
         Raises
         ------
@@ -2204,7 +2271,7 @@ class Lattice:
             self.periodic_axes = list()
         else:
             axis = np.atleast_1d(axis)
-            pidx, pdists, pnvecs, paxs = self._compute_pneighbors(axis)
+            pidx, pdists, pnvecs, paxs = self._compute_pneighbors(axis, primitive)
             self.data.set_periodic(pidx, pdists, pnvecs, paxs)
             self.periodic_axes = axis
 
@@ -2254,7 +2321,7 @@ class Lattice:
         return self._compute_connection_neighbors(self.data.positions, positions2)
 
     def _append(self, ind, pos, neighbors, dists, ax=0, side=+1,
-                sort_axis=None, sort_reverse=False):
+                sort_axis=None, sort_reverse=False, primitive=False):
 
         indices2 = np.copy(ind)
         positions2 = np.copy(pos)
@@ -2262,7 +2329,7 @@ class Lattice:
         distances2 = np.copy(dists)
         # Build translation vector
         indices = self.data.indices if side > 0 else indices2
-        nvec = build_periodic_translation_vector(indices, ax)
+        nvec = self._build_periodic_translation_vector(ax, primitive, indices)
         if side <= 0:
             nvec = -1 * nvec
         vec = self.translate(nvec)
@@ -2289,7 +2356,8 @@ class Lattice:
         self._update_shape()
 
     # noinspection PyShadowingNames
-    def append(self, latt, ax=0, side=+1, sort_ax=None, sort_reverse=False):
+    def append(self, latt, ax=0, side=+1, sort_ax=None, sort_reverse=False,
+               primitive=False):
         """Append another `Lattice`-instance along an axis.
 
         Parameters
@@ -2307,6 +2375,10 @@ class Lattice:
             added. The default is the value specified for ``ax``.
         sort_reverse : bool, optional
             If True, the lattice indices are sorted in reverse order.
+        primitive : bool, optional
+            Flag if the specified axes are in cartesian or lattice coordinates.
+            If ``True`` the passed position will be multiplied with the lattice vectors.
+            The default is ``False`` (cartesian coordinates).
 
         Examples
         --------
@@ -2330,7 +2402,8 @@ class Lattice:
         pos = latt.data.positions
         neighbors = latt.data.neighbors
         dists = latt.data.distvals[latt.data.distances]
-        self._append(ind, pos, neighbors, dists, ax, side, sort_ax, sort_reverse)
+        self._append(ind, pos, neighbors, dists, ax, side, sort_ax,
+                     sort_reverse, primitive)
 
     def extend(self, size, ax=0, side=1, num_jobs=1, sort_ax=None, sort_reverse=False):
         """Extend the lattice along an axis.

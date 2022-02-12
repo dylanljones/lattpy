@@ -584,6 +584,23 @@ def test_periodic_nearest():
     assert_elements_equal1d(latt.nearest_neighbors(20), [0, 15, 21, 24])
     assert_elements_equal1d(latt.nearest_neighbors(24), [4, 19, 20, 23])
 
+    # graphene lattice
+    latt = lp.graphene()
+    latt.build((5.5, 4.5))
+
+    latt.set_periodic(0)
+    assert_elements_equal1d(latt.nearest_neighbors(0), [1, 15])
+    assert_elements_equal1d(latt.nearest_neighbors(2), [3, 15, 21])
+    assert_elements_equal1d(latt.nearest_neighbors(8), [9, 21, 23])
+    latt.set_periodic(1)
+    assert_elements_equal1d(latt.nearest_neighbors(1), [0, 4, 16])
+    assert_elements_equal1d(latt.nearest_neighbors(6), [5, 7, 17])
+    assert_elements_equal1d(latt.nearest_neighbors(7), [6, 14, 22])
+    # Only check corners for both axis periodic
+    latt.set_periodic([0, 1])
+    assert_elements_equal1d(latt.nearest_neighbors(0), [1, 15, 23])
+    assert_elements_equal1d(latt.nearest_neighbors(8), [9, 21, 23])
+
 
 def test_periodic_next_nearest():
     # Lattice chain

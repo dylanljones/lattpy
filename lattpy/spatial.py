@@ -23,8 +23,7 @@ from .plotting import draw_points, draw_vectors, draw_lines, draw_surfaces
 __all__ = [
     "distance", "distances", "interweave", "vindices", "vrange", "cell_size",
     "cell_volume", "compute_vectors", "KDTree", "VoronoiTree",
-    "WignerSeitzCell", "rx", "ry", "rz", "rotate2d", "rotate3d",
-    "build_periodic_translation_vector", "periodic_translation_vectors"
+    "WignerSeitzCell", "rx", "ry", "rz", "rotate2d", "rotate3d"
 ]
 
 
@@ -347,32 +346,6 @@ class KDTree(scipy.spatial.cKDTree):
             dists = np.round(dists, decimals=decimals)
 
         return neighbors, dists
-
-
-def build_periodic_translation_vector(indices, axs):
-    limits = np.array([np.min(indices, axis=0), np.max(indices, axis=0)])
-    idx_size = (limits[1] - limits[0])[:-1]
-    nvec = np.zeros_like(idx_size, dtype=np.int64)
-    for ax in np.atleast_1d(axs):
-        nvec[ax] = np.floor(idx_size[ax]) + 1
-    return nvec
-
-
-def periodic_translation_vectors(indices, axs):
-    # One axis: No combinations needed
-    if isinstance(axs, int) or len(axs) == 1:
-        return [(axs, build_periodic_translation_vector(indices, axs))]
-    # Add all combinations of the periodic axis
-    items = list()
-    for ax in itertools.combinations_with_replacement(axs, r=2):
-        nvec = build_periodic_translation_vector(indices, ax)
-        items.append((ax, nvec))
-        # Use +/- for every axis exept the first one to ensure all corners are hit
-        if not np.all(np.array(ax) == axs[0]):
-            nvec2 = np.copy(nvec)
-            nvec2[1:] *= -1
-            items.append((ax, nvec2))
-    return items
 
 
 class VoronoiTree:

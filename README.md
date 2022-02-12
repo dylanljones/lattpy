@@ -5,7 +5,6 @@
 [![Status][status-badge]][pypi-link]
 [![License][license-badge]][license-link]
 [![LGTM Grade][lgtm-badge]][lgtm-link]
-[![PyPI - Downloads][pypi-downloads]][pypi-link]
 
 | Master | [![Test][tests-master]][link-tests] | [![Codecov][codecov-master]][codecov-master-link] | [![Read the Docs][docs-master]][docs-master-link] |
 |:-------|:------------------------------------|:--------------------------------------------------|:--------------------------------------------------|
@@ -18,7 +17,6 @@ Features:
 - Basis transformations
 - Configurable unit cell
 - Easy neighbor configuration
-- General lattice structures
 - Finite lattice models
 - Periodic boundary conditions for finite lattice models
 

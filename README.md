@@ -40,7 +40,7 @@ Alternatively, it can be installed via [GitHub](https://github.com/dylanljones/l
 ```commandline
 pip install git+https://github.com/dylanljones/lattpy.git@VERSION
 ```
-where `VERSION` is a release or tag (e.g. `0.6.5`). The project can also be
+where `VERSION` is a release or tag. The project can also be
 cloned/forked and installed via
 ````commandline
 python setup.py install

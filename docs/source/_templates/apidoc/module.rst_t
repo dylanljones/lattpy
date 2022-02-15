@@ -6,6 +6,3 @@
 {%- for option in automodule_options %}
    :{{ option }}:
 {%- endfor %}
-
-   .. inheritance-diagram:: {{ qualname }}
-      :parts: 1

@@ -16,7 +16,7 @@
 {{ end -}}
 
 {{ range .Versions }}
-{{- if not (eq .Tag.Name "0.5" "0.5.1" "0.5.2" "0.5.3" "0.5.4" "0.5.5" "0.6.0" "0.6.1" "0.6.2" "0.6.3" "0.6.4" "0.6.5" "0.6.6") }}
+{{- if not (eq .Tag.Name "0.6.0" "0.6.1" "0.6.2" "0.6.3" "0.6.4" "0.6.5" "0.6.6") }}
 <a name="{{ .Tag.Name }}"></a>
 ## {{ if .Tag.Previous }}[{{ .Tag.Name }}]{{ else }}{{ .Tag.Name }}{{ end }} - {{ datetime "2006-02-01" .Tag.Date }}
 {{ range .CommitGroups -}}

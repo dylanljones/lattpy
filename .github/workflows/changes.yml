@@ -14,6 +14,6 @@ jobs:
     steps:
       - uses: nuuday/github-changelog-action@v1.0.0
         with:
-          config_dir: /.github/.chglog
+          config_dir: /home/runner/work/lattpy/.github/.chglog
           filename: CHANGELOG.md
           next_version: "1.0.0"

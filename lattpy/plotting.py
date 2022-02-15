@@ -161,16 +161,19 @@ def draw_line(ax, points, **kwargs):
 
     Returns
     -------
-    coll: Line2D or Line3D
+    coll : Line2D or Line3D
         The created line.
 
     Examples
     --------
+    >>> from lattpy import plotting
+    >>> import matplotlib.pyplot as plt
     >>> fig, ax = plt.subplots()
     >>> points = np.array([[1, 0], [0.7, 0.7], [0, 1], [-0.7, 0.7], [-1, 0]])
-    >>> _ = draw_line(ax, points)
+    >>> _ = plotting.draw_line(ax, points)
     >>> ax.margins(0.1, 0.1)
     >>> plt.show()
+
     """
     dim = len(points[0])
     if dim < 3:
@@ -203,13 +206,15 @@ def draw_lines(ax, segments, **kwargs):
 
     Examples
     --------
+    >>> from lattpy import plotting
+    >>> import matplotlib.pyplot as plt
     >>> fig, ax = plt.subplots()
     >>> segments = np.array([
     ...     [[0, 0], [1, 0]],
     ...     [[0, 1], [1, 1]],
     ...     [[0, 2], [1, 2]]
     ... ])
-    >>> _ = draw_lines(ax, segments)
+    >>> _ = plotting.draw_lines(ax, segments)
     >>> ax.margins(0.1, 0.1)
     >>> plt.show()
     """
@@ -246,9 +251,11 @@ def draw_vectors(ax, vectors, pos=None, **kwargs):
 
     Examples
     --------
+    >>> from lattpy import plotting
+    >>> import matplotlib.pyplot as plt
     >>> fig, ax = plt.subplots()
     >>> vectors = np.array([[1, 0], [0.7, 0.7], [0, 1], [-0.7, 0.7], [-1, 0]])
-    >>> _ = draw_vectors(ax, vectors, [1, 0])
+    >>> _ = plotting.draw_vectors(ax, vectors, [1, 0])
     >>> ax.margins(0.1, 0.1)
     >>> plt.show()
     """
@@ -287,9 +294,11 @@ def draw_arrows(ax, vectors, pos=None, **kwargs):
 
     Examples
     --------
+    >>> from lattpy import plotting
+    >>> import matplotlib.pyplot as plt
     >>> fig, ax = plt.subplots()
     >>> vectors = np.array([[1, 0], [0.7, 0.7], [0, 1], [-0.7, 0.7], [-1, 0]])
-    >>> _ = draw_arrows(ax, vectors)
+    >>> _ = plotting,draw_arrows(ax, vectors)
     >>> ax.margins(0.1, 0.1)
     >>> plt.show()
     """
@@ -341,9 +350,11 @@ def draw_points(ax, points, size=10, **kwargs):
 
     Examples
     --------
+    >>> from lattpy import plotting
+    >>> import matplotlib.pyplot as plt
     >>> fig, ax = plt.subplots()
     >>> points = np.array([[1, 0], [0.7, 0.7], [0, 1], [-0.7, 0.7], [-1, 0]])
-    >>> _ = draw_points(ax, points)
+    >>> _ = plotting.draw_points(ax, points)
     >>> ax.margins(0.1, 0.1)
     >>> plt.show()
     """
@@ -380,10 +391,12 @@ def draw_surfaces(ax, vertices, **kwargs):
 
     Examples
     --------
+    >>> from lattpy import plotting
+    >>> import matplotlib.pyplot as plt
     >>> vertices = [[0, 0, 0], [1, 1, 0], [0.5, 0.5, 1]]
     >>> fig = plt.figure()
     >>> ax = fig.add_subplot(111, projection="3d")
-    >>> _ = draw_surfaces(ax, vertices, alpha=0.5)
+    >>> _ = plotting.draw_surfaces(ax, vertices, alpha=0.5)
     >>> plt.show()
     """
     if not isinstance(vertices[0][0], Iterable):
@@ -417,10 +430,12 @@ def text(ax, strings, positions, offset=None, **kwargs):
 
     Examples
     --------
+    >>> from lattpy import plotting
+    >>> import matplotlib.pyplot as plt
     >>> fig, ax = plt.subplots()
     >>> points = np.array([[-1, 0], [-0.7, 0.7], [0, 1], [0.7, 0.7], [1, 0]])
     >>> strings = ["A", "B", "C", "D", "E"]
-    >>> _ = text(ax, strings, points)
+    >>> _ = plotting.text(ax, strings, points)
     >>> _ = ax.set_xlim(-1.5, +1.5)
     >>> _ = ax.set_ylim(-0.5, +1.5)
     >>> plt.show()
@@ -497,12 +512,14 @@ def draw_sites(ax, points, radius=0.2, **kwargs):
 
     Examples
     --------
+    >>> from lattpy import plotting
+    >>> import matplotlib.pyplot as plt
     >>> fig, ax = plt.subplots()
     >>> points = np.array([[1, 0], [0.7, 0.7], [0, 1], [-0.7, 0.7], [-1, 0]])
-    >>> _ = draw_sites(ax, points, radius=0.2)
+    >>> _ = plotting.draw_sites(ax, points, radius=0.2)
     >>> _ = ax.set_xlim(-1.5, +1.5)
     >>> _ = ax.set_ylim(-0.5, +1.5)
-    >>> set_equal_aspect(ax)
+    >>> plotting.set_equal_aspect(ax)
     >>> plt.show()
     """
     points = np.atleast_2d(points)
@@ -558,10 +575,12 @@ def draw_indices(ax, positions, offset=0.05, **kwargs):
 
     Examples
     --------
+    >>> from lattpy import plotting
+    >>> import matplotlib.pyplot as plt
     >>> points = np.array([[-1, 0], [-0.7, 0.7], [0, 1], [0.7, 0.7], [1, 0]])
     >>> fig, ax = plt.subplots()
-    >>> _ = draw_points(ax, points)
-    >>> _ = draw_indices(ax, points)
+    >>> _ = plotting.draw_points(ax, points)
+    >>> _ = plotting.draw_indices(ax, points)
     >>> ax.margins(0.1, 0.1)
     >>> plt.show()
     """
@@ -593,9 +612,11 @@ def draw_unit_cell(ax, vectors, outlines=True, **kwargs):
 
     Examples
     --------
+    >>> from lattpy import plotting
+    >>> import matplotlib.pyplot as plt
     >>> vectors = np.array([[1, 0], [0, 1]])
     >>> fig, ax = plt.subplots()
-    >>> _ = draw_unit_cell(ax, vectors)
+    >>> _ = plotting.draw_unit_cell(ax, vectors)
     >>> plt.show()
     """
     dim = len(vectors)

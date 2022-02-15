@@ -1,16 +1,10 @@
-What's New
-==========
-
+# What's New
 
 <a name="unreleased"></a>
 ## [Unreleased]
 
 ### New Features
-
-### Improved/Fixed
-
-
-
+- use git-chglog to auto-generate changelogs
 
 <a name="0.6.6"></a>
 ## [0.6.6] - 2022-02-12
@@ -18,13 +12,10 @@ What's New
 ### Improved/Fixed
 
 - improved build process
-- improved periodic neighbor computation:
+- improved periodic neighbor computation
 - Improved documentation
 - Improved CI/Tests
 - minor fixes
-
-
-
 
 
 <a name="0.6.5"></a>
@@ -44,8 +35,18 @@ What's New
 - added more docstrings
 - fixed multiple bugs
 
-
+## 0.6.4 - 2022-01-27
 
 [Unreleased]: https://github.com/dylanljones/lattpy/compare/0.6.6...HEAD
 [0.6.6]: https://github.com/dylanljones/lattpy/compare/0.6.5...0.6.6
 [0.6.5]: https://github.com/dylanljones/lattpy/compare/0.6.4...0.6.5
+[0.6.4]: https://github.com/dylanljones/lattpy/compare/0.6.3...0.6.4
+[0.6.3]: https://github.com/dylanljones/lattpy/compare/0.6.2...0.6.3
+[0.6.2]: https://github.com/dylanljones/lattpy/compare/0.6.1...0.6.2
+[0.6.1]: https://github.com/dylanljones/lattpy/compare/0.6.0...0.6.1
+[0.6.0]: https://github.com/dylanljones/lattpy/compare/0.5.5...0.6.0
+[0.5.5]: https://github.com/dylanljones/lattpy/compare/0.5.4...0.5.5
+[0.5.4]: https://github.com/dylanljones/lattpy/compare/0.5.3...0.5.4
+[0.5.3]: https://github.com/dylanljones/lattpy/compare/0.5.2...0.5.3
+[0.5.2]: https://github.com/dylanljones/lattpy/compare/0.5.1...0.5.2
+[0.5.1]: https://github.com/dylanljones/lattpy/compare/0.5...0.5.1

@@ -13,6 +13,8 @@ info:
   repository_url: https://github.com/dylanljones/lattpy
 
 options:
+  sort: "date"
+
   commits:
      filters:
        Type:

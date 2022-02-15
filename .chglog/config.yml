@@ -1,0 +1,53 @@
+# Git execution command.
+bin: git
+
+# Changelog style (github, gitlab, bitbucket, none)
+style: github
+
+# Path for the template file
+template: CHANGELOG.tpl.md
+
+# Metadata for CHANGELOG
+info:
+  title: CHANGELOG
+  repository_url: https://github.com/dylanljones/lattpy
+
+options:
+  sort: "date"
+
+  commits:
+     filters:
+       Type:
+         - feat      # New feature
+         - fix       # Bug fix
+         - perf      # performance improvements
+         - refactor  # code refactoring
+         # - build     # update build config
+         # - ci        # continous integration updates
+         - docs      # documentation updates
+         # - test      # Test changes
+         # - update    # Miscellaneous
+  commit_groups:
+    group_by: Type
+    sort_by: Custom
+    title_order:
+      - feat
+      - fix
+      - perf
+      - refactor
+      - docs
+    title_maps:
+      feat: New Features
+      fix: Improvements/Bug Fixes
+      perf: Performance Improvements
+      refactor: Code Refactoring
+      docs: Documentation
+  header:
+    pattern: "^(\\w*)\\:\\s(.*)$"
+    pattern_maps:
+      - Type
+      - Subject
+  notes:
+    keywords:
+      - BREAKING CHANGE
+      - DEPRECATED

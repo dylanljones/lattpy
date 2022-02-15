@@ -21,9 +21,9 @@ import lattpy
 
 # -- Project information -----------------------------------------------------
 
-project = 'lattpy'
-copyright = '2022, Dylan L. Jones'
-author = 'Dylan L. Jones'
+project = "lattpy"
+copyright = "2022, Dylan L. Jones"
+author = "Dylan L. Jones"
 
 # -- General configuration ---------------------------------------------------
 
@@ -31,18 +31,20 @@ author = 'Dylan L. Jones'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'numpydoc',
-    'recommonmark',
-    'sphinx.ext.autosummary',
-    'matplotlib.sphinxext.plot_directive',
-    'sphinx.ext.intersphinx',  # links to numpy, scipy ... docs
-    'sphinx.ext.viewcode',
-    'sphinx.ext.doctest',
-    'sphinx.ext.coverage',
-    'sphinx.ext.extlinks',  # define roles for links
-    'sphinx_toggleprompt',  # toggle `>>>`
-    'sphinx_rtd_theme',
+    "sphinx.ext.autodoc",
+    "numpydoc",
+    "myst_parser",
+    "sphinx.ext.autosummary",
+    "matplotlib.sphinxext.plot_directive",
+    "sphinx.ext.intersphinx",  # links to numpy, scipy ... docs
+    "sphinx.ext.viewcode",
+    "sphinx.ext.doctest",
+    "sphinx.ext.coverage",
+    "sphinx.ext.extlinks",  # define roles for links
+    "sphinx_toggleprompt",  # toggle `>>>`
+    "sphinx_rtd_theme",
+    # "sphinx.ext.graphviz",
+    # "sphinx.ext.inheritance_diagram"
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -53,6 +55,12 @@ templates_path = ['_templates']
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'tests',
                     'generated/lattpy.rst', 'generated/modules.rst']
+# -- Graphviz options --------------------------------------------------------
+
+graphviz_output_format = 'svg'
+
+inheritance_graph_attrs = dict(rankdir="TB", size='""')
+
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -66,11 +74,11 @@ html_theme = 'sphinx_rtd_theme'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-# # Include Markdown parser
+# Include Markdown parser
 # source_parsers = {
 #    '.md': 'recommonmark.parser.CommonMarkParser',
 # }
-# source_suffix = ['.rst', '.md']
+source_suffix = ['.rst', '.md']
 
 # Don't show type hints
 autodoc_typehints = "none"
@@ -160,8 +168,7 @@ def run_apidoc(_):
     module = os.path.join(proj_dir, "lattpy")
     exclude = os.path.join(module, "tests")
     template_dir = os.path.join(doc_dir, "source", "_templates", "apidoc")
-    main(["-fMeT", "-o", output_path, module, exclude, "--templatedir", template_dir,
-          "--force"])
+    main(["-fMeT", "-o", output_path, module, exclude, "--templatedir", template_dir])
 
 
 def setup(app):

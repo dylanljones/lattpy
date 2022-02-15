@@ -58,6 +58,13 @@ constructing (finite) lattice structures in ``d`` dimensions.
    generated/lattpy.utils
 
 
+.. toctree::
+   :maxdepth: 3
+   :caption: Development
+
+   development/changes
+   development/contributing
+
 Indices and tables
 ==================
 

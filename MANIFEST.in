@@ -1,6 +1,9 @@
 # Include the requirements file
 include *.txt
 
-# Include the README file
-include *.mdinclude versioneer.py
+# Include markdown files
+include *.md
+
+# Include versioneer files
+include versioneer.py
 include lattpy/_version.py

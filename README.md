@@ -11,7 +11,7 @@
 | Dev    | [![Test][tests-dev]][link-tests]    | [![Codecov][codecov-dev]][codecov-dev-link]       | [![Read the Docs][docs-dev]][docs-dev-link]       |
 
 LattPy is a simple and efficient Python package for modeling Bravais lattices and
-constructing (finite) lattice structures in `d` dimensions.
+constructing (finite) lattice structures in any dimension.
 
 Features:
 - Basis transformations

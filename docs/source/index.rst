@@ -62,8 +62,8 @@ constructing (finite) lattice structures in ``d`` dimensions.
    :maxdepth: 3
    :caption: Development
 
-   changes
-
+   development/changes
+   development/contributing
 
 Indices and tables
 ==================

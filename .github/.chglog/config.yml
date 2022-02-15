@@ -18,11 +18,15 @@ options:
   commits:
      filters:
        Type:
-         - feat
-         - fix
-         - perf
-         - refactor
-         - misc
+         - feat      # New feature
+         - fix       # Bug fix
+         - perf      # performance improvements
+         - refactor  # code refactoring
+         # - build     # update build config
+         # - ci        # continous integration updates
+         - docs      # documentation updates
+         # - test      # Test changes
+         # - update    # Miscellaneous
   commit_groups:
     group_by: Type
     sort_by: Custom
@@ -31,7 +35,7 @@ options:
       - fix
       - perf
       - refactor
-      - misc
+      - docs
     title_maps:
       feat: New Features
       fix: Improvements/Bug Fixes

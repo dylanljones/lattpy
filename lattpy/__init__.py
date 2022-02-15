@@ -314,3 +314,58 @@ def nacl_structure(a=1.0, atom1="Na", atom2="Cl", neighbors=1):
     latt.add_atom(pos=[a / 2, a / 2, a / 2], atom=atom2)
     latt.add_connections(neighbors)
     return latt
+
+
+# ======================================================================================
+# Other
+# ======================================================================================
+
+
+def finite_hypercubic(s, a=1.0, atom=None, neighbors=1):
+    """Creates a d-dimensional finite lattice model with one atom in the unit cell.
+
+    Parameters
+    ----------
+    s : float or Sequence[float] or AbstractShape
+        The shape of the finite lattice. This also defines the dimensionality.
+    a : float, optional
+        The lattice constant (length of the basis-vectors).
+    atom : str or Atom, optional
+        The atom to add to the lattice. If a string is passed, a new ``Atom`` instance
+        is created.
+    neighbors : int, optional
+        The number of neighbor-distance levels, e.g. setting to 1 means only
+        nearest neighbors. The default is nearest neighbors (1).
+
+    Returns
+    -------
+    latt : Lattice
+        The configured lattice instance.
+
+    Examples
+    --------
+    Simple chain:
+
+    >>> import matplotlib.pyplot as plt
+    >>> latt = lp.finite_hypercubic(4)
+    >>> latt.plot()
+    >>> plt.show()
+
+    Simple square:
+
+    >>> import matplotlib.pyplot as plt
+    >>> latt = lp.finite_hypercubic((4, 2))
+    >>> latt.plot()
+    >>> plt.show()
+
+    """
+    import numpy as np
+    if isinstance(s, (float, int)):
+        s = (s, )
+
+    dim = s.dim if isinstance(s, AbstractShape) else len(s)
+    latt = Lattice(a * np.eye(dim))
+    latt.add_atom(atom=atom)
+    latt.add_connections(neighbors)
+    latt.build(s)
+    return latt

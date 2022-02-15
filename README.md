@@ -25,9 +25,9 @@ Features:
 |-----------------------------------------------------------------------------------------------------------|
 
 1. [Installation](#installation)
-2. [Usage](#usage)
-3. [Performance](#performance)
-4. [Examples](#examples)
+2. [Documentation](#documentation)
+3. [Quick start](#quick-start)
+4. [Performance](#performance)
 
 ## Installation
 
@@ -46,10 +46,13 @@ cloned/forked and installed via
 python setup.py install
 ````
 
+## Documentation
 
-## Usage
+The tutorial and API documentation is available on [ReadTheDocs][docs-stable-link].
 
-For more information see the documentation on [ReadTheDocs][docs-stable-link].
+## Quick start
+
+See the [tutorial][docs-tutorial-link] for more information and examples.
 
 ### Configuration
 
@@ -113,7 +116,7 @@ plt.show()
 
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/examples/example_square_periodic.png" width="400">
+<img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/.social/example_square_periodic.png" width="400">
 </p>
 
 ### General lattice attributes
@@ -181,75 +184,10 @@ neighbor_indices = latt.neighbors(i, distidx=0)
 neighbor_indices = latt.nearest_neighbors(i)
 ````
 
-## Performance
+### Data map
 
+The lattice model makes it is easy to construct the (tight-binding) Hamiltonian of a non-interacting model:
 
-Even though `lattpy` is written in pure python, it achieves high performance and
-a low memory footprint by making heavy use of numpy's vectorized operations.
-As an example the build-times, the maximal memory used in the build process and the
-size of the stored lattice data of a square lattice for different number of
-sites are shown in the following plots:
-
-
-|                                             Build time                                              |                                             Build memory                                              |
-|:---------------------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------------:|
-| <img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/examples/benchmark_time.png"> | <img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/examples/benchmark_memory.png"> |
-
-
-
-Note that the overhead of the multi-thread neighbor search results in a slight
-increase of the build time for small systems. By using `num_jobs=1` in the `build`-method
-this overhead can be eliminated for small systems. By passing `num_jobs=-1` all cores
-of the system is used.
-
-
-## Examples
-
-### Lattices
-
-Square lattice with two atoms in the unit cell:
-`````python
-import matplotlib.pyplot as plt
-from lattpy import Lattice
-
-latt = Lattice.square()
-latt.add_atom([0.0, 0.0], "A")
-latt.add_atom([0.5, 0.5], "B")
-latt.add_connection("A", "A", 1)
-latt.add_connection("A", "B", 1)
-latt.analyze()
-latt.build((5, 5))
-
-latt.plot()
-plt.show()
-`````
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/examples/example_square_two_atoms.png" width="400">
-</p>
-
-Rectangular lattice with one atom in the unit cell:
-`````python
-import matplotlib.pyplot as plt
-from lattpy import Lattice
-
-latt = Lattice([[2, 0], [0, 1]])
-latt.add_atom()
-# Two distances are needed for all connections
-latt.add_connections(2)
-latt.build((10, 6))
-
-latt.plot()
-plt.show()
-`````
-
-<p align="center">
-    <img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/examples/example_rectangular.png" width="400">
-</p>
-
-### Tight-binding Hamiltonian
-Using the (built) lattice model it is easy to construct the (tight-binding)
-Hamiltonian of a non-interacting model:
 
 ````python
 import numpy as np
@@ -299,14 +237,26 @@ Both construction methods will create the following Hamiltonian-matrix:
  [0. 0. 0. 1. 0.]]
 ````
 
-If periodic boundary conditions are set (along axis 0) the output is:
-````
-[[0. 1. 0. 0. 1.]
- [1. 0. 1. 0. 0.]
- [0. 1. 0. 1. 0.]
- [0. 0. 1. 0. 1.]
- [1. 0. 0. 1. 0.]]
-````
+## Performance
+
+
+Even though `lattpy` is written in pure python, it achieves high performance and
+a low memory footprint by making heavy use of numpy's vectorized operations.
+As an example the build-times, the maximal memory used in the build process and the
+size of the stored lattice data of a square lattice for different number of
+sites are shown in the following plots:
+
+
+|                                             Build time                                             |                                             Build memory                                             |
+|:--------------------------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------------------:|
+| <img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/.social/benchmark_time.png"> | <img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/.social/benchmark_memory.png"> |
+
+
+
+Note that the overhead of the multi-thread neighbor search results in a slight
+increase of the build time for small systems. By using `num_jobs=1` in the `build`-method
+this overhead can be eliminated for small systems. By passing `num_jobs=-1` all cores
+of the system is used.
 
 
 [pypi-link]: https://pypi.org/project/lattpy/
@@ -331,4 +281,7 @@ If periodic boundary conditions are set (along axis 0) the output is:
 [docs-master-link]: https://lattpy.readthedocs.io/en/latest/
 [docs-dev]: https://img.shields.io/readthedocs/lattpy/dev?style=flat
 [docs-dev-link]: https://lattpy.readthedocs.io/en/dev/
+
+
 [docs-stable-link]: https://lattpy.readthedocs.io/en/stable/
+[docs-tutorial-link]: https://lattpy.readthedocs.io/en/stable/tutorial/index.html

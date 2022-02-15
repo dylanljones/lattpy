@@ -41,7 +41,7 @@ options:
       fix: Improvements/Bug Fixes
       perf: Performance Improvements
       refactor: Code Refactoring
-      misc: Miscellaneous
+      docs: Documentation
   header:
     pattern: "^(\\w*)\\:\\s(.*)$"
     pattern_maps:

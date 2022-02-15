@@ -1,0 +1,19 @@
+name: Build and release
+
+on:
+  push:
+    branches: [master, dev]
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: nuuday/github-changelog-action@v1.0.0
+        with:
+          config_dir: .github/.chglog
+          filename: CHANGELOG.md
+          next_version: "1.0.0"

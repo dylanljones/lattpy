@@ -13,14 +13,6 @@
 LattPy is a simple and efficient Python package for modeling Bravais lattices and
 constructing (finite) lattice structures in any dimension.
 
-Features:
-- Basis transformations
-- Configurable unit cell
-- Easy neighbor configuration
-- General lattice structures
-- Finite lattice models
-- Periodic boundary conditions for finite lattice models
-
 | :warning: **WARNING**: This project is still in development and might change significantly in the future! |
 |-----------------------------------------------------------------------------------------------------------|
 
@@ -28,6 +20,7 @@ Features:
 2. [Documentation](#documentation)
 3. [Quick start](#quick-start)
 4. [Performance](#performance)
+5. [Development](#development)
 
 ## Installation
 
@@ -54,8 +47,16 @@ The tutorial and API documentation is available on [ReadTheDocs][docs-stable-lin
 
 See the [tutorial][docs-tutorial-link] for more information and examples.
 
-### Configuration
+Features:
 
+- Basis transformations
+- Configurable unit cell
+- Easy neighbor configuration
+- General lattice structures
+- Finite lattice models in world or lattice coordinates
+- Periodic boundary conditions along any axis
+
+### Configuration
 
 A new instance of a lattice model is initialized using the unit-vectors of the Bravais lattice.
 After the initialization the atoms of the unit-cell need to be added. To finish the configuration
@@ -258,6 +259,14 @@ increase of the build time for small systems. By using `num_jobs=1` in the `buil
 this overhead can be eliminated for small systems. By passing `num_jobs=-1` all cores
 of the system is used.
 
+
+## Development
+
+See the [CHANGELOG](https://github.com/dylanljones/lattpy/blob/master/CHANGELOG.md) for
+the recent changes of the project.
+
+A guide for contributing to `lattpy` and the commit-message style can be found in
+[CONTRIBUTING](https://github.com/dylanljones/lattpy/blob/master/CONTRIBUTING.md)
 
 [pypi-link]: https://pypi.org/project/lattpy/
 [python-badge]: https://img.shields.io/pypi/pyversions/lattpy?logo=python&style=flat-square

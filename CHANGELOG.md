@@ -10,6 +10,7 @@
 - update change log template and include old entries
 
 ### Documentation
+- add hamiltonian section to tutorial
 - add change log contributing to documentation
 
 <a name="0.6.6"></a>

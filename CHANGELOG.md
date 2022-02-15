@@ -7,6 +7,7 @@
 - use git-chglog to auto-generate changelogs
 
 ### Improvements/Bug Fixes
+- improve lattice plotting and fix scaling/auto-limit issues
 - update change log template and include old entries
 
 ### Documentation

@@ -17,8 +17,15 @@ jobs:
         with:
           filename: CHANGELOG.md
           next_version: "1.0.0"
-      - name: upload
+      - name: Commit files
         run: |
+          git config --local user.email "dylanljones94@gmail.com"
+          git config --local user.name "dylanljones"
           git add CHANGELOG.md
           git commit -m "auto-update CHANGELOG.md"
-          git push
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          branch: ${{ github.ref }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          force: true

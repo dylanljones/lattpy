@@ -77,8 +77,6 @@
 - added more docstrings
 - fixed multiple bugs
 
-## 0.6.4 - 2022-01-27
-
 
 {{- if .Versions }}
 

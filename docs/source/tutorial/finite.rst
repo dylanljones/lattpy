@@ -217,8 +217,6 @@ masks the construction of the hamiltonian-data can be vectorized:
 
 
 >>> from scipy import sparse
-
-# Vectorized construction of the hamiltonian
 >>> eps, t = 0., 1.
 >>> dmap = latt.data.map()               # Build datamap
 >>> values = np.zeros(dmap.size)         # Initialize array for data of H

@@ -3,12 +3,9 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
-### New Features
-- use git-chglog to auto-generate changelogs
 
-### Improvements/Bug Fixes
-- update change log template and include old entries
-
+<a name="1.0.0"></a>
+## 1.0.0 - 2022-15-02
 <a name="0.6.6"></a>
 ## [0.6.6] - 2022-02-12
 
@@ -38,12 +35,4 @@
 - added more docstrings
 - fixed multiple bugs
 
-## 0.6.4 - 2022-01-27
-
-[Unreleased]: https://github.com/dylanljones/lattpy/compare/0.6.6...HEAD
-[0.6.6]: https://github.com/dylanljones/lattpy/compare/0.6.5...0.6.6
-[0.6.5]: https://github.com/dylanljones/lattpy/compare/0.6.4...0.6.5
-[0.6.4]: https://github.com/dylanljones/lattpy/compare/0.6.3...0.6.4
-[0.6.3]: https://github.com/dylanljones/lattpy/compare/0.6.2...0.6.3
-[0.6.2]: https://github.com/dylanljones/lattpy/compare/0.6.1...0.6.2
-[0.6.1]: https://github.com/dylanljones/lattpy/compare/0.6.0...0.6.1
+[Unreleased]: https://github.com/dylanljones/lattpy/compare/1.0.0...HEAD

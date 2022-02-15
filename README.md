@@ -27,8 +27,7 @@ Features:
 1. [Installation](#installation)
 2. [Usage](#usage)
 3. [Performance](#performance)
-4. [Change Log](#change-log)
-5. [Examples](#examples)
+4. [Examples](#examples)
 
 ## Installation
 

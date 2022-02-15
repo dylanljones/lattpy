@@ -27,7 +27,8 @@ Features:
 1. [Installation](#installation)
 2. [Usage](#usage)
 3. [Performance](#performance)
-4. [Examples](#examples)
+4. [Change Log](#change-log)
+5. [Examples](#examples)
 
 ## Installation
 
@@ -49,8 +50,7 @@ python setup.py install
 
 ## Usage
 
-
-Before accessing the attributes of the `Lattice`-model the lattice has to be configured
+For more information see the documentation on [ReadTheDocs][docs-stable-link].
 
 ### Configuration
 
@@ -332,3 +332,4 @@ If periodic boundary conditions are set (along axis 0) the output is:
 [docs-master-link]: https://lattpy.readthedocs.io/en/latest/
 [docs-dev]: https://img.shields.io/readthedocs/lattpy/dev?style=flat
 [docs-dev-link]: https://lattpy.readthedocs.io/en/dev/
+[docs-stable-link]: https://lattpy.readthedocs.io/en/stable/

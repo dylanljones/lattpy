@@ -22,7 +22,7 @@ jobs:
           git config --local user.email "dylanljones94@gmail.com"
           git config --local user.name "dylanljones"
           git add CHANGELOG.md
-          git commit -m "auto-update CHANGELOG.md"
+          git commit -m "auto: update CHANGELOG.md"
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:

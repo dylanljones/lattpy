@@ -20,7 +20,7 @@ A format influenced by [Angular commit message].
 Must be one of the following:
 
 - **feat:** A new feature
-- **fix:** A bug fix
+- **fix:** Bug fixes or improvements
 - **perf:** A code change that improves performance
 - **refactor:** Code refactoring
 - **ci:** Changes to CI configuration files and scripts
@@ -28,6 +28,7 @@ Must be one of the following:
 - **build:** Updating Makefile etc, no production code changes
 - **test:** Adding missing tests or correcting existing tests
 - **update** Other configurations updates
+- **auto** Mostly used by automatic commits (for example from GitHub workflows)
 
 ### Subject
 

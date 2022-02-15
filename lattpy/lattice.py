@@ -40,9 +40,10 @@ from .spatial import (
     KDTree
 )
 from .plotting import (
+    subplot,
     draw_sites,
     draw_vectors,
-    draw_cell,
+    draw_unit_cell,
     draw_indices
 )
 from .unitcell import Atom
@@ -2587,76 +2588,101 @@ class Lattice:
         return self.__hash__() == other.__hash__()
 
     def plot_cell(self,
-                  lw: float = 1.,
+                  lw: float = None,
                   alpha: float = 0.5,
-                  legend: bool = True,
-                  margins: Union[Sequence[float], float] = 0.25,
+                  margins: Union[Sequence[float], float] = 0.1,
+                  legend: bool = None,
+                  grid: bool = False,
                   show_cell: bool = True,
                   show_vecs: bool = True,
                   show_neighbors: bool = True,
+                  con_colors: Sequence = None,
+                  adjustable: str = "datalim",
                   ax: Union[plt.Axes, Axes3D] = None,
                   show: bool = False) -> Union[plt.Axes, Axes3D]:  # pragma: no cover
         """Plot the unit cell of the lattice.
 
         Parameters
         ----------
-        lw : float, default: 1
-            Line width of the hopping connections.
+        lw : float, optional
+            Line width of the neighbor connections.
         alpha : float, optional
-            Optional alpha value of neighbors.
+            The alpha value of the neighbor sites.
+                margins : Sequence[float] or float, optional
+            The margins of the plot.
         legend : bool, optional
             Flag if legend is shown.
-        margins : Sequence[float] or float, optional
-            Optional margins of the plot.
+        grid : bool, optional
+            If True, draw a grid in the plot.
         show_neighbors : bool, optional
             If True the neighbors are plotted.
         show_vecs : bool, optional
             If True the first unit-cell is drawn.
         show_cell : bool, optional
             If True the outlines of the unit cell are plotted.
+        con_colors : Sequence[tuple], optional
+            list of colors to override the defautl connection color. Each element
+            has to be a tuple with the first two elements being the atom indices of
+            the pair and the third element the color, for example ``[('A', 'A', 'r')]``.
+        adjustable : None or {'box', 'datalim'}, optional
+            If not None, this defines which parameter will be adjusted to meet
+            the equal aspect ratio. If 'box', change the physical dimensions of
+            the Axes. If 'datalim', change the x or y data limits.
+            Only applied to 2D plots.
         ax : plt.Axes or plt.Axes3D or None, optional
             Parent plot. If None, a new plot is initialized.
         show : bool, optional
             If True, show the resulting plot.
         """
+        logger.debug("Plotting unit cell")
         if self.dim > 3:
             raise ValueError(f"Plotting in {self.dim} dimensions is not supported!")
-        if ax is None:
-            fig = plt.figure()
-            ax = fig.add_subplot(111, projection="3d" if self.dim == 3 else None)
-        else:
-            fig = ax.get_figure()
-        hopz = 1
-        atomz = 2
-        # prefetch colors
-        colors = list()
-        for i in range(self.num_base):
-            atom = self.get_atom(i)
-            col = atom.color or f"C{i}"
-            line = ax.plot([], [], color=col)[0]
-            col = line.get_color()
-            colors.append(col)
+
+        hopz, atomz = range(2)
+
+        fig, ax = subplot(self.dim, adjustable, ax)
 
         # Draw unit vectors and the cell they spawn.
         if show_vecs:
             vectors = self.vectors
-            draw_cell(ax, vectors, color="k", lw=1., outlines=show_cell)
+            draw_unit_cell(ax, vectors, color="k", lw=1., zorder=hopz,
+                           outlines=show_cell)
+        # Draw sites
+        colors = list()
+        for i in range(self.num_base):
+            atom = self.atoms[i]
+            col = atom.color or f"C{i}"
+            points = self.atom_positions[i]
+            draw_sites(ax, points, atom.radius, color=col, label=atom.name,
+                       zorder=atomz)
+            colors.append(col)
 
-        color = "k"
+        # Draw Neighbors and connections
+        ccolor = "k"
+        _alphas = range(self.num_base)
+        hop_colors = [[ccolor for _ in _alphas] for _ in _alphas]
+        if con_colors is not None:
+            for a1, a2, col in con_colors:
+                alph1 = self.get_alpha(a1)
+                alph2 = self.get_alpha(a2)
+                hop_colors[alph1][alph2] = col
+                hop_colors[alph2][alph1] = col
+
         if show_neighbors:
             position_arr = [list() for _ in range(self.num_base)]
             for i in range(self.num_base):
-                pos = self.atom_positions[i]
+                p1 = self.atom_positions[i]
                 for distidx in range(self.num_distances):
                     try:
                         indices = self.get_neighbors(alpha=i, distidx=distidx)
                         positions = self.get_positions(indices)
-                        draw_vectors(ax, positions - pos, pos=pos, zorder=hopz,
-                                     color=color, lw=lw)
-                        for idx, pos1 in zip(indices, positions):
+                        for idx, p2 in zip(indices, positions):
+                            j = idx[-1]
+                            col = hop_colors[i][j]
+                            draw_vectors(ax, p2 - p1, pos=p1, zorder=hopz,
+                                         color=col, lw=lw)
                             if np.any(idx[:-1]):
-                                a = idx[-1]
-                                position_arr[a].append(pos1)
+                                position_arr[j].append(p2)
                     except IndexError:
                         pass
 
@@ -2667,34 +2693,23 @@ class Lattice:
                     pos = np.unique(positions, axis=0)
                     rad = 0.6 * atom.radius
                     col = colors[i]
-                    draw_sites(ax, pos, radius=rad, color=col,
-                               alpha=alpha, zorder=atomz)
-
-        # Plot atoms in the unit cell
-        for i in range(self.num_base):
-            atom = self.get_atom(i)
-            pos = self.atom_positions[i]
-            col = colors[i]
-            rad = atom.radius
-            draw_sites(ax, pos, radius=rad, color=col, label=atom.name, zorder=atomz)
-
-        rad = max([at.radius for at in self._atoms]) if self._atoms else 0
-        # Format plot
-        if legend and self._num_base > 1:
+                    draw_sites(ax, pos, rad, color=col, alpha=alpha,
+                               zorder=atomz)
+        # Configure legend
+        if legend is None:
+            legend = self.num_base > 1
+        if legend:
             ax.legend()
+
+        # Configure grid
+        if grid and self.dim < 3:
+            ax.set_axisbelow(True)
+            ax.grid(b=True, which="major")
+
+        # Adjust margin
         if isinstance(margins, float):
             margins = [margins] * self.dim
-        if self.dim == 1:
-            w = self.cell_size[0]
-            xmin, xmax = ax.get_xlim()
-            ax.margins(*margins)
-            ax.set_xlim(xmin - rad, xmax + rad)
-            ax.set_ylim(-w / 2, +w / 2)
-        else:
-            ax.margins(*margins)
-
-        if self.dim < 3:
-            ax.set_aspect("equal")
+        ax.margins(*margins)
 
         fig.tight_layout()
         if show:
@@ -2706,9 +2721,12 @@ class Lattice:
              margins: Union[Sequence[float], float] = 0.1,
              legend: bool = True,
              grid: bool = False,
+             pscale: float = 0.5,
              show_periodic: bool = True,
              show_indices: bool = False,
-             show_cell: bool = False,
+             index_offset: float = 0.1,
+             con_colors: Sequence = None,
+             adjustable: str = "datalim",
              ax: Union[plt.Axes, Axes3D] = None,
              show: bool = False) -> Union[plt.Axes, Axes3D]:  # pragma: no cover
         """Plot the cached lattice.
@@ -2718,88 +2736,103 @@ class Lattice:
         lw : float, default: 1
             Line width of the hopping connections.
         margins : Sequence[float] or float, optional
-            Optional margins of the plot.
+            The margins of the plot.
         legend : bool, optional
             Flag if legend is shown
         grid : bool, optional
             If True, draw a grid in the plot.
+        pscale : float, optional
+            The scale for drawing periodic connections. The default is half of the
+            normal length.
         show_periodic : bool, optional
             If True the periodic connections will be shown.
         show_indices : bool, optional
             If True the index of the sites will be shown.
-        show_cell : bool, optional
-            If True the first unit-cell is drawn.
+        index_offset : float, optional
+            The positional offset of the index text labels. Only used if
+            `show_indices=True`.
+        con_colors : Sequence[tuple], optional
+            list of colors to override the defautl connection color. Each element
+            has to be a tuple with the first two elements being the atom indices of
+            the pair and the third element the color, for example ``[('A', 'A', 'r')]``.
+        adjustable : None or {'box', 'datalim'}, optional
+            If not None, this defines which parameter will be adjusted to meet
+            the equal aspect ratio. If 'box', change the physical dimensions of
+            the Axes. If 'datalim', change the x or y data limits.
+            Only applied to 2D plots.
         ax : plt.Axes or plt.Axes3D or None, optional
             Parent plot. If None, a new plot is initialized.
         show : bool, optional
             If True, show the resulting plot.
         """
         logger.debug("Plotting lattice")
-        hopz = 1
-        atomz = 2
         if self.dim > 3:
             raise ValueError(f"Plotting in {self.dim} dimensions is not supported!")
 
-        if ax is None:
-            fig = plt.figure()
-            ax = fig.add_subplot(111, projection="3d" if self.dim == 3 else None)
-        else:
-            fig = ax.get_figure()
+        hopz, atomz = range(2)
 
-        # Draw unit vectors and the cell they spawn.
-        if show_cell:
-            vectors = self.vectors
-            draw_cell(ax, vectors, color='k', lw=2, outlines=True)
-
-        color = "k"
-        # Draw connections
-        for i in range(self.num_sites):
-            pos = self.data.positions[i]
-            neighbor_pos = self.data.get_neighbor_pos(i, periodic=False)
-            if len(neighbor_pos):
-                draw_vectors(ax, neighbor_pos - pos, pos=pos, color=color, lw=lw,
-                             zorder=hopz)
-                if show_periodic:
-                    mask = self.data.neighbor_mask(i, periodic=True)
-                    idx = self.data.neighbors[i, mask]
-                    pnvecs = self.data.pnvecs[i, mask]
-                    neighbor_pos = self.data.positions[idx]
-                    for j, x in enumerate(neighbor_pos):
-                        x = self.translate(-pnvecs[j], x)
-                        vec = 0.5 * (x - pos)
-                        draw_vectors(ax, vec, pos=pos, color="0.5", lw=lw, zorder=hopz)
-
+        fig, ax = subplot(self.dim, adjustable, ax=ax)
         # Draw sites
         for alpha in range(self.num_base):
             atom = self.atoms[alpha]
             col = atom.color or f"C{alpha}"
             points = self.data.get_positions(alpha)
-            draw_sites(ax, points, radius=atom.radius, color=col, label=atom.name,
-                       zorder=atomz)
+            label = atom.name
+            draw_sites(ax, points, atom.radius, color=col, label=label, zorder=atomz)
+
+        # Draw connections
+        ccolor = "k"
+        pcolor = "0.5"
+        positions = self.positions
+        _alphas = range(self.num_base)
+        hop_colors = [[ccolor for _ in _alphas] for _ in _alphas]
+        per_colors = [[pcolor for _ in _alphas] for _ in _alphas]
+        if con_colors is not None:
+            for a1, a2, col in con_colors:
+                alph1 = self.get_alpha(a1)
+                alph2 = self.get_alpha(a2)
+                hop_colors[alph1][alph2] = col
+                hop_colors[alph2][alph1] = col
+
+        for i in range(self.num_sites):
+            at1 = self.alpha(i)
+            p1 = positions[i]
+            for j in self.data.get_neighbors(i, periodic=False, unique=True):
+                p2 = positions[j]
+                at2 = self.alpha(j)
+                color = hop_colors[at1][at2]
+                draw_vectors(ax, p2 - p1, p1, color=color, lw=lw, zorder=hopz)
+            if show_periodic:
+                mask = self.data.neighbor_mask(i, periodic=True)
+                idx = self.data.neighbors[i, mask]
+                pnvecs = self.data.pnvecs[i, mask]
+                neighbor_pos = self.data.positions[idx]
+                for j, x in enumerate(neighbor_pos):
+                    at2 = self.alpha(idx[j])
+                    x = self.translate(-pnvecs[j], x)
+                    color = per_colors[at1][at2]
+                    draw_vectors(ax, pscale * (x - p1), p1, color=color, lw=lw,
+                                 zorder=hopz)
 
         if show_indices:
             positions = [self.position(i) for i in range(self.num_sites)]
-            draw_indices(ax, positions)
+            draw_indices(ax, positions, index_offset)
 
-        # Format plot
-        if legend and self._num_base > 1:
+        # Configure legend
+        if legend is None:
+            legend = self.num_base > 1
+        if legend:
             ax.legend()
-        if grid:
+
+        # Configure grid
+        if grid and self.dim < 3:
             ax.set_axisbelow(True)
             ax.grid(b=True, which="major")
 
+        # Adjust margin
         if isinstance(margins, float):
             margins = [margins] * self.dim
-        if self.dim == 1 or (self.dim == 2 and self.shape[1] < 1):
-            ax.margins(*margins)
-            sizex = self.shape[0]
-            h = sizex / 4
-            ax.set_ylim(-h, +h)
-        else:
-            ax.margins(*margins)
-
-        if self.dim < 3:
-            ax.set_aspect("equal", "datalim")
+        ax.margins(*margins)
 
         fig.tight_layout()
         if show:

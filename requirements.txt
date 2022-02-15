@@ -4,3 +4,4 @@ scipy>=1.7.1
 matplotlib>=3.0.0
 pytest>=6.2.5
 hypothesis>=6.0.0
+colorcet>=2.0.0

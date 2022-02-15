@@ -50,3 +50,4 @@ options:
   notes:
     keywords:
       - BREAKING CHANGE
+      - DEPRECATED

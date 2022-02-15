@@ -23,7 +23,7 @@ from matplotlib import path, transforms
 import colorcet as cc
 
 __all__ = [
-    "subplot", "set_margins", "set_padding", "set_limits", "draw_line", "draw_lines",
+    "subplot", "draw_line", "draw_lines",
     "draw_arrows", "draw_vectors", "draw_points", "draw_indices", "draw_unit_cell",
     "draw_surfaces", "interpolate_to_grid", "draw_sites"
 ]
@@ -31,48 +31,10 @@ __all__ = [
 # Golden ratio as standard ratio for plot-figures
 GOLDEN_RATIO = (np.sqrt(5) - 1.0) / 2.0
 
-# =========================================================================
-# Formatting
-# =========================================================================
-
-
-def set_margins(ax, x=None, y=None, z=None):
-    if z is None:
-        ax.margins(x=x, y=y)
-    else:
-        ax.margins(x=x, y=y, z=z)
-
-
-def set_padding(ax, x=None, y=None, z=None):
-    bbox = ax.dataLim
-    if x is not None:
-        if not hasattr(x, '__len__'):
-            x = (x, x)
-        ax.set_xlim(bbox.x0 - x[0], bbox.x1 + x[1])
-    if y is not None:
-        if not hasattr(y, '__len__'):
-            y = (y, y)
-        ax.set_ylim(bbox.x0 - y[0], bbox.y1 + y[1])
-    if z is not None:
-        if not hasattr(z, '__len__'):
-            z = (z, z)
-        ax.set_zlim(bbox.z0 - z[0], bbox.z0 + z[1])
-
-
-def set_limits(ax, dim, padding=None, margins=0.1):
-    if padding is not None:
-        if not hasattr(padding, "__len__"):
-            padding = [padding] * dim
-        set_padding(ax, *padding)
-    else:
-        if not hasattr(margins, "__len__"):
-            margins = [margins] * dim
-        set_margins(ax, *margins)
-
-
 # ======================================================================================
 # Formatting / Styling
 # ======================================================================================
+
 
 def set_color_cycler(color_cycle=cc.glasbey_category10):
     """Sets the colors of the pyplot color cycler.

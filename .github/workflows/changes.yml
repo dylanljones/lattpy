@@ -17,3 +17,8 @@ jobs:
         with:
           filename: CHANGELOG.md
           next_version: "1.0.0"
+      - name: upload
+        run: |
+          git add CHANGELOG.md
+          git commit -m "auto-update CHANGELOG.md"
+          git push

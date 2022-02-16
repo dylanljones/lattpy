@@ -1,11 +1,11 @@
 <h1 align="center">LattPy - Simple and Efficient Lattice Modeling in Python</h1>
 
 <p align="center">
-    <a name="pypi-link"><img alt="Python Version" src="https://img.shields.io/pypi/pyversions/lattpy?logo=python&style=flat-square"></a>
-    <a name="pypi-link"><img alt="Version" src="https://img.shields.io/pypi/v/lattpy?logo=pypi&style=flat-square"></a>
-    <a name="pypi-link"><img alt="Status" src="https://img.shields.io/pypi/status/lattpy?color=yellow&style=flat-square"></a>
-    <a name="license-link"><img alt="License" src="https://img.shields.io/pypi/l/lattpy?style=flat-square"></a>
-    <a name="lgtm-link"><img alt="LGTM Grade" src="https://img.shields.io/lgtm/grade/python/github/dylanljones/lattpy?label=code%20quality&logo=lgtm&style=flat-square"></a>
+    <a href="https://pypi.org/project/lattpy/"><img alt="Python Version" src="https://img.shields.io/pypi/pyversions/lattpy?logo=python&style=flat-square"></a>
+    <a href="https://pypi.org/project/lattpy/"><img alt="Version" src="https://img.shields.io/pypi/v/lattpy?logo=pypi&style=flat-square"></a>
+    <a href="https://pypi.org/project/lattpy/"><img alt="Status" src="https://img.shields.io/pypi/status/lattpy?color=yellow&style=flat-square"></a>
+    <a href="https://github.com/dylanljones/lattpy/blob/master/LICENSE"><img alt="License" src="https://img.shields.io/pypi/l/lattpy?style=flat-square"></a>
+    <a href="https://lgtm.com/projects/g/dylanljones/lattpy/context:python"><img alt="LGTM Grade" src="https://img.shields.io/lgtm/grade/python/github/dylanljones/lattpy?label=code%20quality&logo=lgtm&style=flat-square"></a>
 </p>
 
 > "Any dimension and shape you like."
@@ -278,22 +278,12 @@ A guide for contributing to `lattpy` and the commit-message style can be found i
 [CONTRIBUTING](https://github.com/dylanljones/lattpy/blob/master/CONTRIBUTING.md)
 
 
-
-
-[pypi-link]: https://pypi.org/project/lattpy/
-[python-badge]: https://img.shields.io/pypi/pyversions/lattpy?logo=python&style=flat-square
-[pypi-badge]: https://img.shields.io/pypi/v/lattpy?logo=pypi&style=flat-square
-[status-badge]: https://img.shields.io/pypi/status/lattpy?color=yellow&style=flat-square
-[license-badge]: https://img.shields.io/pypi/l/lattpy?style=flat-square
-[license-link]: https://github.com/dylanljones/lattpy/blob/master/LICENSE
-[lgtm-badge]: https://img.shields.io/lgtm/grade/python/github/dylanljones/lattpy?label=code%20quality&logo=lgtm&style=flat-square
-[lgtm-link]: https://lgtm.com/projects/g/dylanljones/lattpy/context:python
-[pypi-downloads]: https://img.shields.io/pypi/dm/lattpy?style=flat-square
+[docs-stable-link]: https://lattpy.readthedocs.io/en/stable/
+[docs-tutorial-link]: https://lattpy.readthedocs.io/en/stable/tutorial/index.html
 
 [tests-master]: https://img.shields.io/github/workflow/status/dylanljones/lattpy/Test/master?label=tests&logo=github&style=flat
 [tests-dev]: https://img.shields.io/github/workflow/status/dylanljones/lattpy/Test/dev?label=tests&logo=github&style=flat
 [link-tests]: https://github.com/dylanljones/lattpy/actions/workflows/test.yml
-
 [codecov-master]: https://codecov.io/gh/dylanljones/lattpy/branch/master/graph/badge.svg?
 [codecov-master-link]: https://app.codecov.io/gh/dylanljones/lattpy/branch/master
 [codecov-dev]: https://codecov.io/gh/dylanljones/lattpy/branch/dev/graph/badge.svg?
@@ -302,7 +292,3 @@ A guide for contributing to `lattpy` and the commit-message style can be found i
 [docs-master-link]: https://lattpy.readthedocs.io/en/latest/
 [docs-dev]: https://img.shields.io/readthedocs/lattpy/dev?style=flat
 [docs-dev-link]: https://lattpy.readthedocs.io/en/dev/
-
-
-[docs-stable-link]: https://lattpy.readthedocs.io/en/stable/
-[docs-tutorial-link]: https://lattpy.readthedocs.io/en/stable/tutorial/index.html

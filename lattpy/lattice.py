@@ -2597,7 +2597,7 @@ class Lattice:
                   show_vecs: bool = True,
                   show_neighbors: bool = True,
                   con_colors: Sequence = None,
-                  adjustable: str = "datalim",
+                  adjustable: str = "box",
                   ax: Union[plt.Axes, Axes3D] = None,
                   show: bool = False) -> Union[plt.Axes, Axes3D]:  # pragma: no cover
         """Plot the unit cell of the lattice.
@@ -2608,7 +2608,7 @@ class Lattice:
             Line width of the neighbor connections.
         alpha : float, optional
             The alpha value of the neighbor sites.
-                margins : Sequence[float] or float, optional
+        margins : Sequence[float] or float, optional
             The margins of the plot.
         legend : bool, optional
             Flag if legend is shown.
@@ -2726,7 +2726,7 @@ class Lattice:
              show_indices: bool = False,
              index_offset: float = 0.1,
              con_colors: Sequence = None,
-             adjustable: str = "datalim",
+             adjustable: str = "box",
              ax: Union[plt.Axes, Axes3D] = None,
              show: bool = False) -> Union[plt.Axes, Axes3D]:  # pragma: no cover
         """Plot the cached lattice.

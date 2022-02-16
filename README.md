@@ -8,12 +8,10 @@
     <a name="lgtm-link"><img alt="LGTM Grade" src="https://img.shields.io/lgtm/grade/python/github/dylanljones/lattpy?label=code%20quality&logo=lgtm&style=flat-square"></a>
 </p>
 
-
-| :warning: **WARNING**: This project is still in development and might change significantly in the future! |
-|-----------------------------------------------------------------------------------------------------------|
-
-
 > "Any dimension and shape you like."
+
+:warning: **WARNING**: This project is still in development and might change significantly in the future! |
+
 
 *LattPy* is a simple and efficient Python package for modeling Bravais lattices and
 constructing (finite) lattice structures in any dimension.

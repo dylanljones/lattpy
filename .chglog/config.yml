@@ -22,9 +22,9 @@ options:
          - fix       # Bug fix
          - perf      # performance improvements
          - refactor  # code refactoring
+         - docs      # documentation updates
          # - build     # update build config
          # - ci        # continous integration updates
-         - docs      # documentation updates
          # - test      # Test changes
          # - update    # Miscellaneous
   commit_groups:

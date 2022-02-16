@@ -31,6 +31,15 @@ class LatticeBasis:
     basis vectors and subsequently the coordinate system of the lattice and provides
     the necessary basis transformations between the world and lattice coordinate system.
 
+    Attributes
+    ----------
+    dim
+    vectors
+    vectors3D
+    norms
+    cell_size
+    cell_volume
+
     Methods
     -------
     chain

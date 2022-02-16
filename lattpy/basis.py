@@ -18,10 +18,13 @@ from mpl_toolkits.mplot3d.axes3d import Axes3D
 from typing import Union, Sequence, Callable
 from .spatial import cell_size, cell_volume, WignerSeitzCell
 from .plotting import subplot, draw_unit_cell
+
 logger = logging.getLogger(__name__)
 
 vecs_t = Union[float, Sequence[float], Sequence[Sequence[float]]]
 basis_t = Union[float, Sequence[float], Sequence[Sequence[float]], "LatticeBasis"]
+
+__all__ = ["LatticeBasis"]
 
 
 class LatticeBasis:

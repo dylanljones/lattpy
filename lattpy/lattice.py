@@ -114,6 +114,8 @@ class Lattice(LatticeBasis):
     >>> import lattpy as lp
     >>> import matplotlib.pyplot as plt
     >>> latt = lp.Lattice.square(atoms={(0.0, 0.0): "A"}, cons={("A", "A"): 1})
+    >>> latt.add_atom()
+    >>> latt.add_connections(1)
     >>> _ = latt.plot_cell()
     >>> plt.show()
 

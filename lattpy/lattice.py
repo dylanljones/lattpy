@@ -102,6 +102,7 @@ class Lattice(LatticeBasis):
     --------
     Two dimensional lattice with one atom in the unit cell and nearest neighbors
 
+    >>> import lattpy as lp
     >>> latt = lp.Lattice(np.eye(2))
     >>> latt.add_atom()
     >>> latt.add_connections(1)
@@ -110,6 +111,7 @@ class Lattice(LatticeBasis):
 
     Quick-setup of the same lattice:
 
+    >>> import lattpy as lp
     >>> import matplotlib.pyplot as plt
     >>> latt = lp.Lattice.square(atoms={(0.0, 0.0): "A"}, cons={("A", "A"): 1})
     >>> _ = latt.plot_cell()

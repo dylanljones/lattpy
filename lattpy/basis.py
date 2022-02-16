@@ -70,6 +70,15 @@ class LatticeBasis:
         ``LatticeBasis`` instance is passed it is copied and used as the new basis.
     **kwargs
         Key-word arguments. Used only when subclassing ``LatticeBasis``.
+
+    Examples
+    --------
+    >>> import lattpy as lp
+    >>> import matplotlib.pyplot as plt
+    >>> basis = lp.LatticeBasis.square()
+    >>> _ = basis.plot_basis()
+    >>> plt.show()
+
     """
     # Tolerance for reciprocal vectors/lattice
     RVEC_TOLERANCE: float = 1e-6

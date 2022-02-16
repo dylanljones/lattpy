@@ -75,6 +75,9 @@ def _filter_dangling(indices, positions, neighbors, distances, min_neighbors):
 class Lattice(LatticeStructure):
     """Main lattice object representing a Bravais lattice.
 
+    .. inheritance-diagram:: Lattice
+       :parts: 1
+
     Parameters
     ----------
     basis: array_like or float or LatticeBasis

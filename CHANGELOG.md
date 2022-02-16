@@ -9,6 +9,7 @@
 - use git-chglog to auto-generate changelogs
 
 ### Improvements/Bug Fixes
+- add ``use_mplstyle`` to plotting module
 - change atom parameter order and fix resulting errors
 - use `box` for plot aspect ratio
 - improve lattice plotting and fix scaling/auto-limit issues
@@ -18,6 +19,8 @@
 - rename unitcell module to atom
 
 ### Documentation
+- fix limits of plot in configuration tutorial
+- update index page of docs
 - fix docstrings of ``DataMap``
 - add hamiltonian section to tutorial
 - add change log contributing to documentation

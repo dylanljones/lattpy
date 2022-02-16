@@ -8,6 +8,7 @@
 - use git-chglog to auto-generate changelogs
 
 ### Improvements/Bug Fixes
+- use `box` for plot aspect ratio
 - improve lattice plotting and fix scaling/auto-limit issues
 - update change log template and include old entries
 

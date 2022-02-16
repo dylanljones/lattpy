@@ -3,6 +3,9 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+
+<a name="0.6.7"></a>
+## [0.6.7] - 2022-16-02
 ### New Features
 - add method for hiding the box and axis of a plot
 - Add ``finite_hypercubic`` lattice prefab
@@ -54,7 +57,8 @@
 - add more docstrings
 - fix multiple bugs
 
-[Unreleased]: https://github.com/dylanljones/lattpy/compare/0.6.6...HEAD
+[Unreleased]: https://github.com/dylanljones/lattpy/compare/0.6.7...HEAD
+[0.6.7]: https://github.com/dylanljones/lattpy/compare/0.6.6...0.6.7
 [0.6.6]: https://github.com/dylanljones/lattpy/compare/0.6.5...0.6.6
 [0.6.5]: https://github.com/dylanljones/lattpy/compare/0.6.4...0.6.5
 [0.6.4]: https://github.com/dylanljones/lattpy/compare/0.6.3...0.6.4

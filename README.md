@@ -8,13 +8,14 @@
     <a name="lgtm-link"><img alt="LGTM Grade" src="https://img.shields.io/lgtm/grade/python/github/dylanljones/lattpy?label=code%20quality&logo=lgtm&style=flat-square"></a>
 </p>
 
-> "Any shape and size you like."
+> "Any dimension and shape you like."
 
 *LattPy* is a simple and efficient Python package for modeling Bravais lattices and
 constructing (finite) lattice structures in any dimension.
-It provides an easy interface for constructing lattice structures by simplifying the configuration of the unit cell
-and the neighbor connections - making it possible to construct complex models in just a few lines of code.
-You will save time and mental energy for more important matters.
+It provides an easy interface for constructing lattice structures by simplifying the
+configuration of the unit cell and the neighbor connections - making it possible to
+construct complex models in just a few lines of code and without the headache of
+adding neighbor connections manually. You will save time and mental energy for more important matters.
 
 | Master | [![Test][tests-master]][link-tests] | [![Codecov][codecov-master]][codecov-master-link] | [![Read the Docs][docs-master]][docs-master-link] |
 |:-------|:------------------------------------|:--------------------------------------------------|:--------------------------------------------------|
@@ -23,7 +24,7 @@ You will save time and mental energy for more important matters.
 
 1. [Installation](#installation)
 2. [Documentation](#documentation)
-3. [Quick start](#quick-start)
+3. [Quick-Start](#quick-start)
 4. [Performance](#performance)
 5. [Development](#development)
 
@@ -49,9 +50,9 @@ python setup.py install
 
 ## Documentation
 
-The tutorial and API documentation is available on [ReadTheDocs][docs-stable-link].
+[Read the documentation on ReadTheDocs!][docs-stable-link]
 
-## Quick start
+## Quick-Start
 
 See the [tutorial][docs-tutorial-link] for more information and examples.
 

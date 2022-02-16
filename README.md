@@ -1,4 +1,4 @@
-<h2 align="center">LattPy - Simple and Efficient Lattice Modeling in Python</h2>
+<h1 align="center">LattPy - Simple and Efficient Lattice Modeling in Python</h1>
 
 <p align="center">
     <a name="pypi-link"><img alt="Python Version" src="https://img.shields.io/pypi/pyversions/lattpy?logo=python&style=flat-square"></a>

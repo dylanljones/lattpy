@@ -3,14 +3,24 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-==================================
-Welcome to LattPy's documentation!
-==================================
+===============================================
+Simple and Efficient Lattice Modeling in Python
+===============================================
+
+.. warning::
+   This project is still in development and might change significantly in the future!
 
 |pypi-python-version| |pypi-version| |pypi-status| |pypi-license| |lgtm-grade|
 
-LattPy is a simple and efficient Python package for modeling Bravais lattices and
-constructing (finite) lattice structures in ``d`` dimensions.
+    “Any dimension and shape you like.”
+
+*LattPy* is a simple and efficient Python package for modeling Bravais lattices and
+constructing (finite) lattice structures in any dimension.
+It provides an easy interface for constructing lattice structures by simplifying the
+configuration of the unit cell and the neighbor connections - making it possible to
+construct complex models in just a few lines of code and without the headache of
+adding neighbor connections manually. You will save time and mental energy for more important matters.
+
 
 +---------+---------------+-----------------+---------------+
 | Master  ||tests-master| ||codecov-master| | |docs-master| |
@@ -27,10 +37,6 @@ constructing (finite) lattice structures in ``d`` dimensions.
    >>> latt.build((20.7, 10.5))
    >>> latt.plot(legend=False)
    >>> plt.show()
-
-
-.. warning::
-   This project is still in development and might change significantly in the future!
 
 
 .. toctree::

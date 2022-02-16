@@ -4,10 +4,12 @@
 ## [Unreleased]
 
 ### New Features
+- add method for hiding the box and axis of a plot
 - Add ``finite_hypercubic`` lattice prefab
 - use git-chglog to auto-generate changelogs
 
 ### Improvements/Bug Fixes
+- change atom parameter order and fix resulting errors
 - use `box` for plot aspect ratio
 - improve lattice plotting and fix scaling/auto-limit issues
 - update change log template and include old entries

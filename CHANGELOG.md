@@ -4,9 +4,12 @@
 ## [Unreleased]
 
 ### New Features
+- Split the lattice structure into separate object ``LatticeStructure`` and use it as base class for ``Lattice``
 - Split the lattice basis into separate object ``LatticeBasis`` and use it as base class for ``Lattice``
 
 ### Documentation
+- add inheritance diagram to ``LatticeStructure`` and fix some docstrings
+- add inheritance diagram to ``Lattice``
 - add example to ``LatticeBasis`` docstring
 - add attributes to docstring of ``LatticeBasis``
 - improve docstring of ``Lattice`` class

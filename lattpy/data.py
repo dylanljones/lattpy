@@ -74,6 +74,7 @@ class DataMap:
         alpha : int, optional
             Index of the atom in the unitcell. If `None` a mask for all atoms
             is returned. The default is `None`.
+
         Returns
         -------
         mask : np.ndarray
@@ -91,6 +92,7 @@ class DataMap:
             Index of distance to neighboring sites, default is 0 (nearest neighbors).
             If `None` a mask for neighbor-connections is returned. The default is
             `None`.
+
         Returns
         -------
         mask : np.ndarray
@@ -114,6 +116,7 @@ class DataMap:
         eps : array_like, optional
             The onsite values used for the lattice sites. If there are multiple atoms
             in the unitcell the length of the values must match. The default is 0.
+
         Returns
         -------
         filled : np.ndarray

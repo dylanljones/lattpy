@@ -53,10 +53,10 @@
 
 ### Improved/Fixed
 
-- improved build process
-- improved periodic neighbor computation
-- Improved documentation
-- Improved CI/Tests
+- improve build process
+- improve periodic neighbor computation
+- improve documentation
+- improve CI/Tests
 - minor fixes
 
 
@@ -70,12 +70,12 @@
 
 ### Improved/Fixed
 
-- improved build process
-- improved periodic neighbor computation (still not stable)
-- added/improved tests
-- improved plotting
-- added more docstrings
-- fixed multiple bugs
+- improve build process
+- improve periodic neighbor computation (still not stable)
+- add/improve tests
+- improve plotting
+- add more docstrings
+- fix multiple bugs
 
 
 {{- if .Versions }}

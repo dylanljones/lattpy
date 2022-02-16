@@ -20,61 +20,83 @@ from matplotlib.collections import LineCollection, Collection
 from mpl_toolkits.mplot3d.art3d import Line3DCollection, Line3D, Poly3DCollection
 from matplotlib.artist import allow_rasterization
 from matplotlib import path, transforms
+import colorcet as cc
 
 __all__ = [
-    "set_margins", "set_padding", "set_limits", "draw_line", "draw_lines",
-    "draw_arrows", "draw_vectors", "draw_points", "draw_indices", "draw_cell",
+    "subplot", "draw_line", "draw_lines",
+    "draw_arrows", "draw_vectors", "draw_points", "draw_indices", "draw_unit_cell",
     "draw_surfaces", "interpolate_to_grid", "draw_sites"
 ]
 
 # Golden ratio as standard ratio for plot-figures
 GOLDEN_RATIO = (np.sqrt(5) - 1.0) / 2.0
 
-# =========================================================================
-# Formatting
-# =========================================================================
+# ======================================================================================
+# Formatting / Styling
+# ======================================================================================
 
 
-def set_margins(ax, x=None, y=None, z=None):
-    if z is None:
-        ax.margins(x=x, y=y)
-    else:
-        ax.margins(x=x, y=y, z=z)
+def set_color_cycler(color_cycle=cc.glasbey_category10):
+    """Sets the colors of the pyplot color cycler.
+
+    Parameters
+    ----------
+    color_cycle : sequence
+        A list of the colors to use in the prop cycler.
+    """
+    plt.rcParams["axes.prop_cycle"] = plt.cycler("color", color_cycle)
 
 
-def set_padding(ax, x=None, y=None, z=None):
-    bbox = ax.dataLim
-    if x is not None:
-        if not hasattr(x, '__len__'):
-            x = (x, x)
-        ax.set_xlim(bbox.x0 - x[0], bbox.x1 + x[1])
-    if y is not None:
-        if not hasattr(y, '__len__'):
-            y = (y, y)
-        ax.set_ylim(bbox.x0 - y[0], bbox.y1 + y[1])
-    if z is not None:
-        if not hasattr(z, '__len__'):
-            z = (z, z)
-        ax.set_zlim(bbox.z0 - z[0], bbox.z0 + z[1])
+def set_equal_aspect(ax=None, adjustable="box"):
+    """Sets the aspect ratio of the plot to equal.
+
+    Parameters
+    ----------
+    ax : Axes
+        The axes of the plot. If not given the current axes is used.
+    adjustable : None or {'box', 'datalim'}, optional
+        If not None, this defines which parameter will be adjusted to meet
+        the equal aspect ratio. If 'box', change the physical dimensions of
+        the Axes. If 'datalim', change the x or y data limits.
+
+    Notes
+    -----
+    Setting the aspect ratio to equal is not supported for 3D plots and will
+    be ignored in that case.
+    """
+    if ax is None:
+        ax = plt.gca()
+    if ax.name == "3d":
+        return
+    ax.set_aspect("equal", adjustable)
 
 
-def set_limits(ax, dim, padding=None, margins=0.1):
-    if padding is not None:
-        if not hasattr(padding, "__len__"):
-            padding = [padding] * dim
-        set_padding(ax, *padding)
-    else:
-        if not hasattr(margins, "__len__"):
-            margins = [margins] * dim
-        set_margins(ax, *margins)
+# ======================================================================================
+# General Plotting
+# ======================================================================================
 
+def subplot(dim, adjustable="box", ax=None):
+    """Generates a two- or three-dimensional subplot with a equal aspect ratio
 
-# =========================================================================
-# Plotting
-# =========================================================================
+    Parameters
+    ----------
+    dim : int
+        The dimension of the plot.
+    adjustable : None or {'box', 'datalim'}, optional
+        If not None, this defines which parameter will be adjusted to meet
+        the equal aspect ratio. If 'box', change the physical dimensions of
+        the Axes. If 'datalim', change the x or y data limits.
+        Only applied to 2D plots.
+    ax : Axes, optional
+        Existing axes to format. If an existing axes is passed no new figure is created.
 
-
-def subplot(dim, adjustable="datalim", ax=None):
+    Returns
+    -------
+    fig : Figure
+        The figure of the subplot.
+    ax : Axes
+        The newly created or formatted axes of the subplot.
+    """
     if dim > 3:
         raise ValueError(f"Plotting in {dim} dimensions is not supported!")
     if ax is None:
@@ -82,47 +104,185 @@ def subplot(dim, adjustable="datalim", ax=None):
         ax = fig.add_subplot(111, projection="3d" if dim == 3 else None)
     else:
         fig = ax.get_figure()
-    if dim < 3:
-        ax.set_aspect("equal", adjustable)
+    set_equal_aspect(ax, adjustable)
     return fig, ax
 
 
-def draw_lines(ax, segments, *args, **kwargs):
-    dim = len(segments[0][0])
-    if dim == 3:
-        coll = Line3DCollection(segments, *args, **kwargs)
+# noinspection PyShadowingNames
+def draw_line(ax, points, **kwargs):
+    """Draw a line segment between multiple points.
+
+    Parameters
+    ----------
+    ax : Axes
+        The axes for drawing the line segment.
+    points : (N, D) np.ndarray
+        A list of points between the line is drawn.
+    **kwargs
+        Additional keyword arguments for drawing the line.
+
+    Returns
+    -------
+    coll : Line2D or Line3D
+        The created line.
+
+    Examples
+    --------
+    >>> from lattpy import plotting
+    >>> import matplotlib.pyplot as plt
+    >>> fig, ax = plt.subplots()
+    >>> points = np.array([[1, 0], [0.7, 0.7], [0, 1], [-0.7, 0.7], [-1, 0]])
+    >>> _ = plotting.draw_line(ax, points)
+    >>> ax.margins(0.1, 0.1)
+    >>> plt.show()
+
+    """
+    dim = len(points[0])
+    if dim < 3:
+        line = Line2D(*points.T, **kwargs)
+    elif dim == 3:
+        line = Line3D(*points.T, **kwargs)
     else:
-        coll = LineCollection(segments, *args, **kwargs)
+        raise ValueError(f"Can't draw line with dimension {dim}")
+    ax.add_line(line)
+    return line
+
+
+# noinspection PyShadowingNames
+def draw_lines(ax, segments, **kwargs):
+    """Draw multiple line segments between points.
+
+    Parameters
+    ----------
+    ax : Axes
+        The axes for drawing the lines.
+    segments : array_like of (2, D) np.ndarray
+        A list of point pairs between the lines are drawn.
+    **kwargs
+        Additional keyword arguments for drawing the lines.
+
+    Returns
+    -------
+    coll: LineCollection or Line3DCollection
+        The created line collection.
+
+    Examples
+    --------
+    >>> from lattpy import plotting
+    >>> import matplotlib.pyplot as plt
+    >>> fig, ax = plt.subplots()
+    >>> segments = np.array([
+    ...     [[0, 0], [1, 0]],
+    ...     [[0, 1], [1, 1]],
+    ...     [[0, 2], [1, 2]]
+    ... ])
+    >>> _ = plotting.draw_lines(ax, segments)
+    >>> ax.margins(0.1, 0.1)
+    >>> plt.show()
+    """
+    dim = len(segments[0][0])
+    if dim < 3:
+        coll = LineCollection(segments, **kwargs)
+    elif dim == 3:
+        coll = Line3DCollection(segments, **kwargs)
+    else:
+        raise ValueError(f"Can't draw lines with dimension {dim}")
     ax.add_collection(coll)
     return coll
 
 
-def draw_line(ax, points, *args, **kwargs):
-    dim = len(points[0])
-    if dim < 3:
-        line = Line2D(*points.T, *args, **kwargs)
-        ax.add_line(line)
-    elif dim == 3:
-        line = Line3D(*points.T, *args, **kwargs)
-        ax.add_line(line)
-    else:
-        raise ValueError(f"Can't plot lines with dimension {dim}")
-    return line
+# noinspection PyShadowingNames
+def draw_vectors(ax, vectors, pos=None, **kwargs):
+    """Draws multiple lines from an optional starting point in the given directions.
+
+    Parameters
+    ----------
+    ax : Axes
+        The axes for drawing the lines.
+    vectors : (N, D) np.ndarray
+        The vectors to draw.
+    pos : (D, ) np.ndarray, optional
+        The starting position of the vectors. The default is the origin.
+    **kwargs
+        Additional keyword arguments for drawing the lines.
+
+    Returns
+    -------
+    coll: LineCollection or Line3DCollection
+        The created line collection.
+
+    Examples
+    --------
+    >>> from lattpy import plotting
+    >>> import matplotlib.pyplot as plt
+    >>> fig, ax = plt.subplots()
+    >>> vectors = np.array([[1, 0], [0.7, 0.7], [0, 1], [-0.7, 0.7], [-1, 0]])
+    >>> _ = plotting.draw_vectors(ax, vectors, [1, 0])
+    >>> ax.margins(0.1, 0.1)
+    >>> plt.show()
+    """
+    pos = pos if pos is not None else np.zeros(len(vectors[0]))
+    vectors = np.atleast_2d(vectors)
+    # Fix 1D case
+    if vectors.shape[1] == 1:
+        vectors = np.hstack((vectors, np.zeros((vectors.shape[0], 1))))
+        pos = np.array([pos[0], 0])
+    # Build segments
+    segments = list()
+    for v in vectors:
+        segments.append([pos, pos + v])
+    return draw_lines(ax, segments, **kwargs)
 
 
+# noinspection PyShadowingNames
 def draw_arrows(ax, vectors, pos=None, **kwargs):
+    """Draws multiple arrows from an optional starting point in the given directions.
+
+    Parameters
+    ----------
+    ax : Axes
+        The axes for drawing the arrows.
+    vectors : (N, D) np.ndarray
+        The vectors to draw.
+    pos : (D, ) np.ndarray, optional
+        The starting position of the vectors. The default is the origin.
+    **kwargs
+        Additional keyword arguments for drawing the arrows.
+
+    Returns
+    -------
+    coll: LineCollection or Line3DCollection
+        The created line collection.
+
+    Examples
+    --------
+    >>> from lattpy import plotting
+    >>> import matplotlib.pyplot as plt
+    >>> fig, ax = plt.subplots()
+    >>> vectors = np.array([[1, 0], [0.7, 0.7], [0, 1], [-0.7, 0.7], [-1, 0]])
+    >>> _ = plotting,draw_arrows(ax, vectors)
+    >>> ax.margins(0.1, 0.1)
+    >>> plt.show()
+    """
     vectors = np.atleast_2d(vectors)
     num_vecs, dim = vectors.shape
     if pos is None:
         pos = np.zeros((num_vecs, dim))
     else:
-        pos = np.asarray(pos)
-        if len(pos) == 1 or pos.shape[0] == 1:
+        pos = np.atleast_2d(pos)
+        if pos.shape[0] == 1:
             pos = np.tile(pos, (num_vecs, 1))
     assert len(pos) == len(vectors)
-
     points = pos.T
     directions = vectors.T
+    end_points = (pos + vectors).T
+    # Plot invisible points for datalim
+    if dim == 1:
+        end_points = np.append(end_points, np.zeros_like(end_points), axis=0)
+        points = np.append(points, np.zeros_like(points), axis=0)
+        directions = np.append(directions, np.zeros_like(directions), axis=0)
+    ax.scatter(*end_points, s=0)
+    # Draw arrows as quiver plot
     if dim != 3:
         kwargs.update({"angles": "xy", "scale_units": "xy", "scale": 1})
     else:
@@ -130,36 +290,137 @@ def draw_arrows(ax, vectors, pos=None, **kwargs):
     return ax.quiver(*points, *directions, **kwargs)
 
 
-def draw_vectors(ax, vectors, pos=None, ls="-", lw=1, zorder=1, **kwargs):
-    if not len(vectors):
-        return None
-    pos = pos if pos is not None else np.zeros(len(vectors[0]))
-    vectors = np.atleast_2d(vectors)
-    # Fix 1D case
-    if vectors.shape[1] == 1:
-        vectors = np.hstack((vectors, np.zeros((vectors.shape[0], 1))))
-        pos = np.array([pos[0], 0])
-    segments = list()
-    for v in vectors:
-        segments.append([pos, pos + v])
-    return draw_lines(ax, segments, linestyles=ls, linewidths=lw, zorder=zorder,
-                      **kwargs)
+# noinspection PyShadowingNames
+def draw_points(ax, points, size=10, **kwargs):
+    """Draws multiple points as scatter plot.
 
+    Parameters
+    ----------
+    ax : Axes
+        The axes for drawing the points.
+    points : (N, D) np.ndarray
+        The positions of the points to draw.
+    size : float, optional
+        The size of the markers of the points.
+    **kwargs
+        Additional keyword arguments for drawing the points.
 
-def draw_points(ax, points, size=10, color=None, alpha=1.0, zorder=3, **kwargs):
+    Returns
+    -------
+    scat : PathCollection
+        The scatter plot item.
+
+    Examples
+    --------
+    >>> from lattpy import plotting
+    >>> import matplotlib.pyplot as plt
+    >>> fig, ax = plt.subplots()
+    >>> points = np.array([[1, 0], [0.7, 0.7], [0, 1], [-0.7, 0.7], [-1, 0]])
+    >>> _ = plotting.draw_points(ax, points)
+    >>> ax.margins(0.1, 0.1)
+    >>> plt.show()
+    """
     points = np.atleast_2d(points)
     # Fix 1D case
     if points.shape[1] == 1:
         points = np.hstack((points, np.zeros((points.shape[0], 1))))
 
-    scat = ax.scatter(*points.T, s=size**2, color=color, alpha=alpha, zorder=zorder,
-                      **kwargs)
+    scat = ax.scatter(*points.T, s=size**2, **kwargs)
     # Manualy update data-limits
     # ax.ignore_existing_data_limits = True
     datalim = scat.get_datalim(ax.transData)
     ax.update_datalim(datalim)
     return scat
 
+
+# noinspection PyShadowingNames
+def draw_surfaces(ax, vertices, **kwargs):
+    """Draws a 3D surfaces defined by a set of vertices.
+
+    Parameters
+    ----------
+    ax : Axes3D
+        The axes for drawing the surface.
+    vertices : array_like
+        The vertices defining the surface.
+    **kwargs
+        Additional keyword arguments for drawing the lines.
+
+    Returns
+    -------
+    surf : Poly3DCollection
+        The surface object.
+
+    Examples
+    --------
+    >>> from lattpy import plotting
+    >>> import matplotlib.pyplot as plt
+    >>> vertices = [[0, 0, 0], [1, 1, 0], [0.5, 0.5, 1]]
+    >>> fig = plt.figure()
+    >>> ax = fig.add_subplot(111, projection="3d")
+    >>> _ = plotting.draw_surfaces(ax, vertices, alpha=0.5)
+    >>> plt.show()
+    """
+    if not isinstance(vertices[0][0], Iterable):
+        vertices = [list(vertices)]
+    poly = Poly3DCollection(vertices, **kwargs)
+    ax.add_collection3d(poly)
+    return poly
+
+
+# noinspection PyShadowingNames
+def text(ax, strings, positions, offset=None, **kwargs):
+    """Adds multiple strings to a plot.
+
+    Parameters
+    ----------
+    ax : Axes
+        The axes for drawing the text.
+    strings : str or sequence of str
+        The text to render.
+    positions : (..., D) array_like
+        The positions of the texts.
+    offset : float or (D, ) array_like
+        The offset of the positions of the text.
+    **kwargs
+        Additional keyword arguments for drawing the text.
+
+    Returns
+    -------
+    texts : list
+        The text items.
+
+    Examples
+    --------
+    >>> from lattpy import plotting
+    >>> import matplotlib.pyplot as plt
+    >>> fig, ax = plt.subplots()
+    >>> points = np.array([[-1, 0], [-0.7, 0.7], [0, 1], [0.7, 0.7], [1, 0]])
+    >>> strings = ["A", "B", "C", "D", "E"]
+    >>> _ = plotting.text(ax, strings, points)
+    >>> _ = ax.set_xlim(-1.5, +1.5)
+    >>> _ = ax.set_ylim(-0.5, +1.5)
+    >>> plt.show()
+    """
+    positions = np.atleast_2d(positions)
+    texts = list()
+    if offset is None:
+        offset = np.zeros(max(2, len(positions[0])))
+    elif isinstance(offset, float):
+        offset = offset * np.ones(max(2, len(positions[0])))
+
+    for s, pos in zip(strings, positions):
+        if len(pos) == 1:
+            pos = [pos, 0]
+        tpos = np.asarray(pos) + offset
+        txt = ax.text(*tpos, s=s, **kwargs)
+        texts.append(txt)
+    return texts
+
+
+# ======================================================================================
+# Lattice plotting
+# ======================================================================================
 
 # noinspection PyAbstractClass
 class CircleCollection(Collection):
@@ -190,7 +451,39 @@ class CircleCollection(Collection):
         super().draw(renderer)
 
 
-def draw_sites(ax, points, radius=10, color=None, alpha=1.0, zorder=3, **kwargs):
+# noinspection PyShadowingNames
+def draw_sites(ax, points, radius=0.2, **kwargs):
+    """Draws multiple circles with a scaled radius.
+
+    Parameters
+    ----------
+    ax : Axes
+        The axes for drawing the points.
+    points : (N, D) np.ndarray
+        The positions of the points to draw.
+    radius : float
+        The radius of the points. Scaling is only supported for 2D plots!
+    **kwargs
+        Additional keyword arguments for drawing the points.
+
+    Returns
+    -------
+    point_coll : CircleCollection or PathCollection
+        The circle or path collection.
+
+
+    Examples
+    --------
+    >>> from lattpy import plotting
+    >>> import matplotlib.pyplot as plt
+    >>> fig, ax = plt.subplots()
+    >>> points = np.array([[1, 0], [0.7, 0.7], [0, 1], [-0.7, 0.7], [-1, 0]])
+    >>> _ = plotting.draw_sites(ax, points, radius=0.2)
+    >>> _ = ax.set_xlim(-1.5, +1.5)
+    >>> _ = ax.set_ylim(-0.5, +1.5)
+    >>> plotting.set_equal_aspect(ax)
+    >>> plt.show()
+    """
     points = np.atleast_2d(points)
     # Fix 1D case
     if points.shape[1] == 1:
@@ -199,18 +492,22 @@ def draw_sites(ax, points, radius=10, color=None, alpha=1.0, zorder=3, **kwargs)
     dim = points.shape[1]
     if dim < 3:
         col = CircleCollection(radius, offsets=points, transOffset=ax.transData,
-                               color=color, alpha=alpha, zorder=zorder, **kwargs)
+                               **kwargs)
         ax.add_collection(col)
         label = kwargs.get("label", "")
         if label:
-            ax.plot([], [], marker='o', lw=0, color=color, label=label, markersize=10)
+            ax.plot([], [], marker='o', lw=0, color=kwargs.get("color", None),
+                    label=label, markersize=10)
         datalim = col.get_datalim(ax.transData)
+        datalim.x0 -= radius
+        datalim.x1 += radius
+        datalim.y0 -= radius
+        datalim.y1 += radius
         ax.update_datalim(datalim)
         return col
     else:
         size = radius * 50
-        scat = ax.scatter(*points.T, s=size**2, color=color, alpha=alpha, zorder=zorder,
-                          **kwargs)
+        scat = ax.scatter(*points.T, s=size**2, **kwargs)
         # Manualy update data-limits
         # ax.ignore_existing_data_limits = True
         datalim = scat.get_datalim(ax.transData)
@@ -218,43 +515,89 @@ def draw_sites(ax, points, radius=10, color=None, alpha=1.0, zorder=3, **kwargs)
         return scat
 
 
-def draw_indices(ax, positions, offset=0.1):
-    offset = np.ones_like(positions[0]) * offset
-    texts = list()
-    for i, pos in enumerate(positions):
-        if len(pos) == 1:
-            pos = [pos, 0]
-        lowerleft = np.asarray(pos) + offset
-        txt = ax.text(*lowerleft, s=str(i), va="bottom", ha="left")
-        texts.append(txt)
-    return texts
+# noinspection PyShadowingNames
+def draw_indices(ax, positions, offset=0.05, **kwargs):
+    """Draws the indices of the given positions on the plot.
+
+    Parameters
+    ----------
+    ax : Axes
+        The axes for drawing the text.
+    positions : (..., D) array_like
+        The positions of the texts.
+    offset : float or (D, ) array_like
+        The offset of the positions of the texts.
+    **kwargs
+        Additional keyword arguments for drawing the text.
+
+    Returns
+    -------
+    texts : list
+        The text items.
+
+    Examples
+    --------
+    >>> from lattpy import plotting
+    >>> import matplotlib.pyplot as plt
+    >>> points = np.array([[-1, 0], [-0.7, 0.7], [0, 1], [0.7, 0.7], [1, 0]])
+    >>> fig, ax = plt.subplots()
+    >>> _ = plotting.draw_points(ax, points)
+    >>> _ = plotting.draw_indices(ax, points)
+    >>> ax.margins(0.1, 0.1)
+    >>> plt.show()
+    """
+    strings = [str(i) for i in range(len(positions))]
+    va = "bottom"
+    ha = "left"
+    return text(ax, strings, positions, offset, ha=ha, va=va, **kwargs)
 
 
-def draw_cell(ax, vectors, color="k", lw=2., zorder=1, outlines=True):
+# noinspection PyShadowingNames
+def draw_unit_cell(ax, vectors, outlines=True, **kwargs):
+    """Draws the basis vectors and unit cell.
+
+    Parameters
+    ----------
+    ax : Axes
+        The axes for drawing the text.
+    vectors : float or (D, D) array_like
+        The vectors defining the basis.
+    outlines : bool, optional
+        If True the box define dby the basis vectors (unit cell) is drawn.
+    **kwargs
+        Additional keyword arguments for drawing the lines.
+
+    Returns
+    -------
+    lines : list
+        A list of the plotted lines.
+
+    Examples
+    --------
+    >>> from lattpy import plotting
+    >>> import matplotlib.pyplot as plt
+    >>> vectors = np.array([[1, 0], [0, 1]])
+    >>> fig, ax = plt.subplots()
+    >>> _ = plotting.draw_unit_cell(ax, vectors)
+    >>> plt.show()
+    """
     dim = len(vectors)
-    if dim == 1:
-        draw_arrows(ax, [vectors[0, 0], 0], color=color, lw=lw, zorder=zorder)
-        return
+    color = kwargs.pop("color", "k")
 
-    draw_arrows(ax, vectors, color=color, lw=lw, zorder=zorder)
-    # draw_vectors(ax, vectors, color=color, lw=lw, zorder=zorder)
-    if outlines:
+    arrows = draw_arrows(ax, vectors, color=color, **kwargs)
+    lines = list()
+    if outlines and dim > 1:
         for v, pos in itertools.permutations(vectors, r=2):
             data = np.asarray([pos, pos + v]).T
-            ax.plot(*data, color=color, ls='--', lw=1, zorder=zorder)
+            line = ax.plot(*data, color=color, **kwargs)[0]
+            lines.append(line)
         if dim == 3:
             for vecs in itertools.permutations(vectors, r=3):
                 v, pos = vecs[0], np.sum(vecs[1:], axis=0)
                 data = np.asarray([pos, pos + v]).T
-                ax.plot(*data, color=color, ls='--', lw=1, zorder=zorder)
-
-
-def draw_surfaces(ax, vertices, color=None, alpha=0.5):
-    if not isinstance(vertices[0][0], Iterable):
-        vertices = [list(vertices)]
-    poly = Poly3DCollection(vertices, alpha=alpha, facecolor=color)
-    ax.add_collection3d(poly)
-    return poly
+                line = ax.plot(*data, color=color, **kwargs)[0]
+                lines.append(line)
+    return arrows, lines
 
 
 def interpolate_to_grid(positions, values, num=(100, 100), offset=(0., 0.),

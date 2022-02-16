@@ -4,12 +4,15 @@
 ## [Unreleased]
 
 ### New Features
+- Add ``finite_hypercubic`` lattice prefab
 - use git-chglog to auto-generate changelogs
 
 ### Improvements/Bug Fixes
+- improve lattice plotting and fix scaling/auto-limit issues
 - update change log template and include old entries
 
 ### Documentation
+- fix docstrings of ``DataMap``
 - add hamiltonian section to tutorial
 - add change log contributing to documentation
 
@@ -18,10 +21,10 @@
 
 ### Improved/Fixed
 
-- improved build process
-- improved periodic neighbor computation
-- Improved documentation
-- Improved CI/Tests
+- improve build process
+- improve periodic neighbor computation
+- improve documentation
+- improve CI/Tests
 - minor fixes
 
 
@@ -35,12 +38,12 @@
 
 ### Improved/Fixed
 
-- improved build process
-- improved periodic neighbor computation (still not stable)
-- added/improved tests
-- improved plotting
-- added more docstrings
-- fixed multiple bugs
+- improve build process
+- improve periodic neighbor computation (still not stable)
+- add/improve tests
+- improve plotting
+- add more docstrings
+- fix multiple bugs
 
 [Unreleased]: https://github.com/dylanljones/lattpy/compare/0.6.6...HEAD
 [0.6.6]: https://github.com/dylanljones/lattpy/compare/0.6.5...0.6.6

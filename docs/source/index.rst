@@ -55,6 +55,7 @@ adding neighbor connections manually. You will save time and mental energy for m
 
    lattpy
    generated/lattpy.atom
+   generated/lattpy.basis
    generated/lattpy.data
    generated/lattpy.disptools
    generated/lattpy.lattice

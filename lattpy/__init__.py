@@ -15,6 +15,7 @@ Submodules
 
 .. autosummary::
    lattpy.atom
+   lattpy.basis
    lattpy.data
    lattpy.disptools
    lattpy.lattice
@@ -57,6 +58,7 @@ from .shape import AbstractShape, Shape, Circle, Donut, ConvexHull
 from .data import LatticeData
 from .disptools import DispersionPath
 from .atom import Atom
+from .basis import LatticeBasis
 from .lattice import Lattice
 
 from ._version import get_versions

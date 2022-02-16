@@ -48,13 +48,13 @@ constructing (finite) lattice structures in ``d`` dimensions.
    :caption: API Reference
 
    lattpy
+   generated/lattpy.atom
    generated/lattpy.data
    generated/lattpy.disptools
    generated/lattpy.lattice
    generated/lattpy.plotting
    generated/lattpy.shape
    generated/lattpy.spatial
-   generated/lattpy.unitcell
    generated/lattpy.utils
 
 

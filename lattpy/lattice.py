@@ -46,7 +46,7 @@ from .plotting import (
     draw_unit_cell,
     draw_indices
 )
-from .unitcell import Atom
+from .atom import Atom
 from .data import LatticeData, DataMap
 from .shape import AbstractShape, Shape
 

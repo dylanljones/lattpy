@@ -8,7 +8,7 @@
 # LICENSE file in the root directory and this permission notice shall
 # be included in all copies or substantial portions of the Software.
 
-from lattpy.unitcell import Atom
+from lattpy.atom import Atom
 
 
 def test_atom_uniqueness():
@@ -19,11 +19,6 @@ def test_atom_uniqueness():
 
     atom1 = Atom("A")
     atom2 = Atom("B")
-    assert atom1 != atom2
-    assert atom1.__hash__() != atom2.__hash__()
-
-    atom1 = Atom()
-    atom2 = Atom()
     assert atom1 != atom2
     assert atom1.__hash__() != atom2.__hash__()
 

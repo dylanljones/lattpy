@@ -29,7 +29,7 @@ class Atom(abc.MutableMapping):
         super().__init__()
         index = next(Atom._counter)
         self._index = index
-        self._name = name or str(index)
+        self._name = name or "A"
         self._weight = weight
         self._params = dict(color=color, radius=radius, **kwargs)
 

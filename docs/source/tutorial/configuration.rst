@@ -116,7 +116,7 @@ We again can view the current state of the unit cell:
 
    >>> latt = lp.Lattice.square()
    >>> latt.add_atom([0.0, 0.0], "A")
-   >>> latt.plot_cell(margins=0.5)
+   >>> latt.plot_cell()
    >>> plt.show()
 
 

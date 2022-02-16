@@ -18,14 +18,27 @@ __all__ = ["Atom"]
 
 
 class Atom(abc.MutableMapping):
-    """Object representing an atom of a bravais lattice."""
+    """Object representing an atom of a Bravais lattice.
 
+    Parameters
+    ----------
+    name : str, optional
+        The name of the atom. The default is 'A'.
+    radius : float, optional
+        The radius of the atom in real space.
+    color : str or float or array_like, optional
+        The color used to visualize the atom.
+    weight : float, optional
+        The weight of the atom.
+    **kwargs
+        Additional attributes of the atom.
+    """
     _counter = itertools.count()
 
     __slots__ = ["_index", "_name", "_weight", "_params"]
 
-    def __init__(self, name: str = None, weight: float = 1.0, color: str = None,
-                 radius=0.2, **kwargs):
+    def __init__(self, name: str = None, radius: float = 0.2, color: str = None,
+                 weight: float = 1.0, **kwargs):
         super().__init__()
         index = next(Atom._counter)
         self._index = index
@@ -35,6 +48,7 @@ class Atom(abc.MutableMapping):
 
     @property
     def id(self):
+        """The id of the atom."""
         return id(self)
 
     @property

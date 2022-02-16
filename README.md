@@ -8,6 +8,11 @@
     <a name="lgtm-link"><img alt="LGTM Grade" src="https://img.shields.io/lgtm/grade/python/github/dylanljones/lattpy?label=code%20quality&logo=lgtm&style=flat-square"></a>
 </p>
 
+
+| :warning: **WARNING**: This project is still in development and might change significantly in the future! |
+|-----------------------------------------------------------------------------------------------------------|
+
+
 > "Any dimension and shape you like."
 
 *LattPy* is a simple and efficient Python package for modeling Bravais lattices and
@@ -27,9 +32,6 @@ adding neighbor connections manually. You will save time and mental energy for m
 3. [Quick-Start](#quick-start)
 4. [Performance](#performance)
 5. [Development](#development)
-
-| :warning: **WARNING**: This project is still in development and might change significantly in the future! |
-|-----------------------------------------------------------------------------------------------------------|
 
 ## Installation
 

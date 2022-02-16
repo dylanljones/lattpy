@@ -50,7 +50,7 @@ from .plotting import (
 from .atom import Atom
 from .data import LatticeData, DataMap
 from .shape import AbstractShape, Shape
-
+from .basis import LatticeBasis
 
 __all__ = ["Lattice"]
 
@@ -91,7 +91,7 @@ def _filter_dangling(indices, positions, neighbors, distances, min_neighbors):
     return indices, positions, neighbors, distances
 
 
-class Lattice:
+class Lattice(LatticeBasis):
     """Main lattice object representing a Bravais lattice.
 
     Parameters
@@ -99,7 +99,10 @@ class Lattice:
     vectors: array_like or float
         The primitive basis vectors that define the unit cell of the lattice.
     **kwargs
-        Key-word arguments. Used only when subclassing ``Lattice``.
+        Key-word arguments. Used for quickly configuring a ``Lattice`` instance.
+        Allowed keywords are:
+        - atoms: Dictionary containing the atoms to add to the lattice.
+        - cons: Dictionary conatining the connections to add to the lattice.
 
     Examples
     --------
@@ -108,13 +111,22 @@ class Lattice:
     >>> latt = Lattice(np.eye(2))
     >>> latt.add_atom()
     >>> latt.add_connections(1)
-    Lattice(dim: 2, num_base: 1, shape: None)
+    >>> latt.plot_cell()
+    >>> plt.show()
+
+    Quick-setup of the same lattice:
+
+    >>> latt = Lattice.square(atoms={(0.0, 0.0): "A"}, cons={("A", "A"): 1})
+    >>> latt.plot_cell()
+    >>> plt.show()
+
     """
     DIST_DECIMALS: int = 6        # Decimals used for rounding distances
     RVEC_TOLERANCE: float = 1e-6  # Tolerance for reciprocal vectors/lattice
 
     # noinspection PyUnusedLocal
     def __init__(self, vectors: vecs_t, **kwargs):
+        super().__init__(vectors)
         # Vector basis
         self._vectors = np.atleast_2d(vectors).T
         self._vectors_inv = np.linalg.inv(self._vectors)

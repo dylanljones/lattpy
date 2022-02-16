@@ -102,21 +102,20 @@ class Lattice(LatticeBasis):
     --------
     Two dimensional lattice with one atom in the unit cell and nearest neighbors
 
-    >>> latt = Lattice(np.eye(2))
+    >>> latt = lp.Lattice(np.eye(2))
     >>> latt.add_atom()
     >>> latt.add_connections(1)
-    >>> latt.plot_cell()
-    >>> plt.show()
+    Lattice(dim: 2, num_base: 1, shape: None)
 
     Quick-setup of the same lattice:
 
-    >>> latt = Lattice.square(atoms={(0.0, 0.0): "A"}, cons={("A", "A"): 1})
+    >>> import matplotlib.pyplot as plt
+    >>> latt = lp.Lattice.square(atoms={(0.0, 0.0): "A"}, cons={("A", "A"): 1})
     >>> latt.plot_cell()
     >>> plt.show()
 
     """
     DIST_DECIMALS: int = 6        # Decimals used for rounding distances
-    RVEC_TOLERANCE: float = 1e-6  # Tolerance for reciprocal vectors/lattice
 
     # noinspection PyUnusedLocal
     def __init__(self, basis: basis_t, **kwargs):

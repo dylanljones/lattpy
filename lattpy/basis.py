@@ -203,7 +203,7 @@ class LatticeBasis:
 
         >>> latt = LatticeBasis([[2, 0], [0, 1]])
 
-        Transform points into the coordinat system of the lattice:
+        Transform points into the coordinate system of the lattice:
 
         >>> latt.itransform([2, 0])
         [1. 0.]

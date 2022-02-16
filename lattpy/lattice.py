@@ -46,7 +46,7 @@ from .plotting import (
     draw_unit_cell,
     draw_indices
 )
-from .unitcell import Atom
+from .atom import Atom
 from .data import LatticeData, DataMap
 from .shape import AbstractShape, Shape
 
@@ -2719,7 +2719,7 @@ class Lattice:
     def plot(self,
              lw: float = 1.,
              margins: Union[Sequence[float], float] = 0.1,
-             legend: bool = True,
+             legend: bool = None,
              grid: bool = False,
              pscale: float = 0.5,
              show_periodic: bool = True,

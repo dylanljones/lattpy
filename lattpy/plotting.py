@@ -23,7 +23,7 @@ from matplotlib import path, transforms
 import colorcet as cc
 
 __all__ = [
-    "subplot", "draw_line", "draw_lines",
+    "subplot", "draw_line", "draw_lines", "hide_box",
     "draw_arrows", "draw_vectors", "draw_points", "draw_indices", "draw_unit_cell",
     "draw_surfaces", "interpolate_to_grid", "draw_sites"
 ]
@@ -69,6 +69,34 @@ def set_equal_aspect(ax=None, adjustable="box"):
     if ax.name == "3d":
         return
     ax.set_aspect("equal", adjustable)
+
+
+def hide_box(ax, axis=False):
+    """Remove the box and optionally the axis of a plot.
+
+    Parameters
+    ----------
+    ax : Axes
+        The axes to remove the box.
+    axis : bool, optional
+        If True the axis are hiden as well as the box.
+    """
+    if ax.name == "3d":
+        return
+
+    for side in ["top", "right"]:
+        ax.spines[side].set_visible(False)
+    ax.xaxis.tick_bottom()
+    ax.yaxis.tick_left()
+    if axis:
+        for side in ["left", "bottom"]:
+            ax.spines[side].set_visible(False)
+        ax.xaxis.set_ticks_position('none')
+        ax.yaxis.set_ticks_position('none')
+        ax.set_xlabel('')
+        ax.set_ylabel('')
+        ax.set_xticks([])
+        ax.set_yticks([])
 
 
 # ======================================================================================
@@ -260,7 +288,7 @@ def draw_arrows(ax, vectors, pos=None, **kwargs):
     >>> import matplotlib.pyplot as plt
     >>> fig, ax = plt.subplots()
     >>> vectors = np.array([[1, 0], [0.7, 0.7], [0, 1], [-0.7, 0.7], [-1, 0]])
-    >>> _ = plotting,draw_arrows(ax, vectors)
+    >>> _ = plotting.draw_arrows(ax, vectors)
     >>> ax.margins(0.1, 0.1)
     >>> plt.show()
     """

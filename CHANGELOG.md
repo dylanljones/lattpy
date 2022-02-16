@@ -12,6 +12,9 @@
 - improve lattice plotting and fix scaling/auto-limit issues
 - update change log template and include old entries
 
+### Code Refactoring
+- rename unitcell module to atom
+
 ### Documentation
 - fix docstrings of ``DataMap``
 - add hamiltonian section to tutorial

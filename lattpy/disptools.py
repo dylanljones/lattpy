@@ -16,7 +16,7 @@ import matplotlib.ticker as tck
 from .utils import chain
 from .spatial import distance
 from .plotting import draw_lines
-from .unitcell import Atom
+from .atom import Atom
 
 __all__ = [
     "bandpath_subplots", "plot_dispersion", "disp_dos_subplots",

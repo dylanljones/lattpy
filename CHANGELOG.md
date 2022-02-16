@@ -7,6 +7,7 @@
 - Split the lattice basis into separate object ``LatticeBasis`` and use it as base class for ``Lattice``
 
 ### Documentation
+- add example to ``LatticeBasis`` docstring
 - add attributes to docstring of ``LatticeBasis``
 - improve docstring of ``Lattice`` class
 

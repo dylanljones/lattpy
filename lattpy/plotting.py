@@ -260,7 +260,7 @@ def draw_arrows(ax, vectors, pos=None, **kwargs):
     >>> import matplotlib.pyplot as plt
     >>> fig, ax = plt.subplots()
     >>> vectors = np.array([[1, 0], [0.7, 0.7], [0, 1], [-0.7, 0.7], [-1, 0]])
-    >>> _ = plotting,draw_arrows(ax, vectors)
+    >>> _ = plotting.draw_arrows(ax, vectors)
     >>> ax.margins(0.1, 0.1)
     >>> plt.show()
     """

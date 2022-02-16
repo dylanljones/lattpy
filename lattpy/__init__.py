@@ -14,12 +14,12 @@ Submodules
 ----------
 
 .. autosummary::
+   lattpy.atom
    lattpy.data
    lattpy.disptools
    lattpy.lattice
    lattpy.shape
    lattpy.spatial
-   lattpy.unitcell
    lattpy.utils
 
 """

@@ -52,8 +52,16 @@ __all__ = ["LatticeStructure"]
 
 
 class LatticeStructure(LatticeBasis):
-    """Combines the ``LatticeBasis`` with a set of atoms and connections between
-    them to define a lattice structure.
+    """Structure object representing a infinite Bravais lattice.
+
+    Combines the ``LatticeBasis`` with a set of atoms and connections between
+    them to define a general lattice structure.
+
+    .. rubric:: Inheritance
+
+    .. inheritance-diagram:: LatticeStructure
+       :parts: 1
+
 
     Parameters
     ----------

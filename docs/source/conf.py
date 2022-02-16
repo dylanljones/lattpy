@@ -60,7 +60,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'tests',
 # -- Graphviz options --------------------------------------------------------
 
 graphviz_output_format = 'svg'
-inheritance_graph_attrs = dict(rankdir="TB", size='""')
+inheritance_graph_attrs = dict(rankdir="LR", size='""')
 
 
 # -- Options for HTML output -------------------------------------------------

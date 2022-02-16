@@ -234,15 +234,16 @@ class DispersionPath:
     --------
     Define a path using the add-method or preset points. To get the actual points the
     'build'-method is called:
+
     >>> path = DispersionPath(dim=3).add([0, 0, 0], 'Gamma').x(a=1.0).cycle()
     >>> vectors = path.build(n_sect=1000)
 
     Attributes
     ----------
-    dim: int
-    labels: list of str
-    points: list of array_like
-    n_sect: int
+    dim : int
+    labels : list of str
+    points : list of array_like
+    n_sect : int
     """
 
     def __init__(self, dim=0):

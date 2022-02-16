@@ -73,10 +73,16 @@ def _filter_dangling(indices, positions, neighbors, distances, min_neighbors):
 
 
 class Lattice(LatticeStructure):
-    """Main lattice object representing a Bravais lattice.
+    """Main lattice object representing a Bravais lattice model.
+
+    Combines the ``LatticeBasis`` and the ``LatticeStructure`` class and adds
+    the ability to construct finite lattice models.
+
+    .. rubric:: Inheritance
 
     .. inheritance-diagram:: Lattice
        :parts: 1
+
 
     Parameters
     ----------

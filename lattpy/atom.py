@@ -74,7 +74,7 @@ class Atom(abc.MutableMapping):
 
     def copy(self) -> 'Atom':
         """Creates a deep copy of the ``Atom`` instance."""
-        return Atom(self.name, self.weight, **self._params.copy())
+        return Atom(self.name, weight=self.weight, **self._params.copy())
 
     def get(self, key: str, default=None) -> Any:
         try:

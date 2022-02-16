@@ -2646,18 +2646,16 @@ class Lattice:
         # Draw unit vectors and the cell they spawn.
         if show_vecs:
             vectors = self.vectors
-            draw_unit_cell(ax, vectors, color="k", lw=1., zorder=hopz,
-                           outlines=show_cell)
+            draw_unit_cell(ax, vectors, show_cell, color="k", lw=1., zorder=hopz)
         # Draw sites
         colors = list()
         for i in range(self.num_base):
             atom = self.atoms[i]
             col = atom.color or f"C{i}"
             points = self.atom_positions[i]
-            draw_sites(ax, points, atom.radius, color=col, label=atom.name,
-                       zorder=atomz)
+            rad = atom.radius
+            draw_sites(ax, points, rad, color=col, label=atom.name, zorder=atomz)
             colors.append(col)
-
         # Draw Neighbors and connections
         ccolor = "k"
         hop_colors = connection_color_array(self.num_base, ccolor, con_colors)
@@ -2678,7 +2676,6 @@ class Lattice:
                                 position_arr[j].append(p2)
                     except IndexError:
                         pass
-
             for i in range(self.num_base):
                 atom = self.get_atom(i)
                 positions = position_arr[i]
@@ -2686,19 +2683,16 @@ class Lattice:
                     pos = np.unique(positions, axis=0)
                     rad = 0.6 * atom.radius
                     col = colors[i]
-                    draw_sites(ax, pos, rad, color=col, alpha=alpha,
-                               zorder=atomz)
+                    draw_sites(ax, pos, rad, color=col, alpha=alpha, zorder=atomz)
         # Configure legend
         if legend is None:
             legend = self.num_base > 1
         if legend:
             ax.legend()
-
         # Configure grid
         if grid and self.dim < 3:
             ax.set_axisbelow(True)
             ax.grid(b=True, which="major")
-
         # Adjust margin
         if isinstance(margins, float):
             margins = [margins] * self.dim
@@ -2772,15 +2766,12 @@ class Lattice:
             points = self.data.get_positions(alpha)
             label = atom.name
             draw_sites(ax, points, atom.radius, color=col, label=label, zorder=atomz)
-
         # Draw connections
         ccolor = "k"
         pcolor = "0.5"
         positions = self.positions
-
         hop_colors = connection_color_array(self.num_base, ccolor, con_colors)
         per_colors = connection_color_array(self.num_base, pcolor)
-
         for i in range(self.num_sites):
             at1 = self.alpha(i)
             p1 = positions[i]
@@ -2798,24 +2789,21 @@ class Lattice:
                     at2 = self.alpha(idx[j])
                     x = self.translate(-pnvecs[j], x)
                     color = per_colors[at1][at2]
-                    draw_vectors(ax, pscale * (x - p1), p1, color=color, lw=lw,
-                                 zorder=hopz)
-
+                    vec = pscale * (x - p1)
+                    draw_vectors(ax, vec, p1, color=color, lw=lw, zorder=hopz)
+        # Add index labels
         if show_indices:
             positions = [self.position(i) for i in range(self.num_sites)]
             draw_indices(ax, positions, index_offset)
-
         # Configure legend
         if legend is None:
             legend = self.num_base > 1
         if legend:
             ax.legend()
-
         # Configure grid
         if grid and self.dim < 3:
             ax.set_axisbelow(True)
             ax.grid(b=True, which="major")
-
         # Adjust margin
         if isinstance(margins, float):
             margins = [margins] * self.dim

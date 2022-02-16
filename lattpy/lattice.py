@@ -105,13 +105,14 @@ class Lattice(LatticeBasis):
     >>> latt = lp.Lattice(np.eye(2))
     >>> latt.add_atom()
     >>> latt.add_connections(1)
+    >>> latt
     Lattice(dim: 2, num_base: 1, shape: None)
 
     Quick-setup of the same lattice:
 
     >>> import matplotlib.pyplot as plt
     >>> latt = lp.Lattice.square(atoms={(0.0, 0.0): "A"}, cons={("A", "A"): 1})
-    >>> latt.plot_cell()
+    >>> _ = latt.plot_cell()
     >>> plt.show()
 
     """

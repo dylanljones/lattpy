@@ -53,10 +53,10 @@
 
 ### Improved/Fixed
 
-- improv build process
-- improv periodic neighbor computation
-- improv documentation
-- improv CI/Tests
+- improve build process
+- improve periodic neighbor computation
+- improve documentation
+- improve CI/Tests
 - minor fixes
 
 
@@ -70,10 +70,10 @@
 
 ### Improved/Fixed
 
-- improv build process
-- improv periodic neighbor computation (still not stable)
-- add/improv tests
-- improv plotting
+- improve build process
+- improve periodic neighbor computation (still not stable)
+- add/improve tests
+- improve plotting
 - add more docstrings
 - fix multiple bugs
 

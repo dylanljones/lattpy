@@ -55,12 +55,14 @@ adding neighbor connections manually. You will save time and mental energy for m
 
    lattpy
    generated/lattpy.atom
+   generated/lattpy.basis
    generated/lattpy.data
    generated/lattpy.disptools
    generated/lattpy.lattice
    generated/lattpy.plotting
    generated/lattpy.shape
    generated/lattpy.spatial
+   generated/lattpy.structure
    generated/lattpy.utils
 
 

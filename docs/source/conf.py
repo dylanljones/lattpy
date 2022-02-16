@@ -43,8 +43,8 @@ extensions = [
     "sphinx.ext.extlinks",  # define roles for links
     "sphinx_toggleprompt",  # toggle `>>>`
     "sphinx_rtd_theme",
-    # "sphinx.ext.graphviz",
-    # "sphinx.ext.inheritance_diagram"
+    "sphinx.ext.graphviz",
+    "sphinx.ext.inheritance_diagram"
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -59,8 +59,8 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'tests',
 
 # -- Graphviz options --------------------------------------------------------
 
-# graphviz_output_format = 'svg'
-# inheritance_graph_attrs = dict(rankdir="TB", size='""')
+graphviz_output_format = 'svg'
+inheritance_graph_attrs = dict(rankdir="LR", size='""')
 
 
 # -- Options for HTML output -------------------------------------------------

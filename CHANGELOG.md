@@ -3,6 +3,13 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+### New Features
+- Split the lattice basis into separate object ``LatticeBasis`` and use it as base class for ``Lattice``
+
+### Documentation
+- add attributes to docstring of ``LatticeBasis``
+- improve docstring of ``Lattice`` class
+
 
 <a name="0.6.7"></a>
 ## [0.6.7] - 2022-16-02

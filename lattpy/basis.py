@@ -35,7 +35,7 @@ class LatticeBasis:
     ----------
     dim
     vectors
-    vectors3D
+    vectors3d
     norms
     cell_size
     cell_volume

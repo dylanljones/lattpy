@@ -53,20 +53,21 @@ templates_path = ['_templates']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
+
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'tests',
                     'generated/lattpy.rst', 'generated/modules.rst']
+
 # -- Graphviz options --------------------------------------------------------
 
-graphviz_output_format = 'svg'
-
-inheritance_graph_attrs = dict(rankdir="TB", size='""')
+# graphviz_output_format = 'svg'
+# inheritance_graph_attrs = dict(rankdir="TB", size='""')
 
 
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-#
+
 html_theme = 'sphinx_rtd_theme'
 
 # Add any paths that contain custom static files (such as style sheets) here,

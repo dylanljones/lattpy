@@ -15,6 +15,7 @@ import numpy as np
 from collections.abc import Iterable
 from scipy.interpolate import griddata
 import matplotlib.pyplot as plt
+import matplotlib.style as mpl_style
 from matplotlib.lines import Line2D
 from matplotlib.collections import LineCollection, Collection
 from mpl_toolkits.mplot3d.art3d import Line3DCollection, Line3D, Poly3DCollection
@@ -41,10 +42,25 @@ def set_color_cycler(color_cycle=cc.glasbey_category10):
 
     Parameters
     ----------
-    color_cycle : sequence
+    color_cycle : Sequence
         A list of the colors to use in the prop cycler.
     """
     plt.rcParams["axes.prop_cycle"] = plt.cycler("color", color_cycle)
+
+
+def use_mplstyle(style, color_cycle=None):
+    """Update matplotlib rcparams according to style.
+
+    Parameters
+    ----------
+    style : str or dict or Path or Iterable
+        The style configuration.
+    color_cycle : Sequence, optional
+        A list of the colors to use in the prop cycler.
+    """
+    mpl_style.use(style)
+    if color_cycle is not None:
+        plt.rcParams["axes.prop_cycle"] = plt.cycler("color", color_cycle)
 
 
 def set_equal_aspect(ax=None, adjustable="box"):

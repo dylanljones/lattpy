@@ -1,24 +1,33 @@
-# LattPy
+<h1 align="center">LattPy - Simple and Efficient Lattice Modeling in Python</h1>
 
-[![Python Version][python-badge]][pypi-link]
-[![Version][pypi-badge]][pypi-link]
-[![Status][status-badge]][pypi-link]
-[![License][license-badge]][license-link]
-[![LGTM Grade][lgtm-badge]][lgtm-link]
+<p align="center">
+    <a name="pypi-link"><img alt="Python Version" src="https://img.shields.io/pypi/pyversions/lattpy?logo=python&style=flat-square"></a>
+    <a name="pypi-link"><img alt="Version" src="https://img.shields.io/pypi/v/lattpy?logo=pypi&style=flat-square"></a>
+    <a name="pypi-link"><img alt="Status" src="https://img.shields.io/pypi/status/lattpy?color=yellow&style=flat-square"></a>
+    <a name="license-link"><img alt="License" src="https://img.shields.io/pypi/l/lattpy?style=flat-square"></a>
+    <a name="lgtm-link"><img alt="LGTM Grade" src="https://img.shields.io/lgtm/grade/python/github/dylanljones/lattpy?label=code%20quality&logo=lgtm&style=flat-square"></a>
+</p>
+
+> "Any dimension and shape you like."
+
+:warning: **WARNING**: This project is still in development and might change significantly in the future!
+
+
+*LattPy* is a simple and efficient Python package for modeling Bravais lattices and
+constructing (finite) lattice structures in any dimension.
+It provides an easy interface for constructing lattice structures by simplifying the
+configuration of the unit cell and the neighbor connections - making it possible to
+construct complex models in just a few lines of code and without the headache of
+adding neighbor connections manually. You will save time and mental energy for more important matters.
 
 | Master | [![Test][tests-master]][link-tests] | [![Codecov][codecov-master]][codecov-master-link] | [![Read the Docs][docs-master]][docs-master-link] |
 |:-------|:------------------------------------|:--------------------------------------------------|:--------------------------------------------------|
 | Dev    | [![Test][tests-dev]][link-tests]    | [![Codecov][codecov-dev]][codecov-dev-link]       | [![Read the Docs][docs-dev]][docs-dev-link]       |
 
-LattPy is a simple and efficient Python package for modeling Bravais lattices and
-constructing (finite) lattice structures in any dimension.
-
-| :warning: **WARNING**: This project is still in development and might change significantly in the future! |
-|-----------------------------------------------------------------------------------------------------------|
 
 1. [Installation](#installation)
 2. [Documentation](#documentation)
-3. [Quick start](#quick-start)
+3. [Quick-Start](#quick-start)
 4. [Performance](#performance)
 5. [Development](#development)
 
@@ -41,9 +50,9 @@ python setup.py install
 
 ## Documentation
 
-The tutorial and API documentation is available on [ReadTheDocs][docs-stable-link].
+[Read the documentation on ReadTheDocs!][docs-stable-link]
 
-## Quick start
+## Quick-Start
 
 See the [tutorial][docs-tutorial-link] for more information and examples.
 
@@ -267,6 +276,9 @@ the recent changes of the project.
 
 A guide for contributing to `lattpy` and the commit-message style can be found in
 [CONTRIBUTING](https://github.com/dylanljones/lattpy/blob/master/CONTRIBUTING.md)
+
+
+
 
 [pypi-link]: https://pypi.org/project/lattpy/
 [python-badge]: https://img.shields.io/pypi/pyversions/lattpy?logo=python&style=flat-square

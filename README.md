@@ -10,7 +10,7 @@
 
 > "Any dimension and shape you like."
 
-:warning: **WARNING**: This project is still in development and might change significantly in the future! |
+:warning: **WARNING**: This project is still in development and might change significantly in the future!
 
 
 *LattPy* is a simple and efficient Python package for modeling Bravais lattices and

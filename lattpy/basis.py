@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 vecs_t = Union[float, Sequence[float], Sequence[Sequence[float]]]
 basis_t = Union[float, Sequence[float], Sequence[Sequence[float]], "LatticeBasis"]
 
-__all__ = ["LatticeBasis"]
+__all__ = ["basis_t", "LatticeBasis"]
 
 
 class LatticeBasis:

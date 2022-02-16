@@ -21,6 +21,7 @@ Submodules
    lattpy.lattice
    lattpy.shape
    lattpy.spatial
+   lattpy.structure
    lattpy.utils
 
 """
@@ -59,6 +60,7 @@ from .data import LatticeData
 from .disptools import DispersionPath
 from .atom import Atom
 from .basis import LatticeBasis
+from .structure import LatticeStructure
 from .lattice import Lattice
 
 from ._version import get_versions

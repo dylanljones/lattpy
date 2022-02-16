@@ -62,6 +62,7 @@ adding neighbor connections manually. You will save time and mental energy for m
    generated/lattpy.plotting
    generated/lattpy.shape
    generated/lattpy.spatial
+   generated/lattpy.structure
    generated/lattpy.utils
 
 

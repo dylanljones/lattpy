@@ -21,12 +21,13 @@ from matplotlib.collections import LineCollection, Collection
 from mpl_toolkits.mplot3d.art3d import Line3DCollection, Line3D, Poly3DCollection
 from matplotlib.artist import allow_rasterization
 from matplotlib import path, transforms
+from typing import List
 import colorcet as cc
 
 __all__ = [
     "subplot", "draw_line", "draw_lines", "hide_box",
     "draw_arrows", "draw_vectors", "draw_points", "draw_indices", "draw_unit_cell",
-    "draw_surfaces", "interpolate_to_grid", "draw_sites"
+    "draw_surfaces", "interpolate_to_grid", "draw_sites", "connection_color_array"
 ]
 
 # Golden ratio as standard ratio for plot-figures
@@ -557,6 +558,40 @@ def draw_sites(ax, points, radius=0.2, **kwargs):
         datalim = scat.get_datalim(ax.transData)
         ax.update_datalim(datalim)
         return scat
+
+
+def connection_color_array(num_base, default="k", colors=None) -> List[List]:
+    """Construct color array for the connections between all atoms in a lattice.
+
+    Parameters
+    ----------
+    num_base : int
+        The number of atoms in the unit cell of a lattice.
+    default : str or int or float or tuple
+        The default color of the connections.
+    colors : Sequence[tuple], optional
+        list of colors to override the defautl connection color. Each element
+        has to be a tuple with the first two elements being the atom indices of
+        the pair and the third element the color, for example ``[(0, 0, 'r')]``.
+
+    Returns
+    -------
+    color_array : List of List
+        The connection color array
+
+    Examples
+    --------
+    >>> connection_color_array(2, "k", colors=[(0, 1, "r")])
+    [['k', 'r'], ['r', 'k']]
+
+    """
+    alphas = range(num_base)
+    hop_colors = [[default for _ in alphas] for _ in alphas]
+    if colors is not None and colors:
+        for a1, a2, col in colors:
+            hop_colors[a1][a2] = col
+            hop_colors[a2][a1] = col
+    return hop_colors
 
 
 # noinspection PyShadowingNames

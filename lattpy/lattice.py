@@ -44,7 +44,8 @@ from .plotting import (
     draw_sites,
     draw_vectors,
     draw_unit_cell,
-    draw_indices
+    draw_indices,
+    connection_color_array
 )
 from .atom import Atom
 from .data import LatticeData, DataMap
@@ -2659,15 +2660,7 @@ class Lattice:
 
         # Draw Neighbors and connections
         ccolor = "k"
-        _alphas = range(self.num_base)
-        hop_colors = [[ccolor for _ in _alphas] for _ in _alphas]
-        if con_colors is not None:
-            for a1, a2, col in con_colors:
-                alph1 = self.get_alpha(a1)
-                alph2 = self.get_alpha(a2)
-                hop_colors[alph1][alph2] = col
-                hop_colors[alph2][alph1] = col
-
+        hop_colors = connection_color_array(self.num_base, ccolor, con_colors)
         if show_neighbors:
             position_arr = [list() for _ in range(self.num_base)]
             for i in range(self.num_base):
@@ -2754,7 +2747,7 @@ class Lattice:
         con_colors : Sequence[tuple], optional
             list of colors to override the defautl connection color. Each element
             has to be a tuple with the first two elements being the atom indices of
-            the pair and the third element the color, for example ``[('A', 'A', 'r')]``.
+            the pair and the third element the color, for example ``[(0, 0, 'r')]``.
         adjustable : None or {'box', 'datalim'}, optional
             If not None, this defines which parameter will be adjusted to meet
             the equal aspect ratio. If 'box', change the physical dimensions of
@@ -2784,15 +2777,9 @@ class Lattice:
         ccolor = "k"
         pcolor = "0.5"
         positions = self.positions
-        _alphas = range(self.num_base)
-        hop_colors = [[ccolor for _ in _alphas] for _ in _alphas]
-        per_colors = [[pcolor for _ in _alphas] for _ in _alphas]
-        if con_colors is not None:
-            for a1, a2, col in con_colors:
-                alph1 = self.get_alpha(a1)
-                alph2 = self.get_alpha(a2)
-                hop_colors[alph1][alph2] = col
-                hop_colors[alph2][alph1] = col
+
+        hop_colors = connection_color_array(self.num_base, ccolor, con_colors)
+        per_colors = connection_color_array(self.num_base, pcolor)
 
         for i in range(self.num_sites):
             at1 = self.alpha(i)

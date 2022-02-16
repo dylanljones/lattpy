@@ -2719,7 +2719,7 @@ class Lattice:
     def plot(self,
              lw: float = 1.,
              margins: Union[Sequence[float], float] = 0.1,
-             legend: bool = True,
+             legend: bool = None,
              grid: bool = False,
              pscale: float = 0.5,
              show_periodic: bool = True,

@@ -1,6 +1,10 @@
 <p align="center">
     <img src="https://raw.githubusercontent.com/dylanljones/lattpy/dev/.social/header.png" width="400">
-    <h1 align="center">LattPy - Simple Lattice Modeling in Python</h1>
+</p>
+
+<h1 align="center">LattPy - Simple Lattice Modeling in Python</h1>
+
+<p align="center">
     <a href="https://pypi.org/project/lattpy/"><img alt="Python Version" src="https://img.shields.io/pypi/pyversions/lattpy?logo=python&style=flat-square"></a>
     <a href="https://pypi.org/project/lattpy/"><img alt="Version" src="https://img.shields.io/pypi/v/lattpy?logo=pypi&style=flat-square"></a>
     <a href="https://pypi.org/project/lattpy/"><img alt="Status" src="https://img.shields.io/pypi/status/lattpy?color=yellow&style=flat-square"></a>

@@ -10,7 +10,7 @@ Simple and Efficient Lattice Modeling in Python
 .. warning::
    This project is still in development and might change significantly in the future!
 
-|pypi-python-version| |pypi-version| |pypi-status| |pypi-license| |lgtm-grade|
+|pypi-python-version| |pypi-version| |pypi-status| |pypi-license| |lgtm-grade| |style-black|
 
     “Any dimension and shape you like.”
 
@@ -96,6 +96,10 @@ Indices and tables
 .. |lgtm-grade| image:: https://img.shields.io/lgtm/grade/python/github/dylanljones/lattpy?label=code%20quality&logo=lgtm&style=flat-square
    :alt: LGTM Grade
    :target: https://lgtm.com/projects/g/dylanljones/lattpy/context:python
+.. |style-black| image:: https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square
+   :alt: Code style: black
+   :target: https://github.com/psf/black
+
 .. |tests-master| image:: https://img.shields.io/github/workflow/status/dylanljones/lattpy/Test/master?label=tests&logo=github&style=flat
    :alt: Test status master
    :target: https://github.com/dylanljones/lattpy/actions/workflows/test.yml

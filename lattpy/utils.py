@@ -15,9 +15,21 @@ from typing import Iterable, List, Sequence, Union, Tuple
 import numpy as np
 
 __all__ = [
-    "ArrayLike", "logger", "LatticeError", "ConfigurationError", "SiteOccupiedError",
-    "NoAtomsError", "NoConnectionsError", "NotAnalyzedError", "NotBuiltError",
-    "min_dtype", "chain", "create_lookup_table", "frmt_num", "frmt_bytes", "frmt_time",
+    "ArrayLike",
+    "logger",
+    "LatticeError",
+    "ConfigurationError",
+    "SiteOccupiedError",
+    "NoAtomsError",
+    "NoConnectionsError",
+    "NotAnalyzedError",
+    "NotBuiltError",
+    "min_dtype",
+    "chain",
+    "create_lookup_table",
+    "frmt_num",
+    "frmt_bytes",
+    "frmt_time",
 ]
 
 # define type for numpy `array_like` types
@@ -31,12 +43,12 @@ _CH = logging.StreamHandler()
 _CH.setLevel(logging.DEBUG)
 
 _FRMT_STR = "[%(asctime)s] %(levelname)-8s - %(name)-15s - %(message)s"
-_FRMT = logging.Formatter(_FRMT_STR, datefmt='%H:%M:%S')
+_FRMT = logging.Formatter(_FRMT_STR, datefmt="%H:%M:%S")
 
-_CH.setFormatter(_FRMT)             # Add formatter to stream handler
-logger.addHandler(_CH)              # Add stream handler to package logger
+_CH.setFormatter(_FRMT)  # Add formatter to stream handler
+logger.addHandler(_CH)  # Add stream handler to package logger
 
-logger.setLevel(logging.WARNING)    # Set initial logging level
+logger.setLevel(logging.WARNING)  # Set initial logging level
 
 
 class LatticeError(Exception):
@@ -45,7 +57,6 @@ class LatticeError(Exception):
 
 
 class ConfigurationError(LatticeError):
-
     @property
     def msg(self):
         return self.args[0]
@@ -62,48 +73,50 @@ class ConfigurationError(LatticeError):
 
 
 class SiteOccupiedError(ConfigurationError):
-
     def __init__(self, atom, pos):
-        super().__init__(f"Can't add {atom} to lattice, "
-                         f"position {pos} already occupied!")
+        super().__init__(
+            f"Can't add {atom} to lattice, " f"position {pos} already occupied!"
+        )
 
 
 class NoAtomsError(ConfigurationError):
-
     def __init__(self):
-        super().__init__("lattice doesn't contain any atoms",
-                         "use 'add_atom' to add an 'Atom'-object")
+        super().__init__(
+            "lattice doesn't contain any atoms",
+            "use 'add_atom' to add an 'Atom'-object",
+        )
 
 
 class NotAnalyzedError(ConfigurationError):
-
     def __init__(self):
         msg = "lattice not analyzed"
-        hint = "call 'analyze' after adding atoms and connections or " \
-               "use the 'analyze' keyword of 'add_connection'"
+        hint = (
+            "call 'analyze' after adding atoms and connections or "
+            "use the 'analyze' keyword of 'add_connection'"
+        )
         super().__init__(msg, hint)
 
 
 class NoConnectionsError(ConfigurationError):
-
     def __init__(self):
         msg = "base neighbors not configured"
-        hint = "call 'add_connection' after adding atoms or " \
-               "use the 'neighbors' keyword of 'add_atom'"
+        hint = (
+            "call 'add_connection' after adding atoms or "
+            "use the 'neighbors' keyword of 'add_atom'"
+        )
         super().__init__(msg, hint)
 
 
 class NotBuiltError(ConfigurationError):
-
     def __init__(self):
         msg = "lattice has not been built"
         hint = "use the 'build' method to construct a finite size lattice model"
         super().__init__(msg, hint)
 
 
-def create_lookup_table(array: ArrayLike,
-                        dtype: Union[str, np.dtype] = np.uint8
-                        ) -> Tuple[np.ndarray, np.ndarray]:
+def create_lookup_table(
+    array: ArrayLike, dtype: Union[str, np.dtype] = np.uint8
+) -> Tuple[np.ndarray, np.ndarray]:
     """Converts the given array to an array of indices linked to the unique values.
 
     Parameters
@@ -129,8 +142,9 @@ def create_lookup_table(array: ArrayLike,
     return values, indices
 
 
-def min_dtype(a: Union[int, float, np.ndarray, Iterable],
-              signed: bool = True) -> np.dtype:
+def min_dtype(
+    a: Union[int, float, np.ndarray, Iterable], signed: bool = True
+) -> np.dtype:
     """Returns the minimum required dtype to store the given values.
 
     Parameters
@@ -151,7 +165,7 @@ def min_dtype(a: Union[int, float, np.ndarray, Iterable],
     else:
         amin, amax = np.min(a), np.max(a)
         if amin < 0:
-            a = - amax - 1 if abs(amin) <= amax else amin
+            a = -amax - 1 if abs(amin) <= amax else amin
         else:
             a = amax
     return np.dtype(np.min_scalar_type(a))
@@ -188,8 +202,7 @@ def chain(items: Sequence, cycle: bool = False) -> List:
     return result
 
 
-def frmt_num(num: float, dec: int = 1, unit: str = "",
-             div: float = 1000.) -> str:
+def frmt_num(num: float, dec: int = 1, unit: str = "", div: float = 1000.0) -> str:
     """Returns a formatted string of a number.
 
     Parameters
@@ -207,7 +220,7 @@ def frmt_num(num: float, dec: int = 1, unit: str = "",
     -------
     num_str: str
     """
-    for prefix in ['', 'k', 'M', 'G', 'T', 'P', 'E', 'Z']:
+    for prefix in ["", "k", "M", "G", "T", "P", "E", "Z"]:
         if abs(num) < div:
             return f"{num:.{dec}f}{prefix}{unit}"
         num /= div

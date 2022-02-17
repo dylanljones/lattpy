@@ -236,4 +236,4 @@ def test_get_base_atom_dict():
 
     assert len(result) == 2
     assert_array_equal(result[ata], [[0, 0]])
-    assert_array_equal(result[atb], [[0.5, 0.], [0.5, 0.5]])
+    assert_array_equal(result[atb], [[0.5, 0.0], [0.5, 0.5]])

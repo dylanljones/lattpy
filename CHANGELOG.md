@@ -7,6 +7,9 @@
 - Split the lattice structure into separate object ``LatticeStructure`` and use it as base class for ``Lattice``
 - Split the lattice basis into separate object ``LatticeBasis`` and use it as base class for ``Lattice``
 
+### Code Refactoring
+- use black code formatter
+
 ### Documentation
 - add inheritance diagram to ``LatticeStructure`` and fix some docstrings
 - add inheritance diagram to ``Lattice``

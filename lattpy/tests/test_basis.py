@@ -26,19 +26,16 @@ rrect = LatticeBasis(PI * np.array([[1, 0], [0, 2]]))
 
 
 hexagonal = LatticeBasis.hexagonal(a=1)
-rhexagonal = LatticeBasis(np.array([[+2.0943951, +3.62759873],
-                                    [+2.0943951, -3.62759873]]))
+rhexagonal = LatticeBasis(
+    np.array([[+2.0943951, +3.62759873], [+2.0943951, -3.62759873]])
+)
 sc = LatticeBasis.sc(a=1.0)
 rsc = LatticeBasis(TWOPI * np.eye(3))
 
 fcc = LatticeBasis.fcc(a=1.0)
-rfcc = LatticeBasis(TWOPI * np.array([[+1, +1, -1],
-                                      [+1, -1, +1],
-                                      [-1, +1, +1]]))
+rfcc = LatticeBasis(TWOPI * np.array([[+1, +1, -1], [+1, -1, +1], [-1, +1, +1]]))
 bcc = LatticeBasis.bcc(a=1.0)
-rbcc = LatticeBasis(TWOPI * np.array([[+1, +1, 0],
-                                      [0, -1, +1],
-                                      [-1, 0, +1]]))
+rbcc = LatticeBasis(TWOPI * np.array([[+1, +1, 0], [0, -1, +1], [-1, 0, +1]]))
 
 LATTICES = [chain, square, rect, hexagonal, sc, fcc, bcc]
 RLATTICES = [rchain, rsquare, rrect, rhexagonal, rsc, rfcc, rbcc]
@@ -51,7 +48,7 @@ def assert_elements_equal1d(actual, expected):
     return all(np.isin(actual, expected))
 
 
-def assert_allclose_elements(actual, expected, atol=0., rtol=1e-7):
+def assert_allclose_elements(actual, expected, atol=0.0, rtol=1e-7):
     assert_allclose(np.sort(actual), np.sort(expected), rtol, atol)
 
 
@@ -143,7 +140,7 @@ def test_brillouin_zone():
     latt = LatticeBasis.square()
     bz = latt.brillouin_zone()
 
-    expected = [[-1., -1.], [1., -1.], [-1., 1.], [1., 1.]]
+    expected = [[-1.0, -1.0], [1.0, -1.0], [-1.0, 1.0], [1.0, 1.0]]
     assert_array_equal(bz.vertices / np.pi, expected)
 
     expected = [[0, 1], [0, 2], [1, 3], [2, 3]]

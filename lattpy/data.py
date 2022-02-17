@@ -101,8 +101,9 @@ class DataMap:
             return self._map >= 0
         return self._map == distidx
 
-    def fill(self, array: np.ndarray, hop: ArrayLike,
-             eps: ArrayLike = 0.) -> np.ndarray:
+    def fill(
+        self, array: np.ndarray, hop: ArrayLike, eps: ArrayLike = 0.0
+    ) -> np.ndarray:
         """Fills a data-array with the given values mapped to the right indices.
 
         Parameters
@@ -186,7 +187,7 @@ class LatticeData:
         size += self.pnvecs.nbytes + self.pmask.nbytes
         return size
 
-    def copy(self) -> 'LatticeData':
+    def copy(self) -> "LatticeData":
         """Creates a deep copy of the instance."""
         return deepcopy(self)
 
@@ -204,10 +205,13 @@ class LatticeData:
         self.invalid_idx = -1
         self.invalid_distidx = -1
 
-    def set(self, indices: np.ndarray,
-            positions: np.ndarray,
-            neighbors: np.ndarray,
-            distances: np.ndarray) -> None:
+    def set(
+        self,
+        indices: np.ndarray,
+        positions: np.ndarray,
+        neighbors: np.ndarray,
+        distances: np.ndarray,
+    ) -> None:
         """Sets the data of the `LatticeData` instance.
 
         Parameters
@@ -277,8 +281,9 @@ class LatticeData:
         limits : np.ndarray
             The minimum and maximum value for each axis of the position data.
         """
-        return np.array([np.min(self.positions, axis=0),
-                         np.max(self.positions, axis=0)])
+        return np.array(
+            [np.min(self.positions, axis=0), np.max(self.positions, axis=0)]
+        )
 
     def get_index_limits(self) -> np.ndarray:
         """Computes the geometric limits of the lattice indices of the stored sites.
@@ -300,9 +305,13 @@ class LatticeData:
         """
         return self.get_index_limits()[:, :-1]
 
-    def neighbor_mask(self, site: int, distidx: int = None,
-                      periodic: bool = None,
-                      unique: bool = False) -> np.ndarray:
+    def neighbor_mask(
+        self,
+        site: int,
+        distidx: int = None,
+        periodic: bool = None,
+        unique: bool = False,
+    ) -> np.ndarray:
         """Creates a mask for the valid neighbors of a specific site.
 
         Parameters
@@ -334,10 +343,9 @@ class LatticeData:
             mask &= self.pmask[site] if periodic else ~self.pmask[site]
         return mask
 
-    def set_periodic(self, indices: dict,
-                     distances: dict,
-                     nvecs: dict,
-                     axes: dict) -> None:
+    def set_periodic(
+        self, indices: dict, distances: dict, nvecs: dict, axes: dict
+    ) -> None:
         """Adds periodic neighbors to the invalid slots of the neighbor data
 
         Parameters
@@ -365,7 +373,7 @@ class LatticeData:
             # add periodic data
             self.neighbors[i, i0:i1] = pidx
             self.distances[i, i0:i1] = distidx
-            self.paxes[i, i0:i1, :axes[i].shape[1]] = axes[i]
+            self.paxes[i, i0:i1, : axes[i].shape[1]] = axes[i]
             self.pnvecs[i, i0:i1] = nvecs[i]
             self.pmask[i, i0:i1] = 1
 
@@ -479,9 +487,13 @@ class LatticeData:
         mask = self.indices[:, -1] == alpha
         return self.positions[mask]
 
-    def get_neighbors(self, site: int, distidx: int = None,
-                      periodic: bool = None,
-                      unique: bool = False) -> np.ndarray:
+    def get_neighbors(
+        self,
+        site: int,
+        distidx: int = None,
+        periodic: bool = None,
+        unique: bool = False,
+    ) -> np.ndarray:
         """Returns the neighbors of a lattice site.
 
         See the `neighbor_mask`-method for more information on parameters
@@ -494,9 +506,13 @@ class LatticeData:
         mask = self.neighbor_mask(site, distidx, periodic, unique)
         return self.neighbors[site, mask]
 
-    def get_neighbor_pos(self, site: int, distidx: int = None,
-                         periodic: bool = None,
-                         unique: bool = False) -> np.ndarray:
+    def get_neighbor_pos(
+        self,
+        site: int,
+        distidx: int = None,
+        periodic: bool = None,
+        unique: bool = False,
+    ) -> np.ndarray:
         """Returns the neighbor positions of a lattice site.
 
         See the `neighbor_mask`-method for more information on parameters
@@ -547,9 +563,12 @@ class LatticeData:
             self._dmap = DataMap(alphas, pairs.astype(dtype), distindices)
         return self._dmap
 
-    def site_mask(self, mins: Sequence[Union[float, None]] = None,
-                  maxs: Sequence[Union[float, None]] = None,
-                  invert: bool = False) -> np.ndarray:
+    def site_mask(
+        self,
+        mins: Sequence[Union[float, None]] = None,
+        maxs: Sequence[Union[float, None]] = None,
+        invert: bool = False,
+    ) -> np.ndarray:
         """Creates a mask for the position data of the sites.
 
         Parameters
@@ -583,9 +602,12 @@ class LatticeData:
             mask &= (limits[0, ax] <= ax_data) & (ax_data <= limits[1, ax])
         return np.asarray(1 - mask if invert else mask)
 
-    def find_sites(self, mins: Sequence[Union[float, None]] = None,
-                   maxs: Sequence[Union[float, None]] = None,
-                   invert: bool = False) -> np.ndarray:
+    def find_sites(
+        self,
+        mins: Sequence[Union[float, None]] = None,
+        maxs: Sequence[Union[float, None]] = None,
+        invert: bool = False,
+    ) -> np.ndarray:
         """Returns the indices of sites inside or outside the given limits.
 
         Parameters

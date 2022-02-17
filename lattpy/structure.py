@@ -39,7 +39,7 @@ from .plotting import (
     draw_sites,
     draw_vectors,
     draw_unit_cell,
-    connection_color_array
+    connection_color_array,
 )
 from .spatial import vindices, interweave, KDTree
 from .atom import Atom
@@ -95,6 +95,7 @@ class LatticeStructure(LatticeBasis):
     >>> plt.show()
 
     """
+
     # Decimals used for rounding distances
     DIST_DECIMALS: int = 6
 
@@ -117,8 +118,9 @@ class LatticeStructure(LatticeBasis):
         self._distance_matrix = None
         self._distances = None
 
-        logger.debug("LatticeStructure initialized (D=%i)\nvectors:\n%s",
-                     self.dim, self._vectors)
+        logger.debug(
+            "LatticeStructure initialized (D=%i)\nvectors:\n%s", self.dim, self._vectors
+        )
 
         if "atoms" in kwargs:
             atom_dict = kwargs["atoms"]
@@ -169,12 +171,15 @@ class LatticeStructure(LatticeBasis):
         """np.ndarray: List of distances between the lattice sites."""
         return self._distances
 
-    def add_atom(self, pos: Union[float, Sequence[float]] = None,
-                 atom: Union[str, Dict[str, Any], Atom] = None,
-                 primitive: bool = False,
-                 neighbors: int = 0,
-                 relative: bool = None,
-                 **kwargs) -> Atom:
+    def add_atom(
+        self,
+        pos: Union[float, Sequence[float]] = None,
+        atom: Union[str, Dict[str, Any], Atom] = None,
+        primitive: bool = False,
+        neighbors: int = 0,
+        relative: bool = None,
+        **kwargs,
+    ) -> Atom:
         """Adds a site to the basis of the lattice unit cell.
 
         Parameters
@@ -234,9 +239,11 @@ class LatticeStructure(LatticeBasis):
         Atom(B, size=15, 1)
         """
         if relative is not None:
-            warnings.warn("``relative`` is deprecated and will be removed in a "
-                          "future version. Use ``primitive`` instead",
-                          DeprecationWarning)
+            warnings.warn(
+                "``relative`` is deprecated and will be removed in a "
+                "future version. Use ``primitive`` instead",
+                DeprecationWarning,
+            )
             primitive = relative
 
         pos = np.zeros(self.dim) if pos is None else np.atleast_1d(pos)
@@ -244,8 +251,10 @@ class LatticeStructure(LatticeBasis):
             pos = self.translate(pos)
 
         if len(pos) != self._dim:
-            raise ValueError(f"Shape of the position {pos} doesn't match "
-                             f"the dimension {self.dim} of the lattice!")
+            raise ValueError(
+                f"Shape of the position {pos} doesn't match "
+                f"the dimension {self.dim} of the lattice!"
+            )
         if any(np.all(pos == x) for x in self._positions):
             raise SiteOccupiedError(atom, pos)
 
@@ -360,8 +369,13 @@ class LatticeStructure(LatticeBasis):
                     return at
             raise ValueError(f"No Atom with the name '{atom}' found!")
 
-    def add_connection(self, atom1: Union[int, str, Atom], atom2: Union[int, str, Atom],
-                       num_distances=1, analyze: bool = False) -> None:
+    def add_connection(
+        self,
+        atom1: Union[int, str, Atom],
+        atom2: Union[int, str, Atom],
+        num_distances=1,
+        analyze: bool = False,
+    ) -> None:
         """Sets the number of distances for a specific connection between two atoms.
 
         Parameters
@@ -456,10 +470,12 @@ class LatticeStructure(LatticeBasis):
             Flag if lattice base is analyzed. If ``False`` the ``analyze``-method
             needs to be called manually. The default is True.
         """
-        warnings.warn("Configuring neighbors with `set_num_neighbors` is deprecated "
-                      "and will be removed in a future version. Use the "
-                      "`add_connections` instead.",
-                      DeprecationWarning)
+        warnings.warn(
+            "Configuring neighbors with `set_num_neighbors` is deprecated "
+            "and will be removed in a future version. Use the "
+            "`add_connections` instead.",
+            DeprecationWarning,
+        )
         self.add_connections(num_neighbors, analyze)
 
     def _compute_base_neighbors(self, max_distidx, num_jobs=1):
@@ -470,10 +486,12 @@ class LatticeStructure(LatticeBasis):
         cell_range = 2 * max_distidx
         logger.debug("Max. distidx: %i, Cell-range: %i", max_distidx, cell_range)
 
-        nvecs = self.get_neighbor_cells(cell_range, include_origin=True,
-                                        comparison=np.less_equal)
-        arrays = [np.c_[nvecs, i * np.ones(nvecs.shape[0])]
-                  for i in range(self.num_base)]
+        nvecs = self.get_neighbor_cells(
+            cell_range, include_origin=True, comparison=np.less_equal
+        )
+        arrays = [
+            np.c_[nvecs, i * np.ones(nvecs.shape[0])] for i in range(self.num_base)
+        ]
         cols = self.dim + 1
         indices = np.ravel(arrays, order="F").astype(np.int64)
         indices = indices.reshape(cols, int(indices.shape[0] / cols)).T
@@ -485,12 +503,14 @@ class LatticeStructure(LatticeBasis):
 
         # Compute neighbors for each distance level in the cell range
         n = self.num_base
-        neighbor_array = [[collections.OrderedDict()
-                           for _ in range(n)] for _ in range(n)]
+        neighbor_array = [
+            [collections.OrderedDict() for _ in range(n)] for _ in range(n)
+        ]
         for a1 in range(self.num_base):
             pos = self.atom_positions[a1]
-            neighbors, distances = tree.query(pos, num_jobs, self.DIST_DECIMALS,
-                                              include_zero=True, compact=False)
+            neighbors, distances = tree.query(
+                pos, num_jobs, self.DIST_DECIMALS, include_zero=True, compact=False
+            )
             neighbor_indices = indices[neighbors]
             # Store neighbors of certain distance for each atom pair in the unit cell
             for dist, idx in zip(distances, neighbor_indices):
@@ -619,7 +639,7 @@ class LatticeStructure(LatticeBasis):
                 dists = list(base_neighbors[alpha].keys())
             except ValueError:
                 dists = list()
-            distances[alpha, :len(dists)] = sorted(dists)
+            distances[alpha, : len(dists)] = sorted(dists)
 
         self._base_neighbors = base_neighbors
         self._distance_matrix = base_distance_matrix
@@ -629,8 +649,9 @@ class LatticeStructure(LatticeBasis):
         logger.debug("Distance-matrix:\n%s", base_distance_matrix)
         logger.debug("Distances:\n%s", distances)
 
-    def get_position(self, nvec: Union[int, Sequence[int]] = None,
-                     alpha: int = 0) -> np.ndarray:
+    def get_position(
+        self, nvec: Union[int, Sequence[int]] = None, alpha: int = 0
+    ) -> np.ndarray:
         """Returns the position for a given translation vector ``nvec`` and atom
         ``alpha``.
 
@@ -713,9 +734,9 @@ class LatticeStructure(LatticeBasis):
         n = np.asarray(np.round(self._vectors_inv @ pos, decimals=0), dtype="int")
         return n
 
-    def get_neighbors(self, nvec: Union[int, Sequence[int]] = None,
-                      alpha: int = 0,
-                      distidx: int = 0) -> np.ndarray:
+    def get_neighbors(
+        self, nvec: Union[int, Sequence[int]] = None, alpha: int = 0, distidx: int = 0
+    ) -> np.ndarray:
         """Returns the neighour indices of a given site by transforming neighbor data.
 
         Parameters
@@ -751,8 +772,9 @@ class LatticeStructure(LatticeBasis):
         if nvec is None:
             nvec = np.zeros(self.dim)
         self._assert_analyzed()
-        logger.debug("Computing neighbor-indices of %s, %i (distidx: %i)",
-                     nvec, alpha, distidx)
+        logger.debug(
+            "Computing neighbor-indices of %s, %i (distidx: %i)", nvec, alpha, distidx
+        )
 
         nvec = np.atleast_1d(nvec)
         keys = list(sorted(self._base_neighbors[alpha].keys()))
@@ -764,9 +786,9 @@ class LatticeStructure(LatticeBasis):
 
         return indices_transformed
 
-    def get_neighbor_positions(self, nvec: Union[int, Sequence[int]] = None,
-                               alpha: int = 0,
-                               distidx: int = 0) -> np.ndarray:
+    def get_neighbor_positions(
+        self, nvec: Union[int, Sequence[int]] = None, alpha: int = 0, distidx: int = 0
+    ) -> np.ndarray:
         """Returns the neighour positions of a given site by transforming neighbor data.
 
         Parameters
@@ -802,8 +824,9 @@ class LatticeStructure(LatticeBasis):
         if nvec is None:
             nvec = np.zeros(self.dim)
         self._assert_analyzed()
-        logger.debug("Computing neighbor-positions of %s, %i (distidx: %i)",
-                     nvec, alpha, distidx)
+        logger.debug(
+            "Computing neighbor-positions of %s, %i (distidx: %i)", nvec, alpha, distidx
+        )
 
         indices = self.get_neighbors(nvec, alpha, distidx)
         nvecs, alphas = indices[:, :-1], indices[:, -1]
@@ -813,8 +836,9 @@ class LatticeStructure(LatticeBasis):
 
         return positions
 
-    def get_neighbor_vectors(self, alpha: int = 0, distidx: int = 0,
-                             include_zero: bool = False) -> np.ndarray:
+    def get_neighbor_vectors(
+        self, alpha: int = 0, distidx: int = 0, include_zero: bool = False
+    ) -> np.ndarray:
         """Returns the vectors to the neigbor sites of an atom in the unit cell.
 
         Parameters
@@ -848,8 +872,9 @@ class LatticeStructure(LatticeBasis):
          [ 0.  1.]]
         """
         self._assert_analyzed()
-        logger.debug("Computing neighbor-vectors of atom %i (distidx: %i)",
-                     alpha, distidx)
+        logger.debug(
+            "Computing neighbor-vectors of atom %i (distidx: %i)", alpha, distidx
+        )
 
         pos0 = self._positions[alpha]
         pos1 = self.get_neighbor_positions(alpha=alpha, distidx=distidx)
@@ -860,8 +885,9 @@ class LatticeStructure(LatticeBasis):
 
         return vecs
 
-    def fourier_weights(self, k: ArrayLike, alpha: int = 0,
-                        distidx: int = 0) -> np.ndarray:
+    def fourier_weights(
+        self, k: ArrayLike, alpha: int = 0, distidx: int = 0
+    ) -> np.ndarray:
         """Returns the Fourier-weight for a given vector.
 
         Parameters
@@ -882,8 +908,9 @@ class LatticeStructure(LatticeBasis):
         weights = np.sum(np.exp(1j * np.inner(k, vecs)))
         return weights
 
-    def get_base_atom_dict(self, atleast2d: bool = True) -> \
-            Dict[Any, List[Union[np.ndarray, Any]]]:
+    def get_base_atom_dict(
+        self, atleast2d: bool = True
+    ) -> Dict[Any, List[Union[np.ndarray, Any]]]:
         """Returns a dictionary containing the positions for eatch of the base atoms.
 
         Parameters
@@ -920,12 +947,14 @@ class LatticeStructure(LatticeBasis):
         return atom_pos
 
     # noinspection PyShadowingNames
-    def check_points(self, points: np.ndarray,
-                     shape: Union[int, Sequence[int], AbstractShape],
-                     relative: bool = False,
-                     pos: Union[float, Sequence[float]] = None,
-                     tol: float = 1e-3,
-                     ) -> np.ndarray:
+    def check_points(
+        self,
+        points: np.ndarray,
+        shape: Union[int, Sequence[int], AbstractShape],
+        relative: bool = False,
+        pos: Union[float, Sequence[float]] = None,
+        tol: float = 1e-3,
+    ) -> np.ndarray:
         """Returns a mask for the points in the given shape.
 
         Parameters
@@ -960,8 +989,10 @@ class LatticeStructure(LatticeBasis):
         else:
             shape = np.atleast_1d(shape)
             if len(shape) != self.dim:
-                raise ValueError(f"Dimension of shape {len(shape)} doesn't "
-                                 f"match the dimension of the lattice {self.dim}")
+                raise ValueError(
+                    f"Dimension of shape {len(shape)} doesn't "
+                    f"match the dimension of the lattice {self.dim}"
+                )
             if relative:
                 shape += np.max(self.vectors, axis=0) - 0.1 * self.norms
 
@@ -974,13 +1005,15 @@ class LatticeStructure(LatticeBasis):
                 mask = mask & (pos[i] <= points[:, i]) & (points[:, i] <= end[i])
             return mask
 
-    def build_translation_vectors(self, shape: Union[int, Sequence[int], AbstractShape],
-                                  primitive: bool = False,
-                                  pos: Union[float, Sequence[float]] = None,
-                                  check: bool = True,
-                                  dtype: Union[int, np.dtype] = None,
-                                  oversample: float = 0.0,
-                                  ) -> np.ndarray:
+    def build_translation_vectors(
+        self,
+        shape: Union[int, Sequence[int], AbstractShape],
+        primitive: bool = False,
+        pos: Union[float, Sequence[float]] = None,
+        check: bool = True,
+        dtype: Union[int, np.dtype] = None,
+        oversample: float = 0.0,
+    ) -> np.ndarray:
         """Constructs the translation vectors :math:`n` in a given shape.
 
         Raises
@@ -1035,8 +1068,10 @@ class LatticeStructure(LatticeBasis):
             shape = stop - pos
         shape = np.atleast_1d(shape)
         if len(shape) != self.dim:
-            raise ValueError(f"Dimension of shape {len(shape)} doesn't "
-                             f"match the dimension of the lattice {self.dim}")
+            raise ValueError(
+                f"Dimension of shape {len(shape)} doesn't "
+                f"match the dimension of the lattice {self.dim}"
+            )
         logger.debug("Building nvecs: %s at %s", shape, pos)
 
         if primitive:
@@ -1046,8 +1081,9 @@ class LatticeStructure(LatticeBasis):
         end = pos + shape
 
         # Estimate the maximum needed translation vector to reach all points
-        max_nvecs = np.array([self.itranslate(pos)[0], self.itranslate(end)[0]],
-                             dtype=np.float64)
+        max_nvecs = np.array(
+            [self.itranslate(pos)[0], self.itranslate(end)[0]], dtype=np.float64
+        )
         for i in range(1, self.dim):
             for idx in itertools.combinations(range(self.dim), r=i):
                 _pos = end.copy()
@@ -1073,14 +1109,16 @@ class LatticeStructure(LatticeBasis):
         return nvecs
 
     # noinspection PyShadowingNames
-    def build_indices(self, shape: Union[int, Sequence[int], AbstractShape],
-                      primitive: bool = False,
-                      pos: Union[float, Sequence[float]] = None,
-                      check: bool = True,
-                      callback: Callable = None,
-                      dtype: Union[int, str, np.dtype] = None,
-                      return_pos: bool = False
-                      ) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
+    def build_indices(
+        self,
+        shape: Union[int, Sequence[int], AbstractShape],
+        primitive: bool = False,
+        pos: Union[float, Sequence[float]] = None,
+        check: bool = True,
+        callback: Callable = None,
+        dtype: Union[int, str, np.dtype] = None,
+        return_pos: bool = False,
+    ) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
         """Constructs the lattice indices .math:`(n, α)` in the given shape.
 
         Raises
@@ -1237,8 +1275,9 @@ class LatticeStructure(LatticeBasis):
         return neighbors, distances
 
     # noinspection PyShadowingNames
-    def compute_neighbors(self, indices: ArrayLike, positions: ArrayLike,
-                          num_jobs: int = 1) -> Tuple[np.ndarray, np.ndarray]:
+    def compute_neighbors(
+        self, indices: ArrayLike, positions: ArrayLike, num_jobs: int = 1
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """Computes the neighbors for the given points.
 
         Parameters
@@ -1309,13 +1348,14 @@ class LatticeStructure(LatticeBasis):
         logger.debug("Max. number of neighbors: %i", k)
         logger.debug("Max. neighbor distance:   %f", max_dist)
         # Query and filter neighbors
-        neighbors, distances = tree.query(num_jobs=num_jobs,
-                                          decimals=self.DIST_DECIMALS)
+        neighbors, distances = tree.query(
+            num_jobs=num_jobs, decimals=self.DIST_DECIMALS
+        )
         neighbors, distances = self._filter_neighbors(indices, neighbors, distances)
 
         return neighbors, distances
 
-    def copy(self) -> 'LatticeStructure':
+    def copy(self) -> "LatticeStructure":
         """LatticeStructure : Creates a (deep) copy of the lattice instance."""
         return deepcopy(self)
 
@@ -1383,9 +1423,9 @@ class LatticeStructure(LatticeBasis):
             pickle.dump(self, f)
 
     @classmethod
-    def load(cls,
-             file: Union[str, int, bytes]
-             ) -> 'LatticeStructure':  # pragma: no cover
+    def load(
+        cls, file: Union[str, int, bytes]
+    ) -> "LatticeStructure":  # pragma: no cover
         """Load data of a saved ``LatticeStructure`` instance.
 
         Parameters
@@ -1404,27 +1444,30 @@ class LatticeStructure(LatticeBasis):
 
     def __hash__(self):
         import hashlib
+
         sha = hashlib.md5(self.dumps().encode("utf-8"))
         return int(sha.hexdigest(), 16)
 
     def __eq__(self, other):
         return self.__hash__() == other.__hash__()
 
-    def plot_cell(self,
-                  lw: float = None,
-                  alpha: float = 0.5,
-                  cell_lw: float = None,
-                  cell_ls: str = "--",
-                  margins: Union[Sequence[float], float] = 0.1,
-                  legend: bool = None,
-                  grid: bool = False,
-                  show_cell: bool = True,
-                  show_vecs: bool = True,
-                  show_neighbors: bool = True,
-                  con_colors: Sequence = None,
-                  adjustable: str = "box",
-                  ax: Union[plt.Axes, Axes3D] = None,
-                  show: bool = False) -> Union[plt.Axes, Axes3D]:  # pragma: no cover
+    def plot_cell(
+        self,
+        lw: float = None,
+        alpha: float = 0.5,
+        cell_lw: float = None,
+        cell_ls: str = "--",
+        margins: Union[Sequence[float], float] = 0.1,
+        legend: bool = None,
+        grid: bool = False,
+        show_cell: bool = True,
+        show_vecs: bool = True,
+        show_neighbors: bool = True,
+        con_colors: Sequence = None,
+        adjustable: str = "box",
+        ax: Union[plt.Axes, Axes3D] = None,
+        show: bool = False,
+    ) -> Union[plt.Axes, Axes3D]:  # pragma: no cover
         """Plot the unit cell of the lattice.
 
         Parameters
@@ -1474,8 +1517,9 @@ class LatticeStructure(LatticeBasis):
         # Draw unit vectors and the cell they spawn.
         if show_vecs:
             vectors = self.vectors
-            draw_unit_cell(ax, vectors, show_cell, color="k", lw=cell_lw, ls=cell_ls,
-                           zorder=hopz)
+            draw_unit_cell(
+                ax, vectors, show_cell, color="k", lw=cell_lw, ls=cell_ls, zorder=hopz
+            )
         # Draw sites
         colors = list()
         for i in range(self.num_base):
@@ -1499,8 +1543,9 @@ class LatticeStructure(LatticeBasis):
                         for idx, p2 in zip(indices, positions):
                             j = idx[-1]
                             col = hop_colors[i][j]
-                            draw_vectors(ax, p2 - p1, pos=p1, zorder=hopz,
-                                         color=col, lw=lw)
+                            draw_vectors(
+                                ax, p2 - p1, pos=p1, zorder=hopz, color=col, lw=lw
+                            )
                             if np.any(idx[:-1]):
                                 position_arr[j].append(p2)
                     except IndexError:
@@ -1533,7 +1578,9 @@ class LatticeStructure(LatticeBasis):
         return ax
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(" \
-               f"dim: {self.dim}, " \
-               f"num_base: {self.num_base}, " \
-               f"num_neighbors: {self.num_neighbors})"
+        return (
+            f"{self.__class__.__name__}("
+            f"dim: {self.dim}, "
+            f"num_base: {self.num_base}, "
+            f"num_neighbors: {self.num_neighbors})"
+        )

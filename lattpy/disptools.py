@@ -19,8 +19,12 @@ from .plotting import draw_lines
 from .atom import Atom
 
 __all__ = [
-    "bandpath_subplots", "plot_dispersion", "disp_dos_subplots",
-    "plot_disp_dos", "plot_bands", "DispersionPath"
+    "bandpath_subplots",
+    "plot_dispersion",
+    "disp_dos_subplots",
+    "plot_disp_dos",
+    "plot_bands",
+    "DispersionPath",
 ]
 
 
@@ -46,7 +50,7 @@ def _scale_xaxis(num_points, disp, scales=None):
 
 
 def _set_piticks(axis, num_ticks=2, frmt=".1f"):
-    axis.set_major_formatter(tck.FormatStrFormatter(rf'%{frmt} $\pi$'))
+    axis.set_major_formatter(tck.FormatStrFormatter(rf"%{frmt} $\pi$"))
     axis.set_major_locator(tck.LinearLocator(2 * num_ticks + 1))
 
 
@@ -63,7 +67,7 @@ def bandpath_subplots(ticks, labels, xlabel="$k$", ylabel="$E(k)$", grid="both")
         if not isinstance(grid, str):
             grid = "both"
         ax.set_axisbelow(True)
-        ax.grid(b=True, which='major', axis=grid)
+        ax.grid(b=True, which="major", axis=grid)
     return fig, ax
 
 
@@ -79,9 +83,20 @@ def _draw_dispersion(ax, k, disp, color=None, fill=False, alpha=0.2, lw=1.0):
             ax.fill_between(x, min(band), max(band), color=col, alpha=alpha)
 
 
-def plot_dispersion(disp, labels, xlabel="$k$", ylabel="$E(k)$", grid="both",
-                    color=None, alpha=0.2, lw=1.0, scales=None, fill=False,
-                    ax=None, show=True):
+def plot_dispersion(
+    disp,
+    labels,
+    xlabel="$k$",
+    ylabel="$E(k)$",
+    grid="both",
+    color=None,
+    alpha=0.2,
+    lw=1.0,
+    scales=None,
+    fill=False,
+    ax=None,
+    show=True,
+):
     num_points = len(labels)
     k, ticks = _scale_xaxis(num_points, disp, scales)
     if ax is None:
@@ -105,8 +120,15 @@ def plot_dispersion(disp, labels, xlabel="$k$", ylabel="$E(k)$", grid="both",
     return ax
 
 
-def disp_dos_subplots(ticks, labels, xlabel="$k$", ylabel="$E(k)$", doslabel="$n(E)$",
-                      wratio=(3, 1), grid="both"):
+def disp_dos_subplots(
+    ticks,
+    labels,
+    xlabel="$k$",
+    ylabel="$E(k)$",
+    doslabel="$n(E)$",
+    wratio=(3, 1),
+    grid="both",
+):
     fig, axs = plt.subplots(1, 2, gridspec_kw={"width_ratios": wratio}, sharey="all")
     ax1, ax2 = axs
     ax1.set_xlim(0, ticks[-1])
@@ -121,20 +143,36 @@ def disp_dos_subplots(ticks, labels, xlabel="$k$", ylabel="$E(k)$", doslabel="$n
     ax2.set_xticks([0])
     if grid:
         ax1.set_axisbelow(True)
-        ax1.grid(b=True, which='major', axis=grid)
+        ax1.grid(b=True, which="major", axis=grid)
         ax2.set_axisbelow(True)
-        ax2.grid(b=True, which='major', axis=grid)
+        ax2.grid(b=True, which="major", axis=grid)
     return fig, axs
 
 
-def plot_disp_dos(disp, dos_data, labels, xlabel="k", ylabel="E(k)", doslabel="n(E)",
-                  wratio=(3, 1), grid="both", color=None, fill=True, disp_alpha=0.2,
-                  dos_alpha=0.2, lw=1.0, scales=None, axs=None, show=True):
+def plot_disp_dos(
+    disp,
+    dos_data,
+    labels,
+    xlabel="k",
+    ylabel="E(k)",
+    doslabel="n(E)",
+    wratio=(3, 1),
+    grid="both",
+    color=None,
+    fill=True,
+    disp_alpha=0.2,
+    dos_alpha=0.2,
+    lw=1.0,
+    scales=None,
+    axs=None,
+    show=True,
+):
     num_points = len(labels)
     k, ticks = _scale_xaxis(num_points, disp, scales)
     if axs is None:
-        fig, axs = disp_dos_subplots(ticks, labels, xlabel, ylabel, doslabel, wratio,
-                                     grid)
+        fig, axs = disp_dos_subplots(
+            ticks, labels, xlabel, ylabel, doslabel, wratio, grid
+        )
         ax1, ax2 = axs
     else:
         ax1, ax2 = axs
@@ -165,8 +203,18 @@ def plot_disp_dos(disp, dos_data, labels, xlabel="k", ylabel="E(k)", doslabel="n
     return axs
 
 
-def plot_bands(kgrid, bands, k_label="k", disp_label="E(k)", grid="both",
-               contour_grid=False, bz=None, pi_ticks=True, ax=None, show=True):
+def plot_bands(
+    kgrid,
+    bands,
+    k_label="k",
+    disp_label="E(k)",
+    grid="both",
+    contour_grid=False,
+    bz=None,
+    pi_ticks=True,
+    ax=None,
+    show=True,
+):
     if ax is None:
         fig, ax = plt.subplots()
     else:
@@ -200,7 +248,7 @@ def plot_bands(kgrid, bands, k_label="k", disp_label="E(k)", grid="both",
             bands = np.sum(np.abs(bands), axis=0)
 
         im = ax.contourf(kxx, kyy, bands)
-        ax.set_aspect('equal')
+        ax.set_aspect("equal")
         if k_label:
             ax.set_xlabel(f"{k_label}$_x$")
             ax.set_ylabel(f"{k_label}$_y$")
@@ -266,11 +314,11 @@ class DispersionPath:
 
     @property
     def num_points(self):
-        """ int: Number of HS points in the path"""
+        """int: Number of HS points in the path"""
         return len(self.points)
 
     def add(self, point, name=""):
-        """ Adds a new HS point to the path
+        """Adds a new HS point to the path
 
         This method returns the instance for easier path definitions.
 
@@ -291,7 +339,7 @@ class DispersionPath:
             name = str(len(self.points))
         point = np.asarray(point)
         if self.dim:
-            point = point[:self.dim]
+            point = point[: self.dim]
         else:
             self.dim = len(point)
         self.points.append(point)
@@ -299,7 +347,7 @@ class DispersionPath:
         return self
 
     def add_points(self, points, names=None):
-        """ Adds multiple HS points to the path
+        """Adds multiple HS points to the path
 
         Parameters
         ----------
@@ -320,7 +368,7 @@ class DispersionPath:
         return self
 
     def cycle(self):
-        """ Adds the first point of the path.
+        """Adds the first point of the path.
 
         This method returns the instance for easier path definitions.
 
@@ -333,23 +381,23 @@ class DispersionPath:
         return self
 
     def gamma(self):
-        r""" DispersionPath: Adds the .math:'\Gamma=(0, 0, 0)' point to the path """
+        r"""DispersionPath: Adds the .math:'\Gamma=(0, 0, 0)' point to the path"""
         return self.add([0, 0, 0], r"$\Gamma$")
 
     def x(self, a=1.0):
-        r""" DispersionPath: Adds the .math:'X=(\pi, 0, 0)' point to the path """
+        r"""DispersionPath: Adds the .math:'X=(\pi, 0, 0)' point to the path"""
         return self.add([np.pi / a, 0, 0], r"$X$")
 
     def m(self, a=1.0):
-        r""" DispersionPath: Adds the ,math:'M=(\pi, \pi, 0)' point to the path """
+        r"""DispersionPath: Adds the ,math:'M=(\pi, \pi, 0)' point to the path"""
         return self.add([np.pi / a, np.pi / a, 0], r"$M$")
 
     def r(self, a=1.0):
-        r""" DispersionPath: Adds the .math:'R=(\pi, \pi, \pi)' point to the path """
+        r"""DispersionPath: Adds the .math:'R=(\pi, \pi, \pi)' point to the path"""
         return self.add([np.pi / a, np.pi / a, np.pi / a], r"$R$")
 
     def build(self, n_sect=1000):
-        """ Builds the vectors defining the path between the set HS points.
+        """Builds the vectors defining the path between the set HS points.
 
         Parameters
         ----------
@@ -367,7 +415,7 @@ class DispersionPath:
         return path
 
     def get_ticks(self):
-        """ Get the positions of the points of the last buildt path.
+        """Get the positions of the points of the last buildt path.
 
         Mainly used for setting ticks in plot.
 
@@ -394,12 +442,12 @@ class DispersionPath:
         dists = self.distances()
         return dists / dists[0]
 
-    def draw(self, ax, color=None, lw=1., **kwargs):
+    def draw(self, ax, color=None, lw=1.0, **kwargs):
         lines = draw_lines(ax, self.edges(), color=color, lw=lw, **kwargs)
         return lines
 
     def subplots(self, xlabel="k", ylabel="E(k)", grid="both"):
-        """ Creates an empty matplotlib plot with configured axes for the path.
+        """Creates an empty matplotlib plot with configured axes for the path.
 
         Parameters
         ----------
@@ -417,10 +465,12 @@ class DispersionPath:
 
     def plot_dispersion(self, disp, ax=None, show=True, **kwargs):
         scales = self.scales()
-        return plot_dispersion(disp, self.labels, scales=scales, ax=ax, show=show,
-                               **kwargs)
+        return plot_dispersion(
+            disp, self.labels, scales=scales, ax=ax, show=show, **kwargs
+        )
 
     def plot_disp_dos(self, disp, dos, axs=None, show=True, **kwargs):
         scales = self.scales()
-        return plot_disp_dos(disp, dos, self.labels, scales=scales, axs=axs, show=show,
-                             **kwargs)
+        return plot_disp_dos(
+            disp, dos, self.labels, scales=scales, axs=axs, show=show, **kwargs
+        )

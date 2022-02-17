@@ -3,12 +3,14 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. image:: _static/header.png
+   :width: 400
+   :align: center
+   :alt: Graphene lattice
+
 ===============================================
 Simple and Efficient Lattice Modeling in Python
 ===============================================
-
-.. warning::
-   This project is still in development and might change significantly in the future!
 
 |pypi-python-version| |pypi-version| |pypi-status| |pypi-license| |lgtm-grade| |style-black|
 
@@ -28,16 +30,8 @@ adding neighbor connections manually. You will save time and mental energy for m
 | Dev     ||tests-dev|    ||codecov-dev|    | |docs-dev|    |
 +---------+---------------+-----------------+---------------+
 
-
-.. plot::
-   :format: doctest
-   :context: close-figs
-
-   >>> latt = lp.graphene()
-   >>> latt.build((20.7, 10.5))
-   >>> latt.plot(legend=False)
-   >>> plt.show()
-
+.. warning::
+   This project is still in development and might change significantly in the future!
 
 .. toctree::
    :maxdepth: 3

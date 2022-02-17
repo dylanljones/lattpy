@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/.social/example_graphene_periodic.png" width="400">
+    <img src="https://raw.githubusercontent.com/dylanljones/lattpy/dev/.social/header.png" width="400">
     <h1 align="center">LattPy - Simple Lattice Modeling in Python</h1>
     <a href="https://pypi.org/project/lattpy/"><img alt="Python Version" src="https://img.shields.io/pypi/pyversions/lattpy?logo=python&style=flat-square"></a>
     <a href="https://pypi.org/project/lattpy/"><img alt="Version" src="https://img.shields.io/pypi/v/lattpy?logo=pypi&style=flat-square"></a>

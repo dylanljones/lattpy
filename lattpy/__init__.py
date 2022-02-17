@@ -52,7 +52,7 @@ from .spatial import (
     cell_volume,
     compute_vectors,
     VoronoiTree,
-    WignerSeitzCell
+    WignerSeitzCell,
 )
 
 from .shape import AbstractShape, Shape, Circle, Donut, ConvexHull
@@ -64,7 +64,8 @@ from .structure import LatticeStructure
 from .lattice import Lattice
 
 from ._version import get_versions
-__version__ = get_versions()['version']
+
+__version__ = get_versions()["version"]
 del get_versions
 
 # =========================================================================
@@ -147,6 +148,7 @@ def alternating_chain(a=1.0, atom1=None, atom2=None, x0=0.0, neighbors=1):
 # =========================================================================
 #                             2D Lattices
 # =========================================================================
+
 
 def simple_square(a=1.0, atom=None, neighbors=1):
     """Creates a square lattice with one atom at the origin of the unit cell.
@@ -249,6 +251,7 @@ def graphene(a=1.0):
 # =========================================================================
 #                             3D Lattices
 # =========================================================================
+
 
 def simple_cubic(a=1.0, atom=None, neighbors=1):
     """Creates a cubic lattice with one atom at the origin of the unit cell.
@@ -364,8 +367,9 @@ def finite_hypercubic(s, a=1.0, atom=None, neighbors=1):
 
     """
     import numpy as np
+
     if isinstance(s, (float, int)):
-        s = (s, )
+        s = (s,)
 
     dim = s.dim if isinstance(s, AbstractShape) else len(s)
     latt = Lattice(a * np.eye(dim))

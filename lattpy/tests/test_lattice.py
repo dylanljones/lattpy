@@ -14,7 +14,10 @@ from numpy.testing import assert_array_equal, assert_allclose
 from hypothesis import given, strategies as st
 import hypothesis.extra.numpy as hnp
 from lattpy.utils import (
-    SiteOccupiedError, NoAtomsError, NoConnectionsError, NotAnalyzedError
+    SiteOccupiedError,
+    NoAtomsError,
+    NoConnectionsError,
+    NotAnalyzedError,
 )
 from lattpy import Lattice, Circle, Atom
 import lattpy as lp
@@ -37,19 +40,14 @@ rrect = Lattice(PI * np.array([[1, 0], [0, 2]]))
 
 
 hexagonal = Lattice.hexagonal(a=1)
-rhexagonal = Lattice(np.array([[+2.0943951, +3.62759873],
-                               [+2.0943951, -3.62759873]]))
+rhexagonal = Lattice(np.array([[+2.0943951, +3.62759873], [+2.0943951, -3.62759873]]))
 sc = Lattice.sc(a=1.0)
 rsc = Lattice(TWOPI * np.eye(3))
 
 fcc = Lattice.fcc(a=1.0)
-rfcc = Lattice(TWOPI * np.array([[+1, +1, -1],
-                                 [+1, -1, +1],
-                                 [-1, +1, +1]]))
+rfcc = Lattice(TWOPI * np.array([[+1, +1, -1], [+1, -1, +1], [-1, +1, +1]]))
 bcc = Lattice.bcc(a=1.0)
-rbcc = Lattice(TWOPI * np.array([[+1, +1, 0],
-                                 [0, -1, +1],
-                                 [-1, 0, +1]]))
+rbcc = Lattice(TWOPI * np.array([[+1, +1, 0], [0, -1, +1], [-1, 0, +1]]))
 
 LATTICES = [chain, square, rect, hexagonal, sc, fcc, bcc]
 RLATTICES = [rchain, rsquare, rrect, rhexagonal, rsc, rfcc, rbcc]
@@ -78,7 +76,7 @@ def assert_elements_equal1d(actual, expected):
     return all(np.isin(actual, expected))
 
 
-def assert_allclose_elements(actual, expected, atol=0., rtol=1e-7):
+def assert_allclose_elements(actual, expected, atol=0.0, rtol=1e-7):
     assert_allclose(np.sort(actual), np.sort(expected), rtol, atol)
 
 
@@ -170,7 +168,7 @@ def test_brillouin_zone():
     latt = Lattice.square()
     bz = latt.brillouin_zone()
 
-    expected = [[-1., -1.], [1., -1.], [-1., 1.], [1., 1.]]
+    expected = [[-1.0, -1.0], [1.0, -1.0], [-1.0, 1.0], [1.0, 1.0]]
     assert_array_equal(bz.vertices / np.pi, expected)
 
     expected = [[0, 1], [0, 2], [1, 3], [2, 3]]
@@ -462,7 +460,7 @@ def test_get_base_atom_dict():
 
     assert len(result) == 2
     assert_array_equal(result[ata], [[0, 0]])
-    assert_array_equal(result[atb], [[0.5, 0.], [0.5, 0.5]])
+    assert_array_equal(result[atb], [[0.5, 0.0], [0.5, 0.5]])
 
 
 def test_build():
@@ -475,7 +473,7 @@ def test_build_min_neighbors():
     latt.add_connections()
     shape = Circle([0, 0], radius=5)
     latt.build(shape, min_neighbors=2)
-    assert_array_equal(latt.data.get_limits(), [[-4., -4.], [4., 4.]])
+    assert_array_equal(latt.data.get_limits(), [[-4.0, -4.0], [4.0, 4.0]])
 
 
 def test_build_exceptions():
@@ -698,16 +696,16 @@ def test_to_dict():
     latt.build((5, 5))
     d = latt.todict()
 
-    expected = [[1., 0.], [0., 1.]]
+    expected = [[1.0, 0.0], [0.0, 1.0]]
     assert_array_equal(d["vectors"], expected)
 
-    expected = [[0., 0.]]
+    expected = [[0.0, 0.0]]
     assert_array_equal(d["positions"], expected)
 
     expected = [[1]]
     assert_array_equal(d["connections"], expected)
 
-    expected = [5., 5.]
+    expected = [5.0, 5.0]
     assert_array_equal(d["shape"], expected)
 
 
@@ -735,6 +733,7 @@ def test_hash():
 # =========================================================================
 # General tests
 # =========================================================================
+
 
 def test_simple_chain():
     latt = lp.simple_chain(a=1, neighbors=1)

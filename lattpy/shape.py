@@ -31,7 +31,7 @@ class AbstractShape(ABC):
         pass
 
     @abstractmethod
-    def contains(self, points, tol=0.):
+    def contains(self, points, tol=0.0):
         """Checks if the given points are contained in the shape."""
         pass
 
@@ -99,20 +99,33 @@ class Shape(AbstractShape):
             surfs = np.array([[0, 1, 3, 2, 0]])
         elif self.dim == 3:
             # Edge indices
-            edges = np.array([
-                [0, 2], [2, 3], [3, 1], [1, 0],
-                [4, 6], [6, 7], [7, 5], [5, 4],
-                [0, 4], [2, 6], [3, 7], [1, 5]
-            ])
+            edges = np.array(
+                [
+                    [0, 2],
+                    [2, 3],
+                    [3, 1],
+                    [1, 0],
+                    [4, 6],
+                    [6, 7],
+                    [7, 5],
+                    [5, 4],
+                    [0, 4],
+                    [2, 6],
+                    [3, 7],
+                    [1, 5],
+                ]
+            )
             # Surface indices
-            surfs = np.array([
-                [0, 2, 3, 1],
-                [4, 6, 7, 5],
-                [0, 4, 6, 2],
-                [2, 6, 7, 3],
-                [3, 7, 5, 1],
-                [1, 5, 4, 0]
-            ])
+            surfs = np.array(
+                [
+                    [0, 2, 3, 1],
+                    [4, 6, 7, 5],
+                    [0, 4, 6, 2],
+                    [2, 6, 7, 3],
+                    [3, 7, 5, 1],
+                    [1, 5, 4, 0],
+                ]
+            )
         if self.basis is not None:
             corners = np.inner(corners, self.basis.T)
         return corners, edges, surfs
@@ -122,11 +135,12 @@ class Shape(AbstractShape):
         lims = np.array([np.min(corners, axis=0), np.max(corners, axis=0)])
         return lims.T
 
-    def contains(self, points, tol=0.):
+    def contains(self, points, tol=0.0):
         if self.basis is not None:
             points = np.inner(points, np.linalg.inv(self.basis.T))
-        mask = np.logical_and(self.pos - tol <= points,
-                              points <= self.pos + self.size + tol)
+        mask = np.logical_and(
+            self.pos - tol <= points, points <= self.pos + self.size + tol
+        )
         return np.all(mask, axis=1)
 
     def plot(self, ax, color="k", lw=0.0, alpha=0.2, **kwargs):  # pragma: no cover
@@ -175,7 +189,7 @@ class Circle(AbstractShape):
         lims = self.pos + np.array([-rad, +rad])
         return lims.T
 
-    def contains(self, points, tol=0.):
+    def contains(self, points, tol=0.0):
         dists = np.sqrt(np.sum(np.square(points - self.pos), axis=1))
         return dists <= self.radius + tol
 
@@ -222,8 +236,9 @@ class Donut(AbstractShape):
 
     def contains(self, points, tol=1e-10):
         dists = np.sqrt(np.sum(np.square(points - self.pos), axis=1))
-        return np.logical_and(self.radii[0] - tol <= dists,
-                              dists <= self.radii[1] + tol)
+        return np.logical_and(
+            self.radii[0] - tol <= dists, dists <= self.radii[1] + tol
+        )
 
     def plot(self, ax, color="k", lw=0.0, alpha=0.2, **kwargs):  # pragma: no cover
         n = 100
@@ -276,8 +291,14 @@ class ConvexHull(AbstractShape):
         return np.array([np.min(points, axis=0), np.max(points, axis=0)]).T
 
     def contains(self, points, tol=1e-10):
-        return np.all(np.add(np.dot(points, self.hull.equations[:, :-1].T),
-                             self.hull.equations[:, -1]) <= tol, axis=1)
+        return np.all(
+            np.add(
+                np.dot(points, self.hull.equations[:, :-1].T),
+                self.hull.equations[:, -1],
+            )
+            <= tol,  # noqa: W503
+            axis=1,
+        )
 
     def plot(self, ax, color="k", lw=0.0, alpha=0.2, **kwargs):  # pragma: no cover
 

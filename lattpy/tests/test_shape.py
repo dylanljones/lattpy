@@ -22,7 +22,8 @@ dim = st.shared(st.integers(1, 3), key="d")
 
 @given(
     hnp.arrays(np.float64, dim, elements=st.floats(0.1, 100)),
-    hnp.arrays(np.float64, dim, elements=st.floats(-100, 100)))
+    hnp.arrays(np.float64, dim, elements=st.floats(-100, 100)),
+)
 def test_shape(size, pos):
     s = shape.Shape(size, pos)
 
@@ -70,14 +71,14 @@ def test_circle(pos, radius):
     mask = s.contains(pts)
     for point, res in zip(pts, mask):
         diff = point - pos
-        dist = math.sqrt(diff[0]*diff[0] + diff[1]*diff[1])
+        dist = math.sqrt(diff[0] * diff[0] + diff[1] * diff[1])
         assert res == (dist <= radius)
 
 
 @given(
     hnp.arrays(np.float64, 2, elements=st.floats(-100, 100)),
     st.floats(50, 100),
-    st.floats(0, 49)
+    st.floats(0, 49),
 )
 def test_donut(pos, outer, inner):
     s = shape.Donut(pos, outer, inner)
@@ -89,7 +90,7 @@ def test_donut(pos, outer, inner):
     mask = s.contains(pts)
     for point, res in zip(pts, mask):
         diff = point - pos
-        dist = math.sqrt(diff[0]*diff[0] + diff[1]*diff[1])
+        dist = math.sqrt(diff[0] * diff[0] + diff[1] * diff[1])
         assert res == (inner <= dist <= outer)
 
 

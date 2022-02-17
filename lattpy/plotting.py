@@ -25,9 +25,19 @@ from typing import List
 import colorcet as cc
 
 __all__ = [
-    "subplot", "draw_line", "draw_lines", "hide_box",
-    "draw_arrows", "draw_vectors", "draw_points", "draw_indices", "draw_unit_cell",
-    "draw_surfaces", "interpolate_to_grid", "draw_sites", "connection_color_array"
+    "subplot",
+    "draw_line",
+    "draw_lines",
+    "hide_box",
+    "draw_arrows",
+    "draw_vectors",
+    "draw_points",
+    "draw_indices",
+    "draw_unit_cell",
+    "draw_surfaces",
+    "interpolate_to_grid",
+    "draw_sites",
+    "connection_color_array",
 ]
 
 # Golden ratio as standard ratio for plot-figures
@@ -108,10 +118,10 @@ def hide_box(ax, axis=False):
     if axis:
         for side in ["left", "bottom"]:
             ax.spines[side].set_visible(False)
-        ax.xaxis.set_ticks_position('none')
-        ax.yaxis.set_ticks_position('none')
-        ax.set_xlabel('')
-        ax.set_ylabel('')
+        ax.xaxis.set_ticks_position("none")
+        ax.yaxis.set_ticks_position("none")
+        ax.set_xlabel("")
+        ax.set_ylabel("")
         ax.set_xticks([])
         ax.set_yticks([])
 
@@ -119,6 +129,7 @@ def hide_box(ax, axis=False):
 # ======================================================================================
 # General Plotting
 # ======================================================================================
+
 
 def subplot(dim, adjustable="box", ax=None):
     """Generates a two- or three-dimensional subplot with a equal aspect ratio
@@ -370,7 +381,7 @@ def draw_points(ax, points, size=10, **kwargs):
     if points.shape[1] == 1:
         points = np.hstack((points, np.zeros((points.shape[0], 1))))
 
-    scat = ax.scatter(*points.T, s=size**2, **kwargs)
+    scat = ax.scatter(*points.T, s=size ** 2, **kwargs)
     # Manualy update data-limits
     # ax.ignore_existing_data_limits = True
     datalim = scat.get_datalim(ax.transData)
@@ -476,6 +487,7 @@ class CircleCollection(Collection):
     like a much faster version of a `PatchCollection` of `Circle`.
     The implementation is similar to `EllipseCollection`.
     """
+
     def __init__(self, radius, **kwargs):
         super().__init__(**kwargs)
         self.radius = np.atleast_1d(radius)
@@ -536,13 +548,21 @@ def draw_sites(ax, points, radius=0.2, **kwargs):
 
     dim = points.shape[1]
     if dim < 3:
-        col = CircleCollection(radius, offsets=points, transOffset=ax.transData,
-                               **kwargs)
+        col = CircleCollection(
+            radius, offsets=points, transOffset=ax.transData, **kwargs
+        )
         ax.add_collection(col)
         label = kwargs.get("label", "")
         if label:
-            ax.plot([], [], marker='o', lw=0, color=kwargs.get("color", None),
-                    label=label, markersize=10)
+            ax.plot(
+                [],
+                [],
+                marker="o",
+                lw=0,
+                color=kwargs.get("color", None),
+                label=label,
+                markersize=10,
+            )
         datalim = col.get_datalim(ax.transData)
         datalim.x0 -= radius
         datalim.x1 += radius
@@ -552,7 +572,7 @@ def draw_sites(ax, points, radius=0.2, **kwargs):
         return col
     else:
         size = radius * 50
-        scat = ax.scatter(*points.T, s=size**2, **kwargs)
+        scat = ax.scatter(*points.T, s=size ** 2, **kwargs)
         # Manualy update data-limits
         # ax.ignore_existing_data_limits = True
         datalim = scat.get_datalim(ax.transData)
@@ -679,8 +699,14 @@ def draw_unit_cell(ax, vectors, outlines=True, **kwargs):
     return arrows, lines
 
 
-def interpolate_to_grid(positions, values, num=(100, 100), offset=(0., 0.),
-                        method="linear", fill_value=np.nan):
+def interpolate_to_grid(
+    positions,
+    values,
+    num=(100, 100),
+    offset=(0.0, 0.0),
+    method="linear",
+    fill_value=np.nan,
+):
     x, y = positions.T
 
     # Create regular grid

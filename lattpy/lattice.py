@@ -26,13 +26,13 @@ from .plotting import (
     draw_sites,
     draw_vectors,
     draw_indices,
-    connection_color_array
+    connection_color_array,
 )
 from .spatial import KDTree
 from .atom import Atom
 from .data import LatticeData, DataMap
 from .shape import AbstractShape, Shape
-from .basis import basis_t, LatticeBasis  # noqa: F401
+from .basis import basis_t
 from .structure import LatticeStructure
 
 __all__ = ["Lattice"]
@@ -242,8 +242,9 @@ class Lattice(LatticeStructure):
             return None
         return indices[0]
 
-    def neighbors(self, site: int, distidx: int = None,
-                  unique: bool = False) -> np.ndarray:
+    def neighbors(
+        self, site: int, distidx: int = None, unique: bool = False
+    ) -> np.ndarray:
         """Returns the neighours of a given site in the cached lattice data.
 
         Parameters
@@ -279,8 +280,9 @@ class Lattice(LatticeStructure):
         """
         return self.neighbors(idx, 0, unique)
 
-    def iter_neighbors(self, site: int, unique: bool = False
-                       ) -> Iterator[Tuple[int, np.ndarray]]:
+    def iter_neighbors(
+        self, site: int, unique: bool = False
+    ) -> Iterator[Tuple[int, np.ndarray]]:
         """Iterates over the neighbors of all distances of a given site.
 
         Parameters
@@ -325,16 +327,19 @@ class Lattice(LatticeStructure):
         self.shape = limits[1] - limits[0]
         self.pos = limits[0]
 
-    def build(self, shape: Union[float, Sequence[float], AbstractShape],
-              primitive: bool = False,
-              pos: Union[float, Sequence[float]] = None,
-              check: bool = True,
-              min_neighbors: int = None,
-              num_jobs: int = -1,
-              periodic: Union[bool, int, Sequence[int]] = None,
-              callback: Callable = None,
-              dtype: Union[int, str, np.dtype] = None,
-              relative: bool = None):
+    def build(
+        self,
+        shape: Union[float, Sequence[float], AbstractShape],
+        primitive: bool = False,
+        pos: Union[float, Sequence[float]] = None,
+        check: bool = True,
+        min_neighbors: int = None,
+        num_jobs: int = -1,
+        periodic: Union[bool, int, Sequence[int]] = None,
+        callback: Callable = None,
+        dtype: Union[int, str, np.dtype] = None,
+        relative: bool = None,
+    ):
         """Constructs the indices and neighbors of a finite size lattice.
 
         Parameters
@@ -379,9 +384,11 @@ class Lattice(LatticeStructure):
             Raised if the lattice distances and base-neighbors haven't been computed.
         """
         if relative is not None:
-            warnings.warn("``relative`` is deprecated and will be removed in a "
-                          "future version. Use ``primitive`` instead",
-                          DeprecationWarning)
+            warnings.warn(
+                "``relative`` is deprecated and will be removed in a "
+                "future version. Use ``primitive`` instead",
+                DeprecationWarning,
+            )
             primitive = relative
 
         self.data.reset()
@@ -396,14 +403,16 @@ class Lattice(LatticeStructure):
         logger.debug("Building lattice: %s at %s", shape, pos)
 
         # Build indices and positions
-        indices, positions = self.build_indices(shape, primitive, pos, check,
-                                                callback, dtype, True)
+        indices, positions = self.build_indices(
+            shape, primitive, pos, check, callback, dtype, True
+        )
 
         # Compute the neighbors and distances between the sites
         neighbors, distances = self.compute_neighbors(indices, positions, num_jobs)
         if min_neighbors is not None:
-            data = _filter_dangling(indices, positions, neighbors, distances,
-                                    min_neighbors)
+            data = _filter_dangling(
+                indices, positions, neighbors, distances, min_neighbors
+            )
             indices, positions, neighbors, distances = data
 
         # Set data of the lattice and update shape
@@ -413,8 +422,11 @@ class Lattice(LatticeStructure):
         if periodic is not None:
             self.set_periodic(periodic, primitive)
 
-        logger.debug("Lattice shape: %s (%s)", self.shape,
-                     frmt_num(self.data.nbytes, unit="iB", div=1024))
+        logger.debug(
+            "Lattice shape: %s (%s)",
+            self.shape,
+            frmt_num(self.data.nbytes, unit="iB", div=1024),
+        )
         return shape
 
     def _build_periodic_translation_vector(self, axes, primitive=False, indices=None):
@@ -491,15 +503,16 @@ class Lattice(LatticeStructure):
             out_pos = positions + delta_pos
         return out_ind, out_pos
 
-    def kdtree(self, positions=None, eps=0., boxsize=None):
+    def kdtree(self, positions=None, eps=0.0, boxsize=None):
         if positions is None:
             positions = self.data.positions
         k = np.sum(np.sum(self._raw_num_neighbors, axis=1)) + 1
         max_dist = np.max(self.distances) + 0.1 * np.min(self._raw_distance_matrix)
         return KDTree(positions, k, max_dist, eps=eps, boxsize=boxsize)
 
-    def _compute_pneighbors(self, axis, primitive=False, indices=None, positions=None,
-                            num_jobs=-1):
+    def _compute_pneighbors(
+        self, axis, primitive=False, indices=None, positions=None, num_jobs=-1
+    ):
         if indices is None:
             indices = self.data.indices
             positions = self.data.positions
@@ -523,8 +536,9 @@ class Lattice(LatticeStructure):
 
             # Query neighbors with translated points and filter
             neighbors, distances = tree.query(pos_t, num_jobs, self.DIST_DECIMALS)
-            neighbors, distances = self._filter_neighbors(indices, neighbors,
-                                                          distances, ind_t)
+            neighbors, distances = self._filter_neighbors(
+                indices, neighbors, distances, ind_t
+            )
 
             # Convert to dict
             idx = np.where(np.isfinite(distances).any(axis=1))[0]
@@ -555,8 +569,9 @@ class Lattice(LatticeStructure):
             pnvecs[k] = np.array(pnvecs[k])[ind]
         return pidx, pdists, pnvecs, paxs
 
-    def set_periodic(self, axis: Union[bool, int, Sequence[int]] = None,
-                     primitive: bool = False):
+    def set_periodic(
+        self, axis: Union[bool, int, Sequence[int]] = None, primitive: bool = False
+    ):
         """Sets periodic boundary conditions along the given axis.
 
         Parameters
@@ -640,8 +655,18 @@ class Lattice(LatticeStructure):
         positions2 = latt.data.positions
         return self._compute_connection_neighbors(self.data.positions, positions2)
 
-    def _append(self, ind, pos, neighbors, dists, ax=0, side=+1,
-                sort_axis=None, sort_reverse=False, primitive=False):
+    def _append(
+        self,
+        ind,
+        pos,
+        neighbors,
+        dists,
+        ax=0,
+        side=+1,
+        sort_axis=None,
+        sort_reverse=False,
+        primitive=False,
+    ):
 
         indices2 = np.copy(ind)
         positions2 = np.copy(pos)
@@ -676,8 +701,9 @@ class Lattice(LatticeStructure):
         self._update_shape()
 
     # noinspection PyShadowingNames
-    def append(self, latt, ax=0, side=+1, sort_ax=None, sort_reverse=False,
-               primitive=False):
+    def append(
+        self, latt, ax=0, side=+1, sort_ax=None, sort_reverse=False, primitive=False
+    ):
         """Append another `Lattice`-instance along an axis.
 
         Parameters
@@ -722,8 +748,9 @@ class Lattice(LatticeStructure):
         pos = latt.data.positions
         neighbors = latt.data.neighbors
         dists = latt.data.distvals[latt.data.distances]
-        self._append(ind, pos, neighbors, dists, ax, side, sort_ax,
-                     sort_reverse, primitive)
+        self._append(
+            ind, pos, neighbors, dists, ax, side, sort_ax, sort_reverse, primitive
+        )
 
     def extend(self, size, ax=0, side=1, num_jobs=1, sort_ax=None, sort_reverse=False):
         """Extend the lattice along an axis.
@@ -819,7 +846,7 @@ class Lattice(LatticeStructure):
 
     # ==================================================================================
 
-    def copy(self) -> 'Lattice':
+    def copy(self) -> "Lattice":
         """Lattice : Creates a (deep) copy of the lattice instance."""
         return deepcopy(self)
 
@@ -863,7 +890,7 @@ class Lattice(LatticeStructure):
             pickle.dump(self, f)
 
     @classmethod
-    def load(cls, file: Union[str, int, bytes]) -> 'Lattice':  # pragma: no cover
+    def load(cls, file: Union[str, int, bytes]) -> "Lattice":  # pragma: no cover
         """Load data of a saved ``Lattice`` instance.
 
         Parameters
@@ -882,25 +909,28 @@ class Lattice(LatticeStructure):
 
     def __hash__(self):
         import hashlib
+
         sha = hashlib.md5(self.dumps().encode("utf-8"))
         return int(sha.hexdigest(), 16)
 
     def __eq__(self, other):
         return self.__hash__() == other.__hash__()
 
-    def plot(self,
-             lw: float = None,
-             margins: Union[Sequence[float], float] = 0.1,
-             legend: bool = None,
-             grid: bool = False,
-             pscale: float = 0.5,
-             show_periodic: bool = True,
-             show_indices: bool = False,
-             index_offset: float = 0.1,
-             con_colors: Sequence = None,
-             adjustable: str = "box",
-             ax: Union[plt.Axes, Axes3D] = None,
-             show: bool = False) -> Union[plt.Axes, Axes3D]:  # pragma: no cover
+    def plot(
+        self,
+        lw: float = None,
+        margins: Union[Sequence[float], float] = 0.1,
+        legend: bool = None,
+        grid: bool = False,
+        pscale: float = 0.5,
+        show_periodic: bool = True,
+        show_indices: bool = False,
+        index_offset: float = 0.1,
+        con_colors: Sequence = None,
+        adjustable: str = "box",
+        ax: Union[plt.Axes, Axes3D] = None,
+        show: bool = False,
+    ) -> Union[plt.Axes, Axes3D]:  # pragma: no cover
         """Plot the cached lattice.
 
         Parameters
@@ -1001,8 +1031,10 @@ class Lattice(LatticeStructure):
 
     def __repr__(self) -> str:
         shape = str(self.shape) if self.shape is not None else "None"
-        return f"{self.__class__.__name__}(" \
-               f"dim: {self.dim}, " \
-               f"num_base: {self.num_base}, " \
-               f"num_neighbors: {self.num_neighbors}, " \
-               f"shape: {shape})"
+        return (
+            f"{self.__class__.__name__}("
+            f"dim: {self.dim}, "
+            f"num_base: {self.num_base}, "
+            f"num_neighbors: {self.num_neighbors}, "
+            f"shape: {shape})"
+        )

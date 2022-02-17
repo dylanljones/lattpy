@@ -21,9 +21,22 @@ from .plotting import draw_points, draw_vectors, draw_lines, draw_surfaces
 
 
 __all__ = [
-    "distance", "distances", "interweave", "vindices", "vrange", "cell_size",
-    "cell_volume", "compute_vectors", "KDTree", "VoronoiTree",
-    "WignerSeitzCell", "rx", "ry", "rz", "rotate2d", "rotate3d"
+    "distance",
+    "distances",
+    "interweave",
+    "vindices",
+    "vrange",
+    "cell_size",
+    "cell_volume",
+    "compute_vectors",
+    "KDTree",
+    "VoronoiTree",
+    "WignerSeitzCell",
+    "rx",
+    "ry",
+    "rz",
+    "rotate2d",
+    "rotate3d",
 ]
 
 
@@ -76,7 +89,7 @@ def distances(r1: ArrayLike, r2: ArrayLike, decimals: int = None) -> np.ndarray:
 
 
 def interweave(arrays: Sequence[np.ndarray]) -> np.ndarray:
-    """ Interweaves multiple arrays along the first axis
+    """Interweaves multiple arrays along the first axis
 
     Example
     -------
@@ -103,9 +116,12 @@ def interweave(arrays: Sequence[np.ndarray]) -> np.ndarray:
     return result
 
 
-def vindices(limits: Iterable[Sequence[int]], sort_axis: int = 0,
-             dtype: Union[int, str, np.dtype] = None) -> np.ndarray:
-    """ Return an array representing the indices of a d-dimensional grid.
+def vindices(
+    limits: Iterable[Sequence[int]],
+    sort_axis: int = 0,
+    dtype: Union[int, str, np.dtype] = None,
+) -> np.ndarray:
+    """Return an array representing the indices of a d-dimensional grid.
 
     Parameters
     ----------
@@ -148,9 +164,13 @@ def vindices(limits: Iterable[Sequence[int]], sort_axis: int = 0,
 
 
 # noinspection PyIncorrectDocstring
-def vrange(start=None, *args,
-           dtype: Union[int, str, np.dtype] = None,
-           sort_axis: int = 0, **kwargs) -> np.ndarray:
+def vrange(
+    start=None,
+    *args,
+    dtype: Union[int, str, np.dtype] = None,
+    sort_axis: int = 0,
+    **kwargs,
+) -> np.ndarray:
     """Return evenly spaced vectors within a given interval.
 
     Parameters
@@ -203,7 +223,7 @@ def vrange(start=None, *args,
 
 
 def cell_size(vectors: ArrayLike) -> np.ndarray:
-    """ Computes the shape of the box spawned by the given vectors.
+    """Computes the shape of the box spawned by the given vectors.
 
     Parameters
     ----------
@@ -221,7 +241,7 @@ def cell_size(vectors: ArrayLike) -> np.ndarray:
 
 
 def cell_volume(vectors: ArrayLike) -> float:
-    r""" Computes the volume of the unit cell defined by the primitive vectors.
+    r"""Computes the volume of the unit cell defined by the primitive vectors.
 
     The volume of the unit-cell in two and three dimensions is defined by
 
@@ -258,11 +278,16 @@ def cell_volume(vectors: ArrayLike) -> float:
     return abs(v)
 
 
-def compute_vectors(a: float, b: float = None, c: float = None,
-                    alpha: float = None, beta: float = None,
-                    gamma: float = None,
-                    decimals: int = 0) -> np.ndarray:
-    """ Computes lattice vectors by the lengths and angles. """
+def compute_vectors(
+    a: float,
+    b: float = None,
+    c: float = None,
+    alpha: float = None,
+    beta: float = None,
+    gamma: float = None,
+    decimals: int = 0,
+) -> np.ndarray:
+    """Computes lattice vectors by the lengths and angles."""
     if b is None and c is None:
         vectors = [a]
     elif c is None:
@@ -270,10 +295,7 @@ def compute_vectors(a: float, b: float = None, c: float = None,
         ax = a
         bx = b * np.cos(alpha)
         by = b * np.sin(alpha)
-        vectors = np.array([
-            [ax, 0],
-            [bx, by]
-        ])
+        vectors = np.array([[ax, 0], [bx, by]])
     else:
         alpha = np.deg2rad(alpha)
         beta = np.deg2rad(beta)
@@ -284,11 +306,7 @@ def compute_vectors(a: float, b: float = None, c: float = None,
         cx = c * np.cos(beta)
         cy = (abs(c) * abs(b) * np.cos(alpha) - bx * cx) / by
         cz = np.sqrt(c ** 2 - cx ** 2 - cy ** 2)
-        vectors = np.array([
-            [ax, 0, 0],
-            [bx, by, 0],
-            [cx, cy, cz]
-        ])
+        vectors = np.array([[ax, 0, 0], [bx, by, 0], [cx, cy, cz]])
     if decimals:
         vectors = np.round(vectors, decimals=decimals)
     return vectors
@@ -298,7 +316,7 @@ def compute_vectors(a: float, b: float = None, c: float = None,
 class KDTree(scipy.spatial.cKDTree):
     """Simple wrapper of scipy's cKTree with global query settings."""
 
-    def __init__(self, points, k=1, max_dist=np.inf, eps=0., p=2, boxsize=None):
+    def __init__(self, points, k=1, max_dist=np.inf, eps=0.0, p=2, boxsize=None):
         super().__init__(points, boxsize=boxsize)
         self.max_dist = max_dist
         self.k = k
@@ -317,11 +335,13 @@ class KDTree(scipy.spatial.cKDTree):
     def query_pairs(self, r, *_):
         return super().query_pairs(r, self.p, self.eps)
 
-    def query(self, x=None, num_jobs=1, decimals=None, include_zero=False,
-              compact=True, *_):
+    def query(
+        self, x=None, num_jobs=1, decimals=None, include_zero=False, compact=True, *_
+    ):
         x = self.data if x is None else x
-        dists, neighbors = super().query(x, self.k, self.eps, self.p,
-                                         self.max_dist, num_jobs)
+        dists, neighbors = super().query(
+            x, self.k, self.eps, self.p, self.max_dist, num_jobs
+        )
 
         # Remove zero-distance neighbors and convert dtype
         if not include_zero and np.all(dists[:, 0] == 0):
@@ -349,7 +369,6 @@ class KDTree(scipy.spatial.cKDTree):
 
 
 class VoronoiTree:
-
     def __init__(self, points):
         points = np.asarray(points)
         dim = points.shape[1]
@@ -378,9 +397,20 @@ class VoronoiTree:
     def query(self, x, k=1, eps=0):
         return self.tree.query(x, k, eps)  # noqa
 
-    def draw(self, ax=None, color="C0", size=3, lw=1, alpha=0.15,
-             point_color="k", point_size=3, draw_data=True,
-             points=True, draw=True, fill=True):  # pragma: no cover
+    def draw(
+        self,
+        ax=None,
+        color="C0",
+        size=3,
+        lw=1,
+        alpha=0.15,
+        point_color="k",
+        point_size=3,
+        draw_data=True,
+        points=True,
+        draw=True,
+        fill=True,
+    ):  # pragma: no cover
 
         if ax is None:
             fig = plt.figure()
@@ -418,20 +448,19 @@ class VoronoiTree:
         return f"{self.__class__.__name__}(vertices: {len(self.vertices)})"
 
     def __str__(self):
-        return f"vertices:\n{self.vertices}\n" \
-               f"egdes:\n{self.edges}"
+        return f"vertices:\n{self.vertices}\n" f"egdes:\n{self.edges}"
 
 
 class WignerSeitzCell(VoronoiTree):
-
     def __init__(self, points):
         super().__init__(points)
         self._root = self.query(np.zeros(self.dim))[1]
 
     @property
     def limits(self):
-        return np.array([np.min(self.vertices, axis=0),
-                         np.max(self.vertices, axis=0)]).T
+        return np.array(
+            [np.min(self.vertices, axis=0), np.max(self.vertices, axis=0)]
+        ).T
 
     @property
     def size(self):
@@ -441,24 +470,25 @@ class WignerSeitzCell(VoronoiTree):
         cells = np.asarray(self.query(points)[1])
         return cells == self._root
 
-    def arange(self, steps, offset=0.):
+    def arange(self, steps, offset=0.0):
         limits = self.limits * (1 + offset)
         steps = [steps] * self.dim if not hasattr(steps, "__len__") else steps
         return [np.arange(*lims, step=step) for lims, step in zip(limits, steps)]
 
-    def linspace(self, nums, offset=0.):
+    def linspace(self, nums, offset=0.0):
         limits = self.limits * (1 + offset)
         nums = [nums] * self.dim if not hasattr(nums, "__len__") else nums
         return [np.linspace(*lims, num=num) for lims, num in zip(limits, nums)]
 
-    def meshgrid(self, nums=None, steps=None, offset=0., check=True):
+    def meshgrid(self, nums=None, steps=None, offset=0.0, check=True):
         if nums is not None:
             grid = np.array(np.meshgrid(*self.linspace(nums, offset)))
         elif steps is not None:
             grid = np.array(np.meshgrid(*self.arange(steps, offset)))
         else:
-            raise ValueError("Either the number of points or the step size "
-                             "must be specified")
+            raise ValueError(
+                "Either the number of points or the step size " "must be specified"
+            )
 
         if check:
             lengths = grid.shape[1:]
@@ -516,7 +546,9 @@ def rz(theta: float) -> np.ndarray:
     return np.array([[cos, -sin, 0], [sin, cos, 0], [0, 0, 1]])
 
 
-def rot(thetax: float = 0., thetay: float = 0., thetaz: float = 0.):  # pragma: no cover
+def rot(
+    thetax: float = 0.0, thetay: float = 0.0, thetaz: float = 0.0
+):  # pragma: no cover
     """General rotation matrix"""
     r = np.eye(3)
     if thetaz:
@@ -535,7 +567,7 @@ def rotate2d(a, theta, degree=True):  # pragma: no cover
     return np.dot(a, rz(theta)[:2, :2])
 
 
-def rotate3d(a, thetax=0., thetay=0., thetaz=0., degree=True):  # pragma: no cover
+def rotate3d(a, thetax=0.0, thetay=0.0, thetaz=0.0, degree=True):  # pragma: no cover
     """Applies the general rotation matrix to a 3D point"""
     if degree:
         thetax = np.deg2rad(thetax)

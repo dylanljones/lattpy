@@ -83,6 +83,7 @@ class LatticeBasis:
     >>> plt.show()
 
     """
+
     # Tolerance for reciprocal vectors/lattice
     RVEC_TOLERANCE: float = 1e-6
 
@@ -108,7 +109,7 @@ class LatticeBasis:
         return cls(a * np.eye(2), **kwargs)
 
     @classmethod
-    def rectangular(cls, a1: float = 1., a2: float = 1., **kwargs):
+    def rectangular(cls, a1: float = 1.0, a2: float = 1.0, **kwargs):
         """Initializes a 2D lattice with rectangular basis vectors."""
         return cls(np.array([[a1, 0], [0, a2]]), **kwargs)
 
@@ -125,11 +126,11 @@ class LatticeBasis:
         return cls(vectors, **kwargs)
 
     @classmethod
-    def hexagonal3d(cls, a: float = 1., az: float = 1., **kwargs):
+    def hexagonal3d(cls, a: float = 1.0, az: float = 1.0, **kwargs):
         """Initializes a 3D lattice with hexagonal basis vectors."""
-        vectors = a / 2 * np.array([[3, np.sqrt(3), 0],
-                                    [3, -np.sqrt(3), 0],
-                                    [0, 0, az]])
+        vectors = (
+            a / 2 * np.array([[3, np.sqrt(3), 0], [3, -np.sqrt(3), 0], [0, 0, az]])
+        )
         return cls(vectors, **kwargs)
 
     @classmethod
@@ -165,7 +166,7 @@ class LatticeBasis:
     def vectors3d(self) -> np.ndarray:
         """np.ndarray: The basis vectors expanded to three dimensions."""
         vectors = np.eye(3)
-        vectors[:self.dim, :self.dim] = self._vectors
+        vectors[: self.dim, : self.dim] = self._vectors
         return vectors.T
 
     @property
@@ -183,8 +184,9 @@ class LatticeBasis:
         """float: The volume of the unit cell defined by the basis vectors."""
         return self._cell_volume
 
-    def itransform(self, world_coords: Union[Sequence[int], Sequence[Sequence[int]]]
-                   ) -> np.ndarray:
+    def itransform(
+        self, world_coords: Union[Sequence[int], Sequence[Sequence[int]]]
+    ) -> np.ndarray:
         """Transform the world coords ``(x, y, ...)`` into the basis coords
         ``(n, m, ...)``.
 
@@ -220,8 +222,9 @@ class LatticeBasis:
         world_coords = np.atleast_1d(world_coords)
         return np.inner(world_coords, self._vectors_inv)
 
-    def transform(self, basis_coords: Union[Sequence[int], Sequence[Sequence[int]]]
-                  ) -> np.ndarray:
+    def transform(
+        self, basis_coords: Union[Sequence[int], Sequence[Sequence[int]]]
+    ) -> np.ndarray:
         """Transform the basis-coords ``(n, m, ...)`` into the world coords
         ``(x, y, ...)``.
 
@@ -257,8 +260,11 @@ class LatticeBasis:
         basis_coords = np.atleast_1d(basis_coords)
         return np.inner(basis_coords, self._vectors)
 
-    def translate(self, nvec: Union[int, Sequence[int], Sequence[Sequence[int]]],
-                  r: Union[float, Sequence[float]] = 0.0) -> np.ndarray:
+    def translate(
+        self,
+        nvec: Union[int, Sequence[int], Sequence[Sequence[int]]],
+        r: Union[float, Sequence[float]] = 0.0,
+    ) -> np.ndarray:
         r"""Translates the given postion vector ``r`` by the translation vector ``n``.
 
         The position is calculated using the translation vector :math:`n` and the
@@ -376,8 +382,9 @@ class LatticeBasis:
                 return False
         return True
 
-    def reciprocal_vectors(self, tol: float = RVEC_TOLERANCE,
-                           check: bool = False) -> np.ndarray:
+    def reciprocal_vectors(
+        self, tol: float = RVEC_TOLERANCE, check: bool = False
+    ) -> np.ndarray:
         r"""Computes the reciprocal basis vectors of the bravais lattice.
 
         The lattice- and reciprocal vectors :math:`a_i` and :math:`b_i` must satisfy
@@ -420,7 +427,7 @@ class LatticeBasis:
         b2 = np.cross(a3, a1)
         b3 = np.cross(a1, a2)
         rvecs = factor * np.asarray([b1, b2, b3])
-        rvecs = rvecs[:self.dim, :self.dim]
+        rvecs = rvecs[: self.dim, : self.dim]
 
         # Fix the sign so that the dot-products are all positive
         # and raise an exception if anything went wrong
@@ -471,9 +478,12 @@ class LatticeBasis:
         rlatt = self.__class__(rvecs)
         return rlatt
 
-    def get_neighbor_cells(self, distidx: int = 0,
-                           include_origin: bool = True,
-                           comparison: Callable = np.isclose) -> np.ndarray:
+    def get_neighbor_cells(
+        self,
+        distidx: int = 0,
+        include_origin: bool = True,
+        comparison: Callable = np.isclose,
+    ) -> np.ndarray:
         """Find all neighboring unit cells of the unit cell at the origin.
 
         Parameters
@@ -557,16 +567,18 @@ class LatticeBasis:
         rlatt = self.__class__(rvecs)
         return rlatt.wigner_seitz_cell()
 
-    def plot_basis(self,
-                   lw: float = None,
-                   ls: str = "--",
-                   margins: Union[Sequence[float], float] = 0.1,
-                   grid: bool = False,
-                   show_cell: bool = True,
-                   show_vecs: bool = True,
-                   adjustable: str = "box",
-                   ax: Union[plt.Axes, Axes3D] = None,
-                   show: bool = False) -> Union[plt.Axes, Axes3D]:  # pragma: no cover
+    def plot_basis(
+        self,
+        lw: float = None,
+        ls: str = "--",
+        margins: Union[Sequence[float], float] = 0.1,
+        grid: bool = False,
+        show_cell: bool = True,
+        show_vecs: bool = True,
+        adjustable: str = "box",
+        ax: Union[plt.Axes, Axes3D] = None,
+        show: bool = False,
+    ) -> Union[plt.Axes, Axes3D]:  # pragma: no cover
         """Plot the lattice basis.
 
         Parameters

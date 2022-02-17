@@ -33,12 +33,19 @@ class Atom(abc.MutableMapping):
     **kwargs
         Additional attributes of the atom.
     """
+
     _counter = itertools.count()
 
     __slots__ = ["_index", "_name", "_weight", "_params"]
 
-    def __init__(self, name: str = None, radius: float = 0.2, color: str = None,
-                 weight: float = 1.0, **kwargs):
+    def __init__(
+        self,
+        name: str = None,
+        radius: float = 0.2,
+        color: str = None,
+        weight: float = 1.0,
+        **kwargs,
+    ):
         super().__init__()
         index = next(Atom._counter)
         self._index = index
@@ -72,7 +79,7 @@ class Atom(abc.MutableMapping):
         data.update(self._params)
         return data
 
-    def copy(self) -> 'Atom':
+    def copy(self) -> "Atom":
         """Creates a deep copy of the ``Atom`` instance."""
         return Atom(self.name, weight=self.weight, **self._params.copy())
 
@@ -82,7 +89,7 @@ class Atom(abc.MutableMapping):
         except KeyError:
             return default
 
-    def is_identical(self, other: 'Atom') -> bool:
+    def is_identical(self, other: "Atom") -> bool:
         """Checks if the other ``Atom`` is identical to this one."""
         return self._name == other.name
 
@@ -130,11 +137,11 @@ class Atom(abc.MutableMapping):
         """Return the information of the atom as a dictionary"""
         return self.dict()
 
-    def __copy__(self) -> 'Atom':  # pragma: no cover
+    def __copy__(self) -> "Atom":  # pragma: no cover
         """Creates a deep copy of the ``Atom`` instance."""
         return self.copy()
 
-    def __eq__(self, other: Union['Atom', str]) -> bool:
+    def __eq__(self, other: Union["Atom", str]) -> bool:
         if isinstance(other, Atom):
             return self.is_identical(other)
         else:

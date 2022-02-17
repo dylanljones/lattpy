@@ -18,6 +18,7 @@ jobs:
           paths_ignore: '[
           "docs/**",
           ".github/**",
+          ".social/**",
           "README.md",
           "CHANGELOG.md",
           "CONTRIBUTING.md",

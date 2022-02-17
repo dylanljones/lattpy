@@ -15,7 +15,8 @@ jobs:
       - id: skip_check
         uses: fkirc/skip-duplicate-actions@master
         with:
-          paths_ignore: '["docs/**", "README.md", "CHANGELOG.md", "CONTRIBUTING.md"]'
+          paths_ignore: '["docs/**", "README.md", "CHANGELOG.md", "CONTRIBUTING.md",
+                          ".github/**", ".pre-commit-config.yaml"]'
     outputs:
       should_skip: ${{ steps.skip_check.outputs.should_skip }}
 

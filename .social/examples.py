@@ -20,8 +20,8 @@ def plot_simple_square_periodic():
 
 def plot_graphene_periodic():
     latt = lp.graphene()
-    latt.build((20.7, 10.5))
-    ax = latt.plot(legend=False)
+    latt.build((11.5, 6))
+    ax = latt.plot(legend=False, lw=2, con_colors=[(0, 1, "0.5")])
     ax.set_xticks([])
     ax.set_yticks([])
     fig = ax.get_figure()
@@ -37,7 +37,7 @@ def main():
 
     fig, ax = plot_graphene_periodic()
     fig.tight_layout()
-    fig.savefig("example_graphene_periodic.png", transparent=True)
+    fig.savefig("example_graphene_periodic.png", transparent=True, dpi=160)
     plt.show()
 
 

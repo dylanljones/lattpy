@@ -17,6 +17,11 @@ def requirements():
         return f.readlines()
 
 
+def render_requirements():
+    with open("requirements_renderer.txt", "r") as f:
+        return f.readlines()
+
+
 def long_description():
     with open("README.md", "r") as f:
         return f.read()
@@ -29,7 +34,7 @@ setup(
     author="Dylan Jones",
     author_email="dylanljones94@gmail.com",
     description="Simple and efficient Python package for modeling d-dimensional "
-                "Bravais lattices in solid state physics.",
+    "Bravais lattices in solid state physics.",
     long_description=long_description(),
     long_description_content_type="text/markdown",
     url="https://github.com/dylanljones/lattpy",
@@ -37,6 +42,7 @@ setup(
     license="MIT License",
     install_requires=requirements(),
     tests_require=["pytest", "hypothesis"],
+    extras_require={"renderer": render_requirements()},
     python_requires=">=3.7",
     classifiers=[
         "Development Status :: 3 - Alpha",

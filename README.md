@@ -1,4 +1,4 @@
-<h1 align="center">LattPy - Simple and Efficient Lattice Modeling in Python</h1>
+<h1 align="center">LattPy - Simple Lattice Modeling</h1>
 
 <p align="center">
     <a href="https://pypi.org/project/lattpy/"><img alt="Python Version" src="https://img.shields.io/pypi/pyversions/lattpy?logo=python&style=flat-square"></a>
@@ -6,12 +6,13 @@
     <a href="https://pypi.org/project/lattpy/"><img alt="Status" src="https://img.shields.io/pypi/status/lattpy?color=yellow&style=flat-square"></a>
     <a href="https://github.com/dylanljones/lattpy/blob/master/LICENSE"><img alt="License" src="https://img.shields.io/pypi/l/lattpy?style=flat-square"></a>
     <a href="https://lgtm.com/projects/g/dylanljones/lattpy/context:python"><img alt="LGTM Grade" src="https://img.shields.io/lgtm/grade/python/github/dylanljones/lattpy?label=code%20quality&logo=lgtm&style=flat-square"></a>
+    <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square"></a>
 </p>
 
-> "Any dimension and shape you like."
 
 :warning: **WARNING**: This project is still in development and might change significantly in the future!
 
+> "Any dimension and shape you like."
 
 *LattPy* is a simple and efficient Python package for modeling Bravais lattices and
 constructing (finite) lattice structures in any dimension.

@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://raw.githubusercontent.com/dylanljones/lattpy/dev/.social/header.png" width="400">
+    <img src="https://raw.githubusercontent.com/dylanljones/lattpy/dev/.social/header.png">
 </p>
 
 <h1 align="center">LattPy - Simple Lattice Modeling in Python</h1>
@@ -13,7 +13,7 @@
     <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square"></a>
 </p>
 
-> "Any dimension and shape you like."
+:warning: **WARNING**: This project is still in development and might change significantly in the future!
 
 *LattPy* is a simple and efficient Python package for modeling Bravais lattices and
 constructing (finite) lattice structures in any dimension.
@@ -26,7 +26,6 @@ adding neighbor connections manually. You will save time and mental energy for m
 |:-------|:------------------------------------|:--------------------------------------------------|:--------------------------------------------------|
 | Dev    | [![Test][tests-dev]][link-tests]    | [![Codecov][codecov-dev]][codecov-dev-link]       | [![Read the Docs][docs-dev]][docs-dev-link]       |
 
-:warning: **WARNING**: This project is still in development and might change significantly in the future!
 
 1. [Installation](#installation)
 2. [Documentation](#documentation)

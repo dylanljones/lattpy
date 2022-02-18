@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://raw.githubusercontent.com/dylanljones/lattpy/dev/.social/header.png">
+    <img src="https://raw.githubusercontent.com/dylanljones/lattpy/dev/.social/header.png" width="800">
 </p>
 
 <h1 align="center">LattPy - Simple Lattice Modeling in Python</h1>

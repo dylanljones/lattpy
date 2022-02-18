@@ -37,7 +37,7 @@ def main():
 
     fig, ax = plot_graphene_headerimage()
     fig.tight_layout()
-    fig.savefig("header.png", transparent=True, dpi=600)
+    fig.savefig("header.png", transparent=True, dpi=300)
     plt.show()
 
 

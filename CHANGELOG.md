@@ -44,7 +44,7 @@
 - add change log contributing to documentation
 
 <a name="0.6.6"></a>
-## [0.6.6] - 2022-02-12
+## [0.6.6] - 2022-12-02
 
 ### Improved/Fixed
 
@@ -56,7 +56,7 @@
 
 
 <a name="0.6.5"></a>
-## [0.6.5] - 2022-02-03
+## [0.6.5] - 2022-03-02
 
 ### New Features
 

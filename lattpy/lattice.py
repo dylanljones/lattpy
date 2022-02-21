@@ -844,6 +844,22 @@ class Lattice(LatticeStructure):
         """DataMap : Returns the data-map of the lattice model."""
         return self.data.map()
 
+    def adjacency_matrix(self):
+        """Computes the adjacency matrix for the neighbor data of the lattice.
+
+        Returns
+        -------
+        adj_mat : (N, N) np.ndarray
+            The adjacency matrix of the lattice.
+        """
+        n = self.num_sites
+        adj_mat = np.zeros((n, n), dtype=np.int64)
+        for i in range(n):
+            for j in self.neighbors(i, unique=True):
+                adj_mat[i, j] = 1
+                adj_mat[j, i] = 1
+        return adj_mat
+
     # ==================================================================================
 
     def copy(self) -> "Lattice":

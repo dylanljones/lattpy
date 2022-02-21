@@ -38,6 +38,10 @@ setup(
     long_description=long_description(),
     long_description_content_type="text/markdown",
     url="https://github.com/dylanljones/lattpy",
+    project_urls={
+        "ReadTheDocs": "https://lattpy.readthedocs.io/",
+        "Source Code": "https://github.com/dylanljones/lattpy",
+    },
     packages=find_packages(),
     license="MIT License",
     install_requires=requirements(),

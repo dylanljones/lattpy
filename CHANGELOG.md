@@ -1,7 +1,7 @@
 # What's New
 
 <a name="unreleased"></a>
-## [Unreleased]
+## [0.7.0] - 2022-21-02
 
 ### New Features
 - Add method for computing the adjacency matrix of the lattice graph
@@ -17,7 +17,6 @@
 - add example to ``LatticeBasis`` docstring
 - add attributes to docstring of ``LatticeBasis``
 - improve docstring of ``Lattice`` class
-
 
 <a name="0.6.7"></a>
 ## [0.6.7] - 2022-16-02
@@ -73,6 +72,7 @@
 - fix multiple bugs
 
 [Unreleased]: https://github.com/dylanljones/lattpy/compare/0.6.7...HEAD
+[0.7.0]: https://github.com/dylanljones/lattpy/compare/0.6.7...0.7.0
 [0.6.7]: https://github.com/dylanljones/lattpy/compare/0.6.6...0.6.7
 [0.6.6]: https://github.com/dylanljones/lattpy/compare/0.6.5...0.6.6
 [0.6.5]: https://github.com/dylanljones/lattpy/compare/0.6.4...0.6.5

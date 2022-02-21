@@ -4,6 +4,7 @@
 ## [Unreleased]
 
 ### New Features
+- Add method for computing the adjacency matrix of the lattice graph
 - Split the lattice structure into separate object ``LatticeStructure`` and use it as base class for ``Lattice``
 - Split the lattice basis into separate object ``LatticeBasis`` and use it as base class for ``Lattice``
 

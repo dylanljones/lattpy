@@ -75,15 +75,14 @@ class ConfigurationError(LatticeError):
 class SiteOccupiedError(ConfigurationError):
     def __init__(self, atom, pos):
         super().__init__(
-            f"Can't add {atom} to lattice, " f"position {pos} already occupied!"
+            f"Can't add {atom} to lattice, position {pos} already occupied!"
         )
 
 
 class NoAtomsError(ConfigurationError):
     def __init__(self):
         super().__init__(
-            "lattice doesn't contain any atoms",
-            "use 'add_atom' to add an 'Atom'-object",
+            "lattice doesn't contain any atoms use 'add_atom' to add an 'Atom'-object"
         )
 
 

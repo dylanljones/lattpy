@@ -1,9 +1,10 @@
 # What's New
 
-<a name="unreleased"></a>
-## [Unreleased]
+<a name="0.7.0"></a>
+## [0.7.0] - 2022-21-02
 
 ### New Features
+- Add method for computing the adjacency matrix of the lattice graph
 - Split the lattice structure into separate object ``LatticeStructure`` and use it as base class for ``Lattice``
 - Split the lattice basis into separate object ``LatticeBasis`` and use it as base class for ``Lattice``
 
@@ -16,7 +17,6 @@
 - add example to ``LatticeBasis`` docstring
 - add attributes to docstring of ``LatticeBasis``
 - improve docstring of ``Lattice`` class
-
 
 <a name="0.6.7"></a>
 ## [0.6.7] - 2022-16-02
@@ -43,7 +43,7 @@
 - add change log contributing to documentation
 
 <a name="0.6.6"></a>
-## [0.6.6] - 2022-02-12
+## [0.6.6] - 2022-12-02
 
 ### Improved/Fixed
 
@@ -55,7 +55,7 @@
 
 
 <a name="0.6.5"></a>
-## [0.6.5] - 2022-02-03
+## [0.6.5] - 2022-03-02
 
 ### New Features
 
@@ -72,6 +72,7 @@
 - fix multiple bugs
 
 [Unreleased]: https://github.com/dylanljones/lattpy/compare/0.6.7...HEAD
+[0.7.0]: https://github.com/dylanljones/lattpy/compare/0.6.7...0.7.0
 [0.6.7]: https://github.com/dylanljones/lattpy/compare/0.6.6...0.6.7
 [0.6.6]: https://github.com/dylanljones/lattpy/compare/0.6.5...0.6.6
 [0.6.5]: https://github.com/dylanljones/lattpy/compare/0.6.4...0.6.5

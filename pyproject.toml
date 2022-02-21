@@ -6,7 +6,24 @@
 [project]
 
 name = "lattpy"
-
+description = "Simple and efficient Python package for modeling d-dimensional Bravais lattices in solid state physics."
+authors = ["Dylan Jones <dylanljones94@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+python = "^3.7"
+homepage = "https://github.com/dylanljones/lattpy"
+repository = "https://github.com/dylanljones/lattpy"
+documentation = "https://lattpy.readthedocs.io/en/stable/"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Physics",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
 
 # -- Black -----------------------------------------------------------------------------
 

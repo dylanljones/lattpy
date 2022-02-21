@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://raw.githubusercontent.com/dylanljones/lattpy/dev/.social/header.png" width="400">
+    <img src="https://raw.githubusercontent.com/dylanljones/lattpy/dev/docs/source/_static/header.png" width="800">
 </p>
 
 <h1 align="center">LattPy - Simple Lattice Modeling in Python</h1>
@@ -9,14 +9,11 @@
     <a href="https://pypi.org/project/lattpy/"><img alt="Version" src="https://img.shields.io/pypi/v/lattpy?logo=pypi&style=flat-square"></a>
     <a href="https://pypi.org/project/lattpy/"><img alt="Status" src="https://img.shields.io/pypi/status/lattpy?color=yellow&style=flat-square"></a>
     <a href="https://github.com/dylanljones/lattpy/blob/master/LICENSE"><img alt="License" src="https://img.shields.io/pypi/l/lattpy?style=flat-square"></a>
-    <a href="https://lgtm.com/projects/g/dylanljones/lattpy/context:python"><img alt="LGTM Grade" src="https://img.shields.io/lgtm/grade/python/github/dylanljones/lattpy?label=code%20quality&logo=lgtm&style=flat-square"></a>
     <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square"></a>
+    <a href="https://lgtm.com/projects/g/dylanljones/lattpy/context:python"><img alt="LGTM Grade" src="https://img.shields.io/lgtm/grade/python/github/dylanljones/lattpy?label=code%20quality&logo=lgtm&style=flat-square"></a>
 </p>
 
-
 :warning: **WARNING**: This project is still in development and might change significantly in the future!
-
-> "Any dimension and shape you like."
 
 *LattPy* is a simple and efficient Python package for modeling Bravais lattices and
 constructing (finite) lattice structures in any dimension.

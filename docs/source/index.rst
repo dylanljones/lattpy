@@ -4,7 +4,6 @@
    contain the root `toctree` directive.
 
 .. image:: _static/header.png
-   :width: 400
    :align: center
    :alt: Graphene lattice
 

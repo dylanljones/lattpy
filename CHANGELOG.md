@@ -1,6 +1,6 @@
 # What's New
 
-<a name="unreleased"></a>
+<a name="0.7.0"></a>
 ## [0.7.0] - 2022-21-02
 
 ### New Features

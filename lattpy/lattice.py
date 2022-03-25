@@ -128,6 +128,9 @@ class Lattice(LatticeStructure):
         self.pos = None
         self.periodic_axes = list()
 
+        if "shape" in kwargs:
+            self.build(kwargs["shape"], periodic=kwargs.get("periodic", None))
+
     @property
     def num_sites(self) -> int:
         """int: Number of sites in lattice data (if lattice has been built)."""

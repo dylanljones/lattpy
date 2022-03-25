@@ -38,8 +38,11 @@ class DataMap:
 
     def __init__(self, alphas: np.ndarray, pairs: np.ndarray, distindices: np.ndarray):
         sites = np.arange(len(alphas), dtype=pairs.dtype)
-        self._map = np.append(-alphas - 1, distindices)
-        self._indices = np.append(np.tile(sites, (2, 1)).T, pairs, axis=0)
+        map_ = np.append(-alphas - 1, distindices)
+        indices_ = np.append(np.tile(sites, (2, 1)).T, pairs, axis=0)
+        ind = np.argsort(indices_[:, 0])
+        self._map = map_[ind]
+        self._indices = indices_[ind]
 
     @property
     def size(self) -> int:
@@ -129,6 +132,9 @@ class DataMap:
         for dist, value in enumerate(hop):
             array[self.hopping(dist)] = value
         return array
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(size: {self.size})"
 
 
 class LatticeData:

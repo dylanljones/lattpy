@@ -117,20 +117,20 @@ def test_datamap():
     dmap = latt.data.map()
     res = [
         True,
-        True,
-        True,
-        True,
-        True,
+        False,
         True,
         False,
         False,
+        True,
         False,
         False,
+        True,
         False,
         False,
+        True,
         False,
         False,
-        False,
+        True,
         False,
     ]
     assert dmap.size == len(res)
@@ -138,31 +138,23 @@ def test_datamap():
 
     res = [
         False,
-        False,
-        False,
-        False,
-        False,
+        True,
         False,
         True,
         True,
+        False,
         True,
         True,
+        False,
         True,
         True,
+        False,
         True,
         True,
-        True,
+        False,
         True,
     ]
     assert_array_equal(dmap.hopping(0), res)
-
-    data = np.zeros(dmap.size)
-    dmap.fill(data, hop=1, eps=2)
-
-    res = np.zeros(dmap.size)
-    res[: latt.num_sites] = 2.0
-    res[latt.num_sites :] = 1.0
-    assert_array_equal(data, res)
 
 
 def test_site_mask():

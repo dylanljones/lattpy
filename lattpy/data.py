@@ -11,6 +11,7 @@
 """This module contains objects for low-level representation of lattice systems."""
 
 import logging
+import warnings
 from copy import deepcopy
 from typing import Union, Sequence
 import numpy as np
@@ -158,7 +159,14 @@ class DataMap:
         Returns
         -------
         filled : np.ndarray
+
+        .. deprecated:: 0.7.1
+          The `fill` method will be removed in LattPy 0.8.0
         """
+        warnings.warn(
+            "The `fill` method is deprecated and will be removed in a version '0.8.0'",
+            DeprecationWarning,
+        )
         eps = np.atleast_1d(eps)
         hop = np.atleast_1d(hop)
         for alpha, value in enumerate(eps):

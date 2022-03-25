@@ -8,10 +8,9 @@
 # LICENSE file in the root directory and this permission notice shall
 # be included in all copies or substantial portions of the Software.
 
-
-import pytest
 import numpy as np
-from numpy.testing import assert_array_equal, assert_allclose
+from scipy.sparse import csr_matrix, bsr_matrix
+from numpy.testing import assert_array_equal
 from hypothesis import given, assume, strategies as st
 from lattpy import simple_square, simple_chain
 
@@ -155,6 +154,42 @@ def test_datamap():
         True,
     ]
     assert_array_equal(dmap.hopping(0), res)
+
+
+def test_dmap_csr_hamiltonian():
+    # Chain
+    latt = simple_chain()
+    latt.build(5)
+
+    expected = 2 * np.eye(latt.num_sites)
+    expected += np.eye(latt.num_sites, k=+1) + np.eye(latt.num_sites, k=-1)
+
+    dmap = latt.dmap()
+    data = np.zeros(dmap.size)
+    data[dmap.onsite()] = 2
+    data[dmap.hopping()] = 1
+    result = csr_matrix((data, dmap.indices)).toarray()
+
+    assert_array_equal(expected, result)
+
+
+def test_dmap_bsr_hamiltonian():
+    # Chain
+    latt = simple_chain()
+    latt.build(5)
+    norbs = 2
+
+    size = norbs * latt.num_sites
+    expected = 2 * np.eye(size)
+    expected += np.eye(size, k=+norbs) + np.eye(size, k=-norbs)
+
+    dmap = latt.dmap()
+    data = np.zeros((dmap.size, norbs, norbs))
+    data[dmap.onsite()] = 2 * np.eye(norbs)
+    data[dmap.hopping()] = 1 * np.eye(norbs)
+    result = bsr_matrix((data, *dmap.indices_indptr())).toarray()
+
+    assert_array_equal(expected, result)
 
 
 def test_site_mask():

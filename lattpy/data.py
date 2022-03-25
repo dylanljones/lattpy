@@ -34,6 +34,11 @@ class DataMap:
         An array of index-pairs of the lattice sites.
     distindices : (M) np.ndarray
         The distance-indices for each pair
+
+    Notes
+    -----
+    This object is not intended to be instantiated by the user. Use the ``map`` method
+    of ``latticeData`` or the ``dmap`` method of the main ``Lattice```object.
     """
 
     def __init__(self, alphas: np.ndarray, pairs: np.ndarray, distindices: np.ndarray):
@@ -68,6 +73,35 @@ class DataMap:
     def nbytes(self):
         """The number of bytes stored in the datamap."""
         return self._map.nbytes + self._indices.nbytes
+
+    def indices_indptr(self):
+        """Constructs the `indices` and `indptr` arrays used for CSR/BSR matrices.
+
+        CSR/BSR sparse matrix format:
+        The block column indices for row i are stored in
+        ``indices[indptr[i]:indptr[i+1]]`` and their corresponding block values are
+        stored in ``data[indptr[i]: indptr[i+1]]``.
+
+        Returns
+        -------
+        indices : (N, ) np.ndarray
+            CSR/BSR format index array.
+        indptr : (M, ) np.ndarray
+            CSR/BSR format index pointer array.
+
+        See Also
+        --------
+        scipy.sparse.csr_matrix : Compressed Sparse Row matrix
+        scipy.sparse.bsr_matrix : Block Sparse Row matrix
+        """
+        rows, cols = self._indices.T
+        indptr, indices = [0], []
+        unique = np.sort(np.unique(rows))
+        for r in unique:
+            mask = rows == r
+            indices.extend(list(cols[mask]))
+            indptr.append(len(indices))
+        return indices, indptr
 
     def onsite(self, alpha: int = None) -> np.ndarray:
         """Creates a mask of the site elements for the atoms with the given index.

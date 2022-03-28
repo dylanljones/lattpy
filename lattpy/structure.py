@@ -72,8 +72,10 @@ class LatticeStructure(LatticeBasis):
     **kwargs
         Key-word arguments. Used for quickly configuring a ``LatticeStructure``
         instance. Allowed keywords are:
-        atoms : Dictionary containing the atoms to add to the lattice.
-        cons : Dictionary conatining the connections to add to the lattice.
+
+        Properties:
+        atoms: Dictionary containing the atoms to add to the lattice.
+        cons: Dictionary containing the connections to add to the lattice.
 
     Examples
     --------

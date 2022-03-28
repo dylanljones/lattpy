@@ -1,6 +1,6 @@
 # Contributing
 
-Thank you for contributing `lattpy` :tada:
+Thank you for contributing to `lattpy` :tada:
 
 
 ## Commit Message Format

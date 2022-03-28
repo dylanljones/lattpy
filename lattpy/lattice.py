@@ -93,8 +93,12 @@ class Lattice(LatticeStructure):
     **kwargs
         Key-word arguments. Used for quickly configuring a ``Lattice`` instance.
         Allowed keywords are:
-        - atoms: Dictionary containing the atoms to add to the lattice.
-        - cons: Dictionary conatining the connections to add to the lattice.
+
+        Properties:
+        atoms: Dictionary containing the atoms to add to the lattice.
+        cons: Dictionary containing the connections to add to the lattice.
+        shape: int or tuple defining the shape of the finite size lattice to build.
+        periodic: int or list defining the periodic axes to set up.
 
     Examples
     --------
@@ -348,7 +352,7 @@ class Lattice(LatticeStructure):
         Parameters
         ----------
         shape : (N, ) array_like or float or AbstractShape
-            shape of finite size lattice to build.
+            Shape of finite size lattice to build.
         primitive : bool, optional
             If True the shape will be multiplied by the cell size of the model.
             The default is True.

@@ -687,11 +687,12 @@ class Lattice(LatticeStructure):
         # periodic distances (to translated site)
         paxs = self.periodic_axes
         for axs, vec in self.periodic_translation_vectors(paxs, primitive):
-            # Get position of translated lattice point
+            # Get position of translated lattice point and compute distances
             translated = self.translate(vec, positions[site])
-            # compute distances to translated point
-            pdist = distances(translated, positions)
-            dists.append(pdist)
+            dists.append(distances(translated, positions))
+            # reverse translate direction
+            translated = self.translate(-vec, positions[site])
+            dists.append(distances(translated, positions))
         # get minimum distances
         return np.min(dists, axis=0)
 

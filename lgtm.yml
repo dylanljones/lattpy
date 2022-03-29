@@ -1,3 +1,12 @@
+# LGTM configuration
+
+extraction:
+  python:           # Configure Python
+    python_setup:   # Configure the setup
+      version: 3    # Specify Version 3
+
 path_classifiers:
-    test:
-        - exclude: "**/_version.py"
+  library:
+    - versioneer.py  # Set Versioneer.py to an external "library" (3rd party code)
+  generated:
+    - lattpy/_version.py # Set _version.py to a generated file

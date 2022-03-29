@@ -585,8 +585,7 @@ class Lattice(LatticeStructure):
         ----------
         axis : bool or int or (N, ) array_like
             One or multiple axises to apply the periodic boundary conditions.
-            If the axis is ``None`` the perodic boundary
-            conditions will be removed.
+            If the axis is ``None`` the perodic boundary conditions will be removed.
         primitive : bool, optional
             Flag if the specified axes are in cartesian or lattice coordinates.
             If ``True`` the passed position will be multiplied with the lattice vectors.

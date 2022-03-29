@@ -1,11 +1,15 @@
 # What's New
 
-<a name="unreleased"></a>
-## [Unreleased]
-
+<a name="0.7.1"></a>
+## [0.7.1] - 2022-29-03
 ### New Features
+- add argument for setting periodic boundary conditions to the `finite_hypercubic` method.
+- add method for computing minimum distances in a lattice with periodic boundary conditions
 - add `shape` keyword argument to Lattice constructor
 - add CSR/BSR sparse matrix format of indices and index-pointers to DataMap
+
+### Code Refactoring
+- rename `distance` variables to `distances_` to prevent same name as method
 
 
 <a name="0.7.0"></a>
@@ -79,7 +83,7 @@
 - add more docstrings
 - fix multiple bugs
 
-[Unreleased]: https://github.com/dylanljones/lattpy/compare/0.7.0...HEAD
+[0.7.0]: https://github.com/dylanljones/lattpy/compare/0.7.0...0.7.1
 [0.7.0]: https://github.com/dylanljones/lattpy/compare/0.6.7...0.7.0
 [0.6.7]: https://github.com/dylanljones/lattpy/compare/0.6.6...0.6.7
 [0.6.6]: https://github.com/dylanljones/lattpy/compare/0.6.5...0.6.6

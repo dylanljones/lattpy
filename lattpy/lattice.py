@@ -28,7 +28,7 @@ from .plotting import (
     draw_indices,
     connection_color_array,
 )
-from .spatial import KDTree
+from .spatial import KDTree, distances
 from .atom import Atom
 from .data import LatticeData, DataMap
 from .shape import AbstractShape, Shape
@@ -40,11 +40,11 @@ __all__ = ["Lattice"]
 logger = logging.getLogger(__name__)
 
 
-def _filter_dangling(indices, positions, neighbors, distances, min_neighbors):
-    num_neighbors = np.count_nonzero(np.isfinite(distances), axis=1)
+def _filter_dangling(indices, positions, neighbors, dists, min_neighbors):
+    num_neighbors = np.count_nonzero(np.isfinite(dists), axis=1)
     sites = np.where(num_neighbors < min_neighbors)[0]
     if len(sites) == 0:
-        return indices, positions, neighbors, distances
+        return indices, positions, neighbors, dists
     elif len(sites) == indices.shape[0]:
         raise ValueError("Filtering min_neighbors would result in no sites!")
 
@@ -55,13 +55,13 @@ def _filter_dangling(indices, positions, neighbors, distances, min_neighbors):
     indices = np.delete(indices, sites, axis=0)
     positions = np.delete(positions, sites, axis=0)
     neighbors = np.delete(neighbors, sites, axis=0)
-    distances = np.delete(distances, sites, axis=0)
+    dists = np.delete(dists, sites, axis=0)
 
     # Update neighbor indices and distances:
     # For each removed site below the neighbor index has to be decremented once
     mask = np.isin(neighbors, sites)
     neighbors[mask] = invalid_idx
-    distances[mask] = np.inf
+    dists[mask] = np.inf
     for count, i in enumerate(sorted(sites)):
         neighbors[neighbors > (i - count)] -= 1
 
@@ -69,7 +69,7 @@ def _filter_dangling(indices, positions, neighbors, distances, min_neighbors):
     num_sites = indices.shape[0]
     neighbors[neighbors == invalid_idx] = num_sites
 
-    return indices, positions, neighbors, distances
+    return indices, positions, neighbors, dists
 
 
 class Lattice(LatticeStructure):
@@ -415,15 +415,15 @@ class Lattice(LatticeStructure):
         )
 
         # Compute the neighbors and distances between the sites
-        neighbors, distances = self.compute_neighbors(indices, positions, num_jobs)
+        neighbors, distances_ = self.compute_neighbors(indices, positions, num_jobs)
         if min_neighbors is not None:
             data = _filter_dangling(
-                indices, positions, neighbors, distances, min_neighbors
+                indices, positions, neighbors, distances_, min_neighbors
             )
-            indices, positions, neighbors, distances = data
+            indices, positions, neighbors, distances_ = data
 
         # Set data of the lattice and update shape
-        self.data.set(indices, positions, neighbors, distances)
+        self.data.set(indices, positions, neighbors, distances_)
         self._update_shape()
 
         if periodic is not None:
@@ -542,19 +542,19 @@ class Lattice(LatticeStructure):
             self._build_periodic(indices, positions, nvec, ind_t, pos_t)
 
             # Query neighbors with translated points and filter
-            neighbors, distances = tree.query(pos_t, num_jobs, self.DIST_DECIMALS)
-            neighbors, distances = self._filter_neighbors(
-                indices, neighbors, distances, ind_t
+            neighbors, distances_ = tree.query(pos_t, num_jobs, self.DIST_DECIMALS)
+            neighbors, distances_ = self._filter_neighbors(
+                indices, neighbors, distances_, ind_t
             )
 
             # Convert to dict
-            idx = np.where(np.isfinite(distances).any(axis=1))[0]
-            distances = distances[idx]
+            idx = np.where(np.isfinite(distances_).any(axis=1))[0]
+            distances_ = distances_[idx]
             neighbors = neighbors[idx]
             for i, site in enumerate(idx):
                 mask = i, neighbors[i] < invald_idx
                 inds = neighbors[mask]
-                dists = distances[mask]
+                dists = distances_[mask]
                 # Update dict for indices `inds`
                 pidx.setdefault(site, list()).extend(inds)  # noqa
                 pdists.setdefault(site, list()).extend(dists)
@@ -627,7 +627,7 @@ class Lattice(LatticeStructure):
         tree2 = KDTree(positions2, k=k, max_dist=max_dist)
 
         pairs = list()
-        distances = list()
+        distances_ = list()
         # offset = len(positions1)
         connections = tree1.query_ball_tree(tree2, max_dist)
         for i, conns in enumerate(connections):
@@ -637,10 +637,10 @@ class Lattice(LatticeStructure):
                 for j, dist in zip(conns, dists):
                     pairs.append((i, j))
                     # pairs.append((j, i))
-                    distances.append(dist)
-                    # distances.append(dist)
+                    distances_.append(dist)
+                    # distances_.append(dist)
 
-        return np.array(pairs), np.array(distances)
+        return np.array(pairs), np.array(distances_)
 
     def compute_connections(self, latt):
         """Computes the connections between the current and another lattice.
@@ -661,6 +661,40 @@ class Lattice(LatticeStructure):
         """
         positions2 = latt.data.positions
         return self._compute_connection_neighbors(self.data.positions, positions2)
+
+    def minimum_distances(self, site, primitive=False):
+        """Computes the minimum distances between one site and the other lattice sites.
+
+        This method can be used to find the distances in a lattice with
+        periodic boundary conditions.
+
+        Parameters
+        ----------
+        site : int
+            The super-index i of a site in the cached lattice data.
+        primitive : bool, optional
+            Flag if the periopdic boundarey conditions are set up along cartesian or
+            primitive basis vectors. The default is ``False`` (cartesian coordinates).
+
+        Returns
+        -------
+        min_dists : (N, ) np.ndarray
+            The minimum distances between the lattice site i and the other sites.
+        """
+        positions = self.positions
+        # normal distances
+        dists = [distances(positions[site], positions)]
+        # periodic distances (to translated site)
+        paxs = self.periodic_axes
+        for axs, vec in self.periodic_translation_vectors(paxs, primitive):
+            # Get position of translated lattice point and compute distances
+            translated = self.translate(vec, positions[site])
+            dists.append(distances(translated, positions))
+            # reverse translate direction
+            translated = self.translate(-vec, positions[site])
+            dists.append(distances(translated, positions))
+        # get minimum distances
+        return np.min(dists, axis=0)
 
     def _append(
         self,
@@ -695,9 +729,9 @@ class Lattice(LatticeStructure):
 
         # Append data and compute connecting neighbors
         self.data.append(indices2, positions2, neighbors2, distances2)
-        pairs, distances = self._compute_connection_neighbors(positions1, positions2)
+        pairs, distances_ = self._compute_connection_neighbors(positions1, positions2)
         offset = len(positions1)
-        for (i, j), dist in zip(pairs, distances):
+        for (i, j), dist in zip(pairs, distances_):
             self.data.add_neighbors(i, j + offset, dist)
             self.data.add_neighbors(j + offset, i, dist)
 

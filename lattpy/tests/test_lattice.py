@@ -638,6 +638,63 @@ def test_remove_periodic():
     assert 9 not in latt.neighbors(0)
 
 
+def test_minimum_distances_chain():
+    latt = lp.simple_chain()
+    latt.build(4)
+    assert_array_equal(latt.minimum_distances(0), [0.0, 1.0, 2.0, 3.0, 4.0])
+    assert_array_equal(latt.minimum_distances(1), [1.0, 0.0, 1.0, 2.0, 3.0])
+    assert_array_equal(latt.minimum_distances(2), [2.0, 1.0, 0.0, 1.0, 2.0])
+    assert_array_equal(latt.minimum_distances(3), [3.0, 2.0, 1.0, 0.0, 1.0])
+    assert_array_equal(latt.minimum_distances(4), [4.0, 3.0, 2.0, 1.0, 0.0])
+    latt.set_periodic(0)
+    assert_array_equal(latt.minimum_distances(0), [0.0, 1.0, 2.0, 2.0, 1.0])
+    assert_array_equal(latt.minimum_distances(1), [1.0, 0.0, 1.0, 2.0, 2.0])
+    assert_array_equal(latt.minimum_distances(2), [2.0, 1.0, 0.0, 1.0, 2.0])
+    assert_array_equal(latt.minimum_distances(3), [2.0, 2.0, 1.0, 0.0, 1.0])
+    assert_array_equal(latt.minimum_distances(4), [1.0, 2.0, 2.0, 1.0, 0.0])
+
+
+def test_minimum_distances_square():
+    latt = lp.simple_square()
+    latt.build((2, 2))
+    sqrt11 = np.sqrt(2)
+    sqrt21 = np.sqrt(5)
+    sqrt22 = np.sqrt(8)
+
+    # lower left
+    dists = [0.0, 1.0, 2.0, 1.0, sqrt11, sqrt21, 2.0, sqrt21, sqrt22]
+    assert_allclose(latt.minimum_distances(0), dists)
+    # upper left
+    dists = [2.0, 1.0, 0.0, sqrt21, sqrt11, 1.0, sqrt22, sqrt21, 2.0]
+    assert_allclose(latt.minimum_distances(2), dists)
+    # center
+    dists = [sqrt11, 1.0, sqrt11, 1.0, 0.0, 1, sqrt11, 1.0, sqrt11]
+    assert_allclose(latt.minimum_distances(4), dists)
+    # lower right
+    dists = [2.0, sqrt21, sqrt22, 1.0, sqrt11, sqrt21, 0.0, 1.0, 2.0]
+    assert_allclose(latt.minimum_distances(6), dists)
+    # upper right
+    dists = [sqrt22, sqrt21, 2.0, sqrt21, sqrt11, 1.0, 2.0, 1.0, 0.0]
+    assert_allclose(latt.minimum_distances(8), dists)
+
+    latt.set_periodic(0)
+    # lower left
+    dists = [0.0, 1.0, 2.0, 1.0, sqrt11, sqrt21, 1.0, sqrt11, sqrt21]
+    assert_allclose(latt.minimum_distances(0), dists)
+    # upper left
+    dists = [2.0, 1.0, 0.0, sqrt21, sqrt11, 1.0, sqrt21, sqrt11, 1.0]
+    assert_allclose(latt.minimum_distances(2), dists)
+    # center
+    dists = [sqrt11, 1.0, sqrt11, 1.0, 0.0, 1, sqrt11, 1.0, sqrt11]
+    assert_allclose(latt.minimum_distances(4), dists)
+    # lower right
+    dists = [1.0, sqrt11, sqrt21, 1.0, sqrt11, sqrt21, 0.0, 1.0, 2.0]
+    assert_allclose(latt.minimum_distances(6), dists)
+    # upper right
+    dists = [sqrt21, sqrt11, 1.0, sqrt21, sqrt11, 1.0, 2.0, 1.0, 0.0]
+    assert_allclose(latt.minimum_distances(8), dists)
+
+
 def test_append():
     latt = Lattice(np.eye(2))
     latt.add_atom()

@@ -28,7 +28,7 @@ from .plotting import (
     draw_indices,
     connection_color_array,
 )
-from .spatial import KDTree
+from .spatial import KDTree, distances
 from .atom import Atom
 from .data import LatticeData, DataMap
 from .shape import AbstractShape, Shape
@@ -661,6 +661,39 @@ class Lattice(LatticeStructure):
         """
         positions2 = latt.data.positions
         return self._compute_connection_neighbors(self.data.positions, positions2)
+
+    def minimum_distances(self, site, primitive=False):
+        """Computes the minimum distances between one site and the other lattice sites.
+
+        This method can be used to find the distances in a lattice with
+        periodic boundary conditions.
+
+        Parameters
+        ----------
+        site : int
+            The super-index i of a site in the cached lattice data.
+        primitive : bool, optional
+            Flag if the periopdic boundarey conditions are set up along cartesian or
+            primitive basis vectors. The default is ``False`` (cartesian coordinates).
+
+        Returns
+        -------
+        min_dists : (N, ) np.ndarray
+            The minimum distances between the lattice site i and the other sites.
+        """
+        positions = self.positions
+        # normal distances
+        dists = [distances(positions[site], positions)]
+        # periodic distances (to translated site)
+        paxs = self.periodic_axes
+        for axs, vec in self.periodic_translation_vectors(paxs, primitive):
+            # Get position of translated lattice point
+            translated = self.translate(vec, positions[site])
+            # compute distances to translated point
+            pdist = distances(translated, positions)
+            dists.append(pdist)
+        # get minimum distances
+        return np.min(dists, axis=0)
 
     def _append(
         self,

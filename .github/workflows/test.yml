@@ -35,7 +35,7 @@ jobs:
     if: ${{ needs.code-change.outputs.should_skip != 'true'}}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.7", "3.10"]  # check oldest and latest supported version
         other-os: [false]
 

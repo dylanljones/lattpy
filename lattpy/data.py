@@ -15,6 +15,7 @@ import warnings
 from copy import deepcopy
 from typing import Union, Sequence
 import numpy as np
+from scipy.sparse import csr_matrix, bsr_matrix
 from .utils import ArrayLike, create_lookup_table, min_dtype
 
 __all__ = ["DataMap", "LatticeData"]
@@ -174,6 +175,50 @@ class DataMap:
         for dist, value in enumerate(hop):
             array[self.hopping(dist)] = value
         return array
+
+    def build_csr(self, data, shape=None, dtype=None):
+        """Constructs a CSR matrix using the given data and the indices of the data map.
+
+        Parameters
+        ----------
+        data : (N,) np.ndarray
+            The input data for constructing the CSR matrix. The data array should be
+            filled using the built-in mask methods of the `DataMap` class.
+        shape : tuple, optional
+            The shape of the resulting matrix. If None (default), the shape is inferred
+            from the data and indices of the matrix.
+        dtype : int or str or np.dtype, optional
+            The data type of hte matrix. By default, it is set automatically.
+
+        Returns
+        -------
+        sparse_mat : (M, M) scipy.sparse.csr.csr_matrix
+            The sparse matrix representing the lattice data.
+        """
+        return csr_matrix((data, self.indices), shape=shape, dtype=dtype)
+
+    def build_bsr(self, data, shape=None, dtype=None):
+        """Constructs a BSR matrix using the given data and the indices of the data map.
+
+        Parameters
+        ----------
+        data : (N, B, B) np.ndarray
+            The input data for constructing the BSR matrix. The array must be
+            3-dimensional, where the first axis N represents the number of blocks
+            and the last two axis B the size of each block. The data array should be
+            filled using the built-in mask methods of the `DataMap` class.
+        shape : tuple, optional
+            The shape of the resulting matrix. If None (default), the shape is inferred
+            from the data and indices of the matrix.
+        dtype : int or str or np.dtype, optional
+            The data type of hte matrix. By default, it is set automatically.
+
+        Returns
+        -------
+        sparse_mat : (M, M) scipy.sparse.csr.bsr_matrix
+            The sparse matrix representing the lattice data.
+        """
+        return bsr_matrix((data, *self.indices_indptr()), shape=shape, dtype=dtype)
 
     def __repr__(self):
         return f"{self.__class__.__name__}(size: {self.size})"

@@ -21,7 +21,6 @@ GIGABYTE = 1024 * MEGABYTE
 
 
 class ProfileThread(threading.Thread):
-
     def __init__(self, profiler, interval=0.5):
         super().__init__()
         self._running = False
@@ -87,10 +86,12 @@ class Profiler:
 
     def take_snapshot(self):
         snapshot = tracemalloc.take_snapshot()
-        snapshot = snapshot.filter_traces((
-            tracemalloc.Filter(False, "<frozen importlib._bootstrap>"),
-            tracemalloc.Filter(False, "<unknown>"),
-        ))
+        snapshot = snapshot.filter_traces(
+            (
+                tracemalloc.Filter(False, "<frozen importlib._bootstrap>"),
+                tracemalloc.Filter(False, "<unknown>"),
+            )
+        )
         self._snapshot = snapshot
         return snapshot
 

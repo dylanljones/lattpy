@@ -305,7 +305,7 @@ def compute_vectors(
         by = b * np.sin(gamma)
         cx = c * np.cos(beta)
         cy = (abs(c) * abs(b) * np.cos(alpha) - bx * cx) / by
-        cz = np.sqrt(c ** 2 - cx ** 2 - cy ** 2)
+        cz = np.sqrt(c**2 - cx**2 - cy**2)
         vectors = np.array([[ax, 0, 0], [bx, by, 0], [cx, cy, cz]])
     if decimals:
         vectors = np.round(vectors, decimals=decimals)

@@ -355,7 +355,7 @@ class Lattice(LatticeStructure):
             Shape of finite size lattice to build.
         primitive : bool, optional
             If True the shape will be multiplied by the cell size of the model.
-            The default is True.
+            The default is False.
         pos : (N, ) array_like or int, optional
             Optional position of the section to build. If ``None`` the origin is used.
         check : bool, optional

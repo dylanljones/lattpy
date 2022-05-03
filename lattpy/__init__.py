@@ -394,7 +394,7 @@ def nacl_structure(a=1.0, atom1="Na", atom2="Cl", neighbors=1):
 # ======================================================================================
 
 
-def finite_hypercubic(s, a=1.0, atom=None, neighbors=1, periodic=None):
+def finite_hypercubic(s, a=1.0, atom=None, neighbors=1, primitive=True, periodic=None):
     """Creates a d-dimensional finite lattice model with one atom in the unit cell.
 
     Parameters
@@ -409,6 +409,9 @@ def finite_hypercubic(s, a=1.0, atom=None, neighbors=1, periodic=None):
     neighbors : int, optional
         The number of neighbor-distance levels, e.g. setting to 1 means only
         nearest neighbors. The default is nearest neighbors (1).
+    primitive : bool, optional
+        If True the shape will be multiplied by the cell size of the model.
+        The default is True.
     periodic : bool or int or (N, ) array_like
         One or multiple axises to apply the periodic boundary conditions.
         If the axis is ``None`` no perodic boundary conditions will be set.
@@ -444,5 +447,5 @@ def finite_hypercubic(s, a=1.0, atom=None, neighbors=1, periodic=None):
     latt = Lattice(a * np.eye(dim))
     latt.add_atom(atom=atom)
     latt.add_connections(neighbors)
-    latt.build(s, periodic=periodic)
+    latt.build(s, primitive=primitive, periodic=periodic)
     return latt

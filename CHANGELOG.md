@@ -4,7 +4,11 @@
 ## [Unreleased]
 
 ### New Features
+- add prefabs for the hexagonal (triangular) and honeycomb lattice.
 - add methods for building sparse matrices to `DataMap` class
+
+### Improvements/Bug Fixes
+- add argument for building in primitive basis to the `finite_hypercubic` method.
 
 
 <a name="0.7.1"></a>

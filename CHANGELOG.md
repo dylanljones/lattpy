@@ -1,8 +1,7 @@
 # What's New
 
-<a name="unreleased"></a>
-## [Unreleased]
-
+<a name="0.7.2"></a>
+## [0.7.2] - 2022-29-03
 ### New Features
 - add prefabs for the hexagonal (triangular) and honeycomb lattice.
 - add methods for building sparse matrices to `DataMap` class
@@ -94,7 +93,8 @@
 - add more docstrings
 - fix multiple bugs
 
-[Unreleased]: https://github.com/dylanljones/lattpy/compare/0.7.1...HEAD
+[Unreleased]: https://github.com/dylanljones/lattpy/compare/0.7.2...HEAD
+[0.7.2]: https://github.com/dylanljones/lattpy/compare/0.7.1...0.7.2
 [0.7.1]: https://github.com/dylanljones/lattpy/compare/0.7.0...0.7.1
 [0.7.0]: https://github.com/dylanljones/lattpy/compare/0.6.7...0.7.0
 [0.6.7]: https://github.com/dylanljones/lattpy/compare/0.6.6...0.6.7

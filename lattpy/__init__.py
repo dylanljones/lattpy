@@ -197,7 +197,7 @@ def simple_rectangular(a1=1.5, a2=1.0, atom=None, neighbors=2):
         is created.
     neighbors : int, optional
         The number of neighbor-distance levels, e.g. setting to 1 means only
-        nearest neighbors. The default is nearest neighbors (1).
+        nearest neighbors. The default is nearest neighbors (2).
 
     Returns
     -------
@@ -215,6 +215,72 @@ def simple_rectangular(a1=1.5, a2=1.0, atom=None, neighbors=2):
     latt = Lattice.rectangular(a1, a2)
     latt.add_atom(atom=atom)
     latt.add_connections(neighbors)
+    return latt
+
+
+def simple_hexagonal(a=1.0, atom=None, neighbors=1):
+    """Creates a hexagonal lattice with one atom at the origin of the unit cell.
+
+    Parameters
+    ----------
+    a : float, optional
+        The lattice constant (length of the basis-vector).
+    atom : str or Atom, optional
+        The atom to add to the lattice. If a string is passed, a new ``Atom`` instance
+        is created.
+    neighbors : int, optional
+        The number of neighbor-distance levels, e.g. setting to 1 means only
+        nearest neighbors. The default is nearest neighbors (1).
+
+    Returns
+    -------
+    latt : Lattice
+        The configured lattice instance.
+
+    Examples
+    --------
+    >>> import matplotlib.pyplot as plt
+    >>> latt = lp.simple_hexagonal()
+    >>> latt.plot_cell()
+    >>> plt.show()
+
+    """
+    latt = Lattice.hexagonal(a)
+    latt.add_atom(atom=atom)
+    latt.add_connections(neighbors)
+    return latt
+
+
+def honeycomb(a=1.0, atom=None):
+    """Creates a honeycomb lattice with two identical atoms in the unit cell.
+
+    Parameters
+    ----------
+    a : float, optional
+        The lattice constant (length of the basis-vector).
+    atom : str or Atom, optional
+        The atom to add to the lattice. If a string is passed, a new ``Atom`` instance
+        is created.
+
+    Returns
+    -------
+    latt : Lattice
+        The configured lattice instance.
+
+    Examples
+    --------
+    >>> import matplotlib.pyplot as plt
+    >>> latt = lp.honeycomb()
+    >>> latt.plot_cell()
+    >>> plt.show()
+
+    """
+    if not isinstance(atom, Atom):
+        atom = Atom(atom, color="C0")
+    latt = Lattice.hexagonal(a)
+    latt.add_atom([0, 0], atom=atom)
+    latt.add_atom([a, 0], atom=atom)
+    latt.add_connection(0, 1, analyze=True)
     return latt
 
 
@@ -328,7 +394,7 @@ def nacl_structure(a=1.0, atom1="Na", atom2="Cl", neighbors=1):
 # ======================================================================================
 
 
-def finite_hypercubic(s, a=1.0, atom=None, neighbors=1, periodic=None):
+def finite_hypercubic(s, a=1.0, atom=None, neighbors=1, primitive=True, periodic=None):
     """Creates a d-dimensional finite lattice model with one atom in the unit cell.
 
     Parameters
@@ -343,6 +409,9 @@ def finite_hypercubic(s, a=1.0, atom=None, neighbors=1, periodic=None):
     neighbors : int, optional
         The number of neighbor-distance levels, e.g. setting to 1 means only
         nearest neighbors. The default is nearest neighbors (1).
+    primitive : bool, optional
+        If True the shape will be multiplied by the cell size of the model.
+        The default is True.
     periodic : bool or int or (N, ) array_like
         One or multiple axises to apply the periodic boundary conditions.
         If the axis is ``None`` no perodic boundary conditions will be set.
@@ -378,5 +447,5 @@ def finite_hypercubic(s, a=1.0, atom=None, neighbors=1, periodic=None):
     latt = Lattice(a * np.eye(dim))
     latt.add_atom(atom=atom)
     latt.add_connections(neighbors)
-    latt.build(s, periodic=periodic)
+    latt.build(s, primitive=primitive, periodic=periodic)
     return latt

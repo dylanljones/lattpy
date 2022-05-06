@@ -1,9 +1,0 @@
-# Include the requirements file
-include *.txt
-
-# Include markdown files
-include *.md
-
-# Include versioneer files
-include versioneer.py
-include lattpy/_version.py

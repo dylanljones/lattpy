@@ -26,21 +26,27 @@ jobs:
       id: latestrelease
       run: |
         echo "::set-output name=releasetag::$(curl -s https://api.github.com/repos/dylanljones/lattpy/releases/latest | jq '.tag_name' | sed 's/\"//g')"
+
     - name: confirm release tag
       run: |
         echo ${{ steps.latestrelease.outputs.releasetag }}
+
     - name: checkout
       uses: actions/checkout@v2
       with:
         ref: ${{ steps.latestrelease.outputs.releasetag }}
+
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: "3.8"
+        python-version: "3.9"
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install setuptools wheel twine build
+        pip install twine
+        pip install .[build]
+
     - name: Build and publish distribution 📦 to PyPI
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}

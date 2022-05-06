@@ -14,7 +14,7 @@ import os
 import sys
 import math
 
-sys.path.insert(0, os.path.abspath('../..'))
+sys.path.insert(0, os.path.abspath("../.."))
 
 import lattpy
 
@@ -44,22 +44,28 @@ extensions = [
     "sphinx_toggleprompt",  # toggle `>>>`
     "sphinx_rtd_theme",
     "sphinx.ext.graphviz",
-    "sphinx.ext.inheritance_diagram"
+    "sphinx.ext.inheritance_diagram",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'tests',
-                    'generated/lattpy.rst', 'generated/modules.rst']
+exclude_patterns = [
+    "_build",
+    "Thumbs.db",
+    ".DS_Store",
+    "tests",
+    "generated/lattpy.rst",
+    "generated/modules.rst",
+]
 
 # -- Graphviz options --------------------------------------------------------
 
-graphviz_output_format = 'svg'
+graphviz_output_format = "svg"
 inheritance_graph_attrs = dict(rankdir="LR", size='""')
 
 
@@ -68,24 +74,24 @@ inheritance_graph_attrs = dict(rankdir="LR", size='""')
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 
-html_theme = 'sphinx_rtd_theme'
+html_theme = "sphinx_rtd_theme"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]
 
 # Include Markdown parser
 # source_parsers = {
 #    '.md': 'recommonmark.parser.CommonMarkParser',
 # }
-source_suffix = ['.rst', '.md']
+source_suffix = [".rst", ".md"]
 
 # Don't show type hints
 autodoc_typehints = "none"
 
 # Preserve order
-autodoc_member_order = 'bysource'
+autodoc_member_order = "bysource"
 
 # -- Apidoc ------------------------------------------------------------------
 
@@ -124,44 +130,47 @@ except:
 
 plot_include_source = True
 plot_html_show_source_link = False
-plot_formats = [('png', 100), 'pdf']
+plot_formats = [("png", 100), "pdf"]
 
-phi = (math.sqrt(5) + 1)/2
+phi = (math.sqrt(5) + 1) / 2
 
 plot_rcparams = {
-    'font.size': 8,
-    'axes.titlesize': 8,
-    'axes.labelsize': 8,
-    'xtick.labelsize': 8,
-    'ytick.labelsize': 8,
-    'legend.fontsize': 8,
-    'figure.figsize': (3*phi, 3),
-    'figure.subplot.bottom': 0.2,
-    'figure.subplot.left': 0.2,
-    'figure.subplot.right': 0.9,
-    'figure.subplot.top': 0.85,
-    'figure.subplot.wspace': 0.4,
-    'text.usetex': False,
+    "font.size": 8,
+    "axes.titlesize": 8,
+    "axes.labelsize": 8,
+    "xtick.labelsize": 8,
+    "ytick.labelsize": 8,
+    "legend.fontsize": 8,
+    "figure.figsize": (3 * phi, 3),
+    "figure.subplot.bottom": 0.2,
+    "figure.subplot.left": 0.2,
+    "figure.subplot.right": 0.9,
+    "figure.subplot.top": 0.85,
+    "figure.subplot.wspace": 0.4,
+    "text.usetex": False,
 }
 
 # -- Intersphinx -------------------------------------------------------------
 
 # taken from https://gist.github.com/bskinn/0e164963428d4b51017cebdb6cda5209
-intersphinx_mapping = {'python': (r'https://docs.python.org', None),
-                       'scipy': (r'https://docs.scipy.org/doc/scipy/', None),
-                       'numpy': (r'https://docs.scipy.org/doc/numpy/', None),
-                       'np': (r'https://docs.scipy.org/doc/numpy/', None),
-                       'matplotlib': (r'https://matplotlib.org/', None),
-                       }
+intersphinx_mapping = {
+    "python": (r"https://docs.python.org", None),
+    "scipy": (r"https://docs.scipy.org/doc/scipy/", None),
+    "numpy": (r"https://docs.scipy.org/doc/numpy/", None),
+    "np": (r"https://docs.scipy.org/doc/numpy/", None),
+    "matplotlib": (r"https://matplotlib.org/", None),
+}
 
 
 # -- Auto-run sphinx-apidoc --------------------------------------------------
+
 
 def run_apidoc(_):
     from sphinx.ext.apidoc import main
     import os
     import sys
-    sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+    sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
     cur_dir = os.path.abspath(os.path.dirname(__file__))
     proj_dir = os.path.dirname(os.path.dirname(cur_dir))
     doc_dir = os.path.join(proj_dir, "docs")
@@ -173,4 +182,4 @@ def run_apidoc(_):
 
 
 def setup(app):
-    app.connect('builder-inited', run_apidoc)
+    app.connect("builder-inited", run_apidoc)

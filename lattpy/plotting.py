@@ -381,7 +381,7 @@ def draw_points(ax, points, size=10, **kwargs):
     if points.shape[1] == 1:
         points = np.hstack((points, np.zeros((points.shape[0], 1))))
 
-    scat = ax.scatter(*points.T, s=size ** 2, **kwargs)
+    scat = ax.scatter(*points.T, s=size**2, **kwargs)
     # Manualy update data-limits
     # ax.ignore_existing_data_limits = True
     datalim = scat.get_datalim(ax.transData)
@@ -572,7 +572,7 @@ def draw_sites(ax, points, radius=0.2, **kwargs):
         return col
     else:
         size = radius * 50
-        scat = ax.scatter(*points.T, s=size ** 2, **kwargs)
+        scat = ax.scatter(*points.T, s=size**2, **kwargs)
         # Manualy update data-limits
         # ax.ignore_existing_data_limits = True
         datalim = scat.get_datalim(ax.transData)

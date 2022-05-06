@@ -1,7 +1,15 @@
 # What's New
 
+<a name="unreleased"></a>
+## [Unreleased]
+
+### Improvements/Bug Fixes
+- `adjacency_matrix` is now vectorized and returns a `csr_matrix`
+- passing a False boolean as axis to `set_periodic` now removes the periodic boundaries
+
+
 <a name="0.7.2"></a>
-## [0.7.2] - 2022-29-03
+## [0.7.2] - 2022-04-05
 ### New Features
 - add prefabs for the hexagonal (triangular) and honeycomb lattice.
 - add methods for building sparse matrices to `DataMap` class

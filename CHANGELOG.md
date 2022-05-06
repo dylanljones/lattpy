@@ -1,8 +1,7 @@
 # What's New
 
-<a name="unreleased"></a>
-## [Unreleased]
-
+<a name="0.7.3"></a>
+## [0.7.3] - 2022-06-05
 ### Improvements/Bug Fixes
 - `adjacency_matrix` is now vectorized and returns a `csr_matrix`
 - passing a False boolean as axis to `set_periodic` now removes the periodic boundaries
@@ -101,7 +100,8 @@
 - add more docstrings
 - fix multiple bugs
 
-[Unreleased]: https://github.com/dylanljones/lattpy/compare/0.7.2...HEAD
+[Unreleased]: https://github.com/dylanljones/lattpy/compare/0.7.3...HEAD
+[0.7.3]: https://github.com/dylanljones/lattpy/compare/0.7.2...0.7.3
 [0.7.2]: https://github.com/dylanljones/lattpy/compare/0.7.1...0.7.2
 [0.7.1]: https://github.com/dylanljones/lattpy/compare/0.7.0...0.7.1
 [0.7.0]: https://github.com/dylanljones/lattpy/compare/0.6.7...0.7.0

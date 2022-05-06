@@ -16,6 +16,7 @@ import warnings
 import itertools
 import numpy as np
 from copy import deepcopy
+from scipy.sparse import csr_matrix
 from scipy.spatial.distance import cdist
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.axes3d import Axes3D
@@ -892,16 +893,27 @@ class Lattice(LatticeStructure):
 
         Returns
         -------
-        adj_mat : (N, N) np.ndarray
+        adj_mat : (N, N) csr_matrix
             The adjacency matrix of the lattice.
         """
-        n = self.num_sites
-        adj_mat = np.zeros((n, n), dtype=np.int64)
-        for i in range(n):
-            for j in self.neighbors(i, unique=True):
-                adj_mat[i, j] = 1
-                adj_mat[j, i] = 1
-        return adj_mat
+        num_sites = self.data.num_sites
+        neighbors = self.data.neighbors
+        dists = self.data.distances
+        invalid_distidx = self.data.invalid_distidx
+        # Build index pairs and corresponding distance array
+        dtype = np.min_scalar_type(num_sites)
+        sites = np.arange(num_sites, dtype=dtype)
+        sites_t = np.tile(sites, (neighbors.shape[1], 1)).T
+        pairs = np.reshape([sites_t, neighbors], newshape=(2, -1)).T
+        distindices = dists.flatten()
+        # Filter pairs with invalid indices
+        mask = distindices != invalid_distidx
+        pairs = pairs[mask]
+        distindices = distindices[mask]
+
+        rows, cols = pairs.T
+        data = distindices + 1
+        return csr_matrix((data, (rows, cols)), dtype=np.int8)
 
     # ==================================================================================
 

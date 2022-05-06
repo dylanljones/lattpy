@@ -601,8 +601,11 @@ class Lattice(LatticeStructure):
         The lattice has to be built before applying the periodic boundarie conditions.
         The lattice also has to be at least three atoms big in the specified directions.
         """
-        if isinstance(axis, bool) and axis is True:
-            axis = np.arange(self.dim)
+        if isinstance(axis, bool):
+            if axis is True:
+                axis = np.arange(self.dim)
+            else:
+                axis = None
 
         logger.debug("Computing periodic neighbors along axis %s", axis)
         if self.shape is None:

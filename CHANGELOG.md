@@ -1,5 +1,16 @@
 # What's New
 
+<a name="unreleased"></a>
+## [Unreleased]
+
+### New Features
+- add method `neighbor_pairs` for generating a list of neighbor indices
+
+### Documentation
+- add example to `adjacency_matrix`
+- add docstring to `neighbor_pairs`
+
+
 <a name="0.7.3"></a>
 ## [0.7.3] - 2022-06-05
 ### Improvements/Bug Fixes
@@ -71,6 +82,24 @@
 - add hamiltonian section to tutorial
 - add change log contributing to documentation
 
+
+<a name="0.5.5"></a>
+## [0.5.5] - 2021-12-01
+
+<a name="0.5.4"></a>
+## [0.5.4] - 2021-12-01
+
+<a name="0.5.3"></a>
+## [0.5.3] - 2021-12-01
+
+<a name="0.5.2"></a>
+## [0.5.2] - 2021-09-01
+
+<a name="0.5.1"></a>
+## [0.5.1] - 2021-08-01
+
+<a name="0.5"></a>
+## 0.5 - 2021-08-01
 <a name="0.6.6"></a>
 ## [0.6.6] - 2022-12-02
 
@@ -112,3 +141,9 @@
 [0.6.3]: https://github.com/dylanljones/lattpy/compare/0.6.2...0.6.3
 [0.6.2]: https://github.com/dylanljones/lattpy/compare/0.6.1...0.6.2
 [0.6.1]: https://github.com/dylanljones/lattpy/compare/0.6.0...0.6.1
+[0.6.0]: https://github.com/dylanljones/lattpy/compare/0.5.5...0.6.0
+[0.5.5]: https://github.com/dylanljones/lattpy/compare/0.5.4...0.5.5
+[0.5.4]: https://github.com/dylanljones/lattpy/compare/0.5.3...0.5.4
+[0.5.3]: https://github.com/dylanljones/lattpy/compare/0.5.2...0.5.3
+[0.5.2]: https://github.com/dylanljones/lattpy/compare/0.5.1...0.5.2
+[0.5.1]: https://github.com/dylanljones/lattpy/compare/0.5...0.5.1

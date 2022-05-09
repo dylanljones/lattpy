@@ -24,7 +24,8 @@ jobs:
           "CONTRIBUTING.md",
           ".pre-commit-config.yaml",
           ".readthedocs.yaml",
-          "pyproject.toml"
+          "pyproject.toml",
+          "lgtm.yml"
           ]'
     outputs:
       should_skip: ${{ steps.skip_check.outputs.should_skip }}

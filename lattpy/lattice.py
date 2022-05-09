@@ -889,6 +889,45 @@ class Lattice(LatticeStructure):
         return self.data.map()
 
     def neighbor_pairs(self, unique=False):
+        """Returns all neighbor pairs with their corresponding distances in the lattice.
+
+        Parameters
+        ----------
+        unique : bool, optional
+            If True, only unique pairs with i < j are returned. The default is False.
+
+        Returns
+        -------
+        pairs : (N, 2) np.ndarray
+            An array containing all neighbor pairs of the lattice. If `unique=True`,
+            the first index is always smaller than the second index in each element.
+        distindices : (N, ) np.ndarray
+            The corresponding distance indices of the neighbor pairs.
+
+        Examples
+        --------
+        >>> latt = Lattice.chain()
+        >>> latt.add_atom(neighbors=1)
+        >>> latt.build(5)
+        >>> idx, distidx = latt.neighbor_pairs()
+        >>> idx
+        array([[0, 1],
+               [1, 2],
+               [1, 0],
+               [2, 3],
+               [2, 1],
+               [3, 2]], dtype=uint8)
+
+        >>> distidx
+        array([0, 0, 0, 0, 0, 0], dtype=uint8)
+
+        >>> idx, distidx = latt.neighbor_pairs(unique=True)
+        >>> idx
+        array([[0, 1],
+               [1, 2],
+               [2, 3]], dtype=uint8)
+
+        """
         # Build index pairs and corresponding distance array
         dtype = np.min_scalar_type(self.num_sites)
         sites = np.arange(self.num_sites, dtype=dtype)

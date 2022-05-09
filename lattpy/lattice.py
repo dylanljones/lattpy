@@ -955,6 +955,22 @@ class Lattice(LatticeStructure):
         -------
         adj_mat : (N, N) csr_matrix
             The adjacency matrix of the lattice.
+
+        See Also
+        --------
+        neighbor_pairs : Generates a list of neighbor indices.
+
+        Examples
+        --------
+        >>> latt = Lattice.chain()
+        >>> latt.add_atom(neighbors=1)
+        >>> latt.build(5)
+        >>> adj_mat = latt.adjacency_matrix()
+        >>> adj_mat.toarray()
+        array([[0, 1, 0, 0],
+               [1, 0, 1, 0],
+               [0, 1, 0, 1],
+               [0, 0, 1, 0]], dtype=int8)
         """
         pairs, distindices = self.neighbor_pairs(unique=False)
         rows, cols = pairs.T

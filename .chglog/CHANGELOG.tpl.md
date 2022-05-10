@@ -19,6 +19,7 @@
 {{- if not (eq .Tag.Name "0.6.0" "0.6.1" "0.6.2" "0.6.3" "0.6.4" "0.6.5" "0.6.6") }}
 <a name="{{ .Tag.Name }}"></a>
 ## {{ if .Tag.Previous }}[{{ .Tag.Name }}]{{ else }}{{ .Tag.Name }}{{ end }} - {{ datetime "2006-02-01" .Tag.Date }}
+
 {{ range .CommitGroups -}}
 ### {{ .Title }}
 {{ range .Commits -}}

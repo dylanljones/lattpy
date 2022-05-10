@@ -888,6 +888,66 @@ class Lattice(LatticeStructure):
         """DataMap : Returns the data-map of the lattice model."""
         return self.data.map()
 
+    def neighbor_pairs(self, unique=False):
+        """Returns all neighbor pairs with their corresponding distances in the lattice.
+
+        Parameters
+        ----------
+        unique : bool, optional
+            If True, only unique pairs with i < j are returned. The default is False.
+
+        Returns
+        -------
+        pairs : (N, 2) np.ndarray
+            An array containing all neighbor pairs of the lattice. If `unique=True`,
+            the first index is always smaller than the second index in each element.
+        distindices : (N, ) np.ndarray
+            The corresponding distance indices of the neighbor pairs.
+
+        Examples
+        --------
+        >>> latt = Lattice.chain()
+        >>> latt.add_atom(neighbors=1)
+        >>> latt.build(5)
+        >>> idx, distidx = latt.neighbor_pairs()
+        >>> idx
+        array([[0, 1],
+               [1, 2],
+               [1, 0],
+               [2, 3],
+               [2, 1],
+               [3, 2]], dtype=uint8)
+
+        >>> distidx
+        array([0, 0, 0, 0, 0, 0], dtype=uint8)
+
+        >>> idx, distidx = latt.neighbor_pairs(unique=True)
+        >>> idx
+        array([[0, 1],
+               [1, 2],
+               [2, 3]], dtype=uint8)
+
+        """
+        # Build index pairs and corresponding distance array
+        dtype = np.min_scalar_type(self.num_sites)
+        sites = np.arange(self.num_sites, dtype=dtype)
+        sites_t = np.tile(sites, (self.data.neighbors.shape[1], 1)).T
+        pairs = np.reshape([sites_t, self.data.neighbors], newshape=(2, -1)).T
+        distindices = self.data.distances.flatten()
+
+        # Filter pairs with invalid indices
+        mask = distindices != self.data.invalid_distidx
+        pairs = pairs[mask]
+        distindices = distindices[mask]
+
+        if unique:
+            # Filter for unique pairs (i < j)
+            mask = pairs[:, 0] < pairs[:, 1]
+            pairs = pairs[mask]
+            distindices = distindices[mask]
+
+        return pairs, distindices
+
     def adjacency_matrix(self):
         """Computes the adjacency matrix for the neighbor data of the lattice.
 
@@ -895,22 +955,24 @@ class Lattice(LatticeStructure):
         -------
         adj_mat : (N, N) csr_matrix
             The adjacency matrix of the lattice.
-        """
-        num_sites = self.data.num_sites
-        neighbors = self.data.neighbors
-        dists = self.data.distances
-        invalid_distidx = self.data.invalid_distidx
-        # Build index pairs and corresponding distance array
-        dtype = np.min_scalar_type(num_sites)
-        sites = np.arange(num_sites, dtype=dtype)
-        sites_t = np.tile(sites, (neighbors.shape[1], 1)).T
-        pairs = np.reshape([sites_t, neighbors], newshape=(2, -1)).T
-        distindices = dists.flatten()
-        # Filter pairs with invalid indices
-        mask = distindices != invalid_distidx
-        pairs = pairs[mask]
-        distindices = distindices[mask]
 
+        See Also
+        --------
+        neighbor_pairs : Generates a list of neighbor indices.
+
+        Examples
+        --------
+        >>> latt = Lattice.chain()
+        >>> latt.add_atom(neighbors=1)
+        >>> latt.build(5)
+        >>> adj_mat = latt.adjacency_matrix()
+        >>> adj_mat.toarray()
+        array([[0, 1, 0, 0],
+               [1, 0, 1, 0],
+               [0, 1, 0, 1],
+               [0, 0, 1, 0]], dtype=int8)
+        """
+        pairs, distindices = self.neighbor_pairs(unique=False)
         rows, cols = pairs.T
         data = distindices + 1
         return csr_matrix((data, (rows, cols)), dtype=np.int8)

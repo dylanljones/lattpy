@@ -1,7 +1,19 @@
 # What's New
 
+<a name="0.7.4"></a>
+## [0.7.4] - 2022-10-05
+
+### New Features
+- add method `neighbor_pairs` for generating a list of neighbor indices
+
+### Documentation
+- add example to `adjacency_matrix`
+- add docstring to `neighbor_pairs`
+
+
 <a name="0.7.3"></a>
 ## [0.7.3] - 2022-06-05
+
 ### Improvements/Bug Fixes
 - `adjacency_matrix` is now vectorized and returns a `csr_matrix`
 - passing a False boolean as axis to `set_periodic` now removes the periodic boundaries
@@ -9,6 +21,7 @@
 
 <a name="0.7.2"></a>
 ## [0.7.2] - 2022-04-05
+
 ### New Features
 - add prefabs for the hexagonal (triangular) and honeycomb lattice.
 - add methods for building sparse matrices to `DataMap` class
@@ -19,6 +32,7 @@
 
 <a name="0.7.1"></a>
 ## [0.7.1] - 2022-29-03
+
 ### New Features
 - add argument for setting periodic boundary conditions to the `finite_hypercubic` method.
 - add method for computing minimum distances in a lattice with periodic boundary conditions
@@ -31,6 +45,7 @@
 
 <a name="0.7.0"></a>
 ## [0.7.0] - 2022-21-02
+
 ### New Features
 - Add method for computing the adjacency matrix of the lattice graph
 - Split the lattice structure into separate object ``LatticeStructure`` and use it as base class for ``Lattice``
@@ -49,6 +64,7 @@
 
 <a name="0.6.7"></a>
 ## [0.6.7] - 2022-16-02
+
 ### New Features
 - add method for hiding the box and axis of a plot
 - Add ``finite_hypercubic`` lattice prefab
@@ -100,7 +116,7 @@
 - add more docstrings
 - fix multiple bugs
 
-[Unreleased]: https://github.com/dylanljones/lattpy/compare/0.7.3...HEAD
+[0.7.4]: https://github.com/dylanljones/lattpy/compare/0.7.3...0.7.4
 [0.7.3]: https://github.com/dylanljones/lattpy/compare/0.7.2...0.7.3
 [0.7.2]: https://github.com/dylanljones/lattpy/compare/0.7.1...0.7.2
 [0.7.1]: https://github.com/dylanljones/lattpy/compare/0.7.0...0.7.1
@@ -108,7 +124,3 @@
 [0.6.7]: https://github.com/dylanljones/lattpy/compare/0.6.6...0.6.7
 [0.6.6]: https://github.com/dylanljones/lattpy/compare/0.6.5...0.6.6
 [0.6.5]: https://github.com/dylanljones/lattpy/compare/0.6.4...0.6.5
-[0.6.4]: https://github.com/dylanljones/lattpy/compare/0.6.3...0.6.4
-[0.6.3]: https://github.com/dylanljones/lattpy/compare/0.6.2...0.6.3
-[0.6.2]: https://github.com/dylanljones/lattpy/compare/0.6.1...0.6.2
-[0.6.1]: https://github.com/dylanljones/lattpy/compare/0.6.0...0.6.1

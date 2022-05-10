@@ -787,6 +787,14 @@ def test_hash():
     assert latt.__hash__() != hash1
 
 
+@given(structures())
+def test_neighbor_pairs(latt: lp.Lattice):
+    pairs, distindices = latt.neighbor_pairs()
+    for (i, j), distidx in zip(pairs, distindices):
+        neighbors = latt.neighbors(i, distidx=distidx)
+        assert j in neighbors
+
+
 # =========================================================================
 # General tests
 # =========================================================================

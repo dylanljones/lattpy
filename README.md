@@ -271,6 +271,10 @@ of the system is used.
 See the [CHANGELOG](https://github.com/dylanljones/lattpy/blob/master/CHANGELOG.md) for
 the recent changes of the project.
 
+If you encounter an issue or want to contribute to pyrekordbox, please feel free to
+get in touch, [create an issue](https://github.com/dylanljones/lattpy/issues/new/choose)
+or open a pull request!
+
 A guide for contributing to `lattpy` and the commit-message style can be found in
 [CONTRIBUTING](https://github.com/dylanljones/lattpy/blob/master/CONTRIBUTING.md)
 

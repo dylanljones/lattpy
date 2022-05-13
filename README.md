@@ -28,12 +28,6 @@ adding neighbor connections manually. You will save time and mental energy for m
 | Dev    | [![Test][tests-dev]][link-tests]    | [![Codecov][codecov-dev]][codecov-dev-link]       | [![Read the Docs][docs-dev]][docs-dev-link]       |
 
 
-1. [Installation](#installation)
-2. [Documentation](#documentation)
-3. [Quick-Start](#quick-start)
-4. [Performance](#performance)
-5. [Development](#development)
-
 ## Installation
 
 LattPy is available on [PyPI](https://pypi.org/project/lattpy/):

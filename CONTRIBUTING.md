@@ -2,6 +2,18 @@
 
 Thank you for contributing to `lattpy` :tada:
 
+## Pre-commit Hooks
+
+We are using the [pre-commit framework](https://pre-commit.com/) to automatically run
+some checks and the [Black code formatter](https://github.com/psf/black) at commit time.
+This ensures that every commit fulfills the basic requirements to be mergeable and
+follows the coding style of the project.
+
+The pre-commit hooks can be installed via
+````sh
+$ pre-commit install
+pre-commit installed at .git/hooks/pre-commit
+````
 
 ## Commit Message Format
 

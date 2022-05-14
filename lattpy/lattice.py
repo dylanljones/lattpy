@@ -633,6 +633,7 @@ class Lattice(LatticeStructure):
             self.data.remove_periodic()
             self.periodic_axes = list()
         else:
+            self.data.remove_periodic()
             axis = np.atleast_1d(axis)
             pidx, pdists, pnvecs, paxs = self._compute_pneighbors(axis, primitive)
             if not pidx:

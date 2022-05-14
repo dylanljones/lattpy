@@ -1,5 +1,13 @@
 # What's New
 
+<a name="unreleased"></a>
+## [Unreleased]
+
+### Improvements/Bug Fixes
+- fix error when setting periodic neighbors twice
+- set periodic axes only if size is big enough ([#67](https://github.com/dylanljones/lattpy/issues/67))
+
+
 <a name="0.7.4"></a>
 ## [0.7.4] - 2022-10-05
 
@@ -116,6 +124,7 @@
 - add more docstrings
 - fix multiple bugs
 
+[Unreleased]: https://github.com/dylanljones/lattpy/compare/0.7.4...HEAD
 [0.7.4]: https://github.com/dylanljones/lattpy/compare/0.7.3...0.7.4
 [0.7.3]: https://github.com/dylanljones/lattpy/compare/0.7.2...0.7.3
 [0.7.2]: https://github.com/dylanljones/lattpy/compare/0.7.1...0.7.2

@@ -237,3 +237,16 @@ def test_get_base_atom_dict():
     assert len(result) == 2
     assert_array_equal(result[ata], [[0, 0]])
     assert_array_equal(result[atb], [[0.5, 0.0], [0.5, 0.5]])
+
+
+def test_quick_setup():
+    latt = LatticeStructure(np.eye(2), atoms={(0.0, 0.0): "A"})
+    assert latt.num_base == 1
+    assert latt.atoms[0] == "A"
+    assert_array_equal(latt.atom_positions[0], [0.0, 0.0])
+
+    latt = LatticeStructure(np.eye(2), atoms={(0.0, 0.0): "A"}, cons=1)
+    assert_array_equal(latt.num_neighbors, [4])
+
+    latt = LatticeStructure(np.eye(2), atoms={(0.0, 0.0): "A"}, cons={("A", "A"): 1})
+    assert_array_equal(latt.num_neighbors, [4])

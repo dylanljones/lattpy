@@ -211,6 +211,51 @@ def test_wignerseitz_symmetry_points():
     assert_array_equal(face_centers, f)
 
 
+def test_wigner_seitz_arange():
+    latt = simple_square()
+    ws = latt.wigner_seitz_cell()
+
+    x, y = ws.arange(0.1)
+    assert_allclose(x, np.arange(-0.5, +0.5, 0.1))
+    assert_allclose(y, np.arange(-0.5, +0.5, 0.1))
+
+    x, y = ws.arange((0.1, 0.2))
+    assert_allclose(x, np.arange(-0.5, +0.5, 0.1))
+    assert_allclose(y, np.arange(-0.5, +0.5, 0.2))
+
+
+def test_wigner_seitz_linspace():
+    latt = simple_square()
+    ws = latt.wigner_seitz_cell()
+
+    x, y = ws.linspace(100)
+    assert_allclose(x, np.linspace(-0.5, +0.5, 100))
+    assert_allclose(y, np.linspace(-0.5, +0.5, 100))
+
+    x, y = ws.linspace((100, 200))
+    assert_allclose(x, np.linspace(-0.5, +0.5, 100))
+    assert_allclose(y, np.linspace(-0.5, +0.5, 200))
+
+
+def test_wigner_seitz_lmeshgrid():
+    latt = simple_square()
+    ws = latt.wigner_seitz_cell()
+
+    num = 101
+    actual = ws.meshgrid(num)
+    x = np.linspace(-0.5, +0.5, num)
+    y = np.linspace(-0.5, +0.5, num)
+    expected = np.array(np.meshgrid(x, y))
+    assert_allclose(actual, expected)
+
+    step = 0.1
+    actual = ws.meshgrid(steps=step)
+    x = np.arange(-0.5, +0.5, step)
+    y = np.arange(-0.5, +0.5, step)
+    expected = np.array(np.meshgrid(x, y))
+    assert_allclose(actual, expected)
+
+
 def test_compute_vectors():
     # Test square vectors
     vecs = spatial.compute_vectors(1.0, 1.0, alpha=90)

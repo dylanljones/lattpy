@@ -162,10 +162,10 @@ class DataMap:
         filled : np.ndarray
 
         .. deprecated:: 0.7.1
-          The `fill` method will be removed in LattPy 0.8.0
+          The `fill` method will be removed in lattpy 0.8.0
         """
         warnings.warn(
-            "The `fill` method is deprecated and will be removed in a version '0.8.0'",
+            "The `fill` method is deprecated and will be removed in version '0.8.0'",
             DeprecationWarning,
         )
         eps = np.atleast_1d(eps)

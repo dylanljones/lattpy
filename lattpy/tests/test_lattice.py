@@ -630,6 +630,15 @@ def test_periodic_next_nearest():
     assert_elements_equal1d(latt.neighbors(23, 1), [0, 3, 15, 18])
 
 
+def test_periodic_small():
+    latt = lp.simple_square()
+    latt.build((2, 2), primitive=True)
+    latt.set_periodic(True)
+
+    assert_elements_equal1d(latt.neighbors(0), [1, 2])
+    assert_elements_equal1d(latt.neighbors(1), [2, 3])
+
+
 def test_remove_periodic():
     latt = lp.simple_chain()
     latt.build(9)

@@ -11,7 +11,7 @@
 import pytest
 import numpy as np
 from numpy.testing import assert_array_equal, assert_allclose
-from hypothesis import given, strategies as st
+from hypothesis import settings, given, strategies as st
 import hypothesis.extra.numpy as hnp
 from lattpy.utils import (
     SiteOccupiedError,
@@ -22,6 +22,7 @@ from lattpy.utils import (
 from lattpy import Lattice, Circle, Atom
 import lattpy as lp
 
+settings.load_profile("lattpy")
 
 atom = Atom()
 

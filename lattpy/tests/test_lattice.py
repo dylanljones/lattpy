@@ -11,7 +11,7 @@
 import pytest
 import numpy as np
 from numpy.testing import assert_array_equal, assert_allclose
-from hypothesis import given, strategies as st
+from hypothesis import settings, given, strategies as st
 import hypothesis.extra.numpy as hnp
 from lattpy.utils import (
     SiteOccupiedError,
@@ -22,6 +22,7 @@ from lattpy.utils import (
 from lattpy import Lattice, Circle, Atom
 import lattpy as lp
 
+settings.load_profile("lattpy")
 
 atom = Atom()
 
@@ -628,6 +629,15 @@ def test_periodic_next_nearest():
     assert_elements_equal1d(latt.neighbors(4, 1), [5, 8, 20, 23])
     assert_elements_equal1d(latt.neighbors(20, 1), [1, 4, 16, 19])
     assert_elements_equal1d(latt.neighbors(23, 1), [0, 3, 15, 18])
+
+
+def test_periodic_small():
+    latt = lp.simple_square()
+    latt.build((2, 2), primitive=True)
+    latt.set_periodic(True)
+
+    assert_elements_equal1d(latt.neighbors(0), [1, 2])
+    assert_elements_equal1d(latt.neighbors(1), [2, 3])
 
 
 def test_remove_periodic():

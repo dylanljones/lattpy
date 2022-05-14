@@ -556,6 +556,7 @@ class Lattice(LatticeStructure):
                 mask = i, neighbors[i] < invald_idx
                 inds = neighbors[mask]
                 dists = distances_[mask]
+
                 # Update dict for indices `inds`
                 pidx.setdefault(site, list()).extend(inds)  # noqa
                 pdists.setdefault(site, list()).extend(dists)
@@ -569,12 +570,29 @@ class Lattice(LatticeStructure):
                     pnvecs.setdefault(j, list()).append(-nvec)
 
         # Convert values of dict to np.ndarray's
-        for k in pidx.keys():
-            vals, ind = np.unique(pidx[k], return_index=True)
-            pidx[k] = np.array(vals)
-            pdists[k] = np.array(pdists[k])[ind]
-            paxs[k] = np.array(paxs[k])[ind]
-            pnvecs[k] = np.array(pnvecs[k])[ind]
+        for k in list(pidx.keys()):
+            pi = list(pidx[k])  # indices of periodic neighbors
+            # Check if periodic neighbors is in regular neighbors
+            # This occurs for small lattices and makes no sense, since the
+            # sites are already neighbors
+            existing_neighbors = self.neighbors(k)
+            for _i, ind in enumerate(pi[:]):
+                if ind in existing_neighbors:
+                    pi.remove(ind)
+
+            if len(pi):
+                # Convert to arrays
+                sites, ind = np.unique(pi, return_index=True)
+                pidx[k] = np.array(sites)
+                pdists[k] = np.array(pdists[k])[ind]
+                paxs[k] = np.array(paxs[k])[ind]
+                pnvecs[k] = np.array(pnvecs[k])[ind]
+            else:
+                # Remove periodic neighbors
+                del pidx[k]
+                del pdists[k]
+                del paxs[k]
+                del pnvecs[k]
         return pidx, pdists, pnvecs, paxs
 
     def set_periodic(
@@ -615,8 +633,11 @@ class Lattice(LatticeStructure):
             self.data.remove_periodic()
             self.periodic_axes = list()
         else:
+            self.data.remove_periodic()
             axis = np.atleast_1d(axis)
             pidx, pdists, pnvecs, paxs = self._compute_pneighbors(axis, primitive)
+            if not pidx:
+                return
             self.data.set_periodic(pidx, pdists, pnvecs, paxs)
             self.periodic_axes = axis
 
@@ -973,7 +994,7 @@ class Lattice(LatticeStructure):
                [0, 0, 1, 0]], dtype=int8)
         """
         pairs, distindices = self.neighbor_pairs(unique=False)
-        rows, cols = pairs.T
+        rows, cols = pairs.T  # noqa
         data = distindices + 1
         return csr_matrix((data, (rows, cols)), dtype=np.int8)
 

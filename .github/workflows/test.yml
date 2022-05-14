@@ -70,6 +70,3 @@ jobs:
       with:
         env_vars: OS,PYTHON
         verbose: True
-
-    - name: Coverage
-      run: codecov

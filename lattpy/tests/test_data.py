@@ -156,6 +156,25 @@ def test_datamap():
     assert_array_equal(dmap.hopping(0), res)
 
 
+def test_dmap_fill():
+    # Chain
+    latt = simple_chain()
+    latt.build(5)
+
+    expected = 2 * np.eye(latt.num_sites)
+    expected += np.eye(latt.num_sites, k=+1) + np.eye(latt.num_sites, k=-1)
+
+    dmap = latt.dmap()
+    expected = np.zeros(dmap.size)
+    expected[dmap.onsite()] = 2
+    expected[dmap.hopping()] = 1
+
+    actual = np.zeros(dmap.size)
+    dmap.fill(actual, hop=[1], eps=[2])
+
+    assert_array_equal(actual, expected)
+
+
 def test_dmap_csr_hamiltonian():
     # Chain
     latt = simple_chain()
@@ -168,7 +187,7 @@ def test_dmap_csr_hamiltonian():
     data = np.zeros(dmap.size)
     data[dmap.onsite()] = 2
     data[dmap.hopping()] = 1
-    result = csr_matrix((data, dmap.indices)).toarray()
+    result = dmap.build_csr(data).toarray()
 
     assert_array_equal(expected, result)
 
@@ -187,7 +206,7 @@ def test_dmap_bsr_hamiltonian():
     data = np.zeros((dmap.size, norbs, norbs))
     data[dmap.onsite()] = 2 * np.eye(norbs)
     data[dmap.hopping()] = 1 * np.eye(norbs)
-    result = bsr_matrix((data, *dmap.indices_indptr())).toarray()
+    result = dmap.build_bsr(data).toarray()
 
     assert_array_equal(expected, result)
 

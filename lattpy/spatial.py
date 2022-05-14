@@ -487,7 +487,7 @@ class WignerSeitzCell(VoronoiTree):
             grid = np.array(np.meshgrid(*self.arange(steps, offset)))
         else:
             raise ValueError(
-                "Either the number of points or the step size " "must be specified"
+                "Either the number of points or the step size must be specified"
             )
 
         if check:

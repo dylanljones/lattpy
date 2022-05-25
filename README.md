@@ -28,7 +28,7 @@ adding neighbor connections manually. You will save time and mental energy for m
 | Dev    | [![Test][tests-dev]][link-tests]    | [![Codecov][codecov-dev]][codecov-dev-link]       | [![Read the Docs][docs-dev]][docs-dev-link]       |
 
 
-## Installation
+## 🔧 Installation
 
 LattPy is available on [PyPI](https://pypi.org/project/lattpy/):
 ````commandline
@@ -45,11 +45,11 @@ cloned/forked and installed via
 python setup.py install
 ````
 
-## Documentation
+## 📖 Documentation
 
 [Read the documentation on ReadTheDocs!][docs-stable-link]
 
-## Quick-Start
+## 🚀 Quick-Start
 
 See the [tutorial][docs-tutorial-link] for more information and examples.
 
@@ -244,7 +244,7 @@ Both construction methods will create the following Hamiltonian-matrix:
  [0. 0. 0. 1. 0.]]
 ````
 
-## Performance
+## 🔥 Performance
 
 
 Even though `lattpy` is written in pure python, it achieves high performance and
@@ -266,7 +266,7 @@ this overhead can be eliminated for small systems. By passing `num_jobs=-1` all 
 of the system is used.
 
 
-## Development
+## 💻 Development
 
 See the [CHANGELOG](https://github.com/dylanljones/lattpy/blob/master/CHANGELOG.md) for
 the recent changes of the project.

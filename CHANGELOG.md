@@ -1,7 +1,7 @@
 # What's New
 
-<a name="unreleased"></a>
-## [Unreleased]
+<a name="0.7.5"></a>
+## [0.7.5] - 2022-25-05
 
 ### Improvements/Bug Fixes
 - fix error when setting periodic neighbors twice
@@ -124,7 +124,7 @@
 - add more docstrings
 - fix multiple bugs
 
-[Unreleased]: https://github.com/dylanljones/lattpy/compare/0.7.4...HEAD
+[0.7.5]: https://github.com/dylanljones/lattpy/compare/0.7.4...0.7.5
 [0.7.4]: https://github.com/dylanljones/lattpy/compare/0.7.3...0.7.4
 [0.7.3]: https://github.com/dylanljones/lattpy/compare/0.7.2...0.7.3
 [0.7.2]: https://github.com/dylanljones/lattpy/compare/0.7.1...0.7.2

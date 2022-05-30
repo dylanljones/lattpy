@@ -177,6 +177,21 @@ class DataMap:
         return array
 
     def zeros(self, norb=None, dtype=None):
+        """Creates an empty data-arary.
+
+        Parameters
+        ----------
+        norb : int, optional
+            The number of orbitals M. By default, only a single orbital is used.
+        dtype : int or str or np.dtype, optional
+            The data type of the array. By default, it is set automatically.
+
+        Returns
+        -------
+        data : np.ndarray
+            The empty data array. If a single orbital is used the array is
+            one-dimensional, otherwise the array has the shape (N, M, M).
+        """
         if norb is None:
             shape = self.size
         else:
@@ -195,7 +210,7 @@ class DataMap:
             The shape of the resulting matrix. If None (default), the shape is inferred
             from the data and indices of the matrix.
         dtype : int or str or np.dtype, optional
-            The data type of hte matrix. By default, it is set automatically.
+            The data type of the matrix. By default, it is set automatically.
 
         Returns
         -------

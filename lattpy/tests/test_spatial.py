@@ -242,14 +242,14 @@ def test_wigner_seitz_meshgrid():
     ws = latt.wigner_seitz_cell()
 
     num = 101
-    actual = ws.meshgrid(num)
+    actual = ws.meshgrid(num, endpoint=True)
     x = np.linspace(-0.5, +0.5, num)
     y = np.linspace(-0.5, +0.5, num)
     expected = np.array(np.meshgrid(x, y))
     assert_allclose(actual, expected)
 
     step = 0.1
-    actual = ws.meshgrid(steps=step)
+    actual = ws.meshgrid(steps=step, endpoint=True)
     x = np.arange(-0.5, +0.5, step)
     y = np.arange(-0.5, +0.5, step)
     expected = np.array(np.meshgrid(x, y))

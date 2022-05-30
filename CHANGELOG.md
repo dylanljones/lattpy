@@ -1,5 +1,15 @@
 # What's New
 
+<a name="unreleased"></a>
+## [Unreleased]
+
+### New Features
+- add `np.zeros` wrapper to `DataMap`
+
+### Improvements/Bug Fixes
+- add endpoint argument to linspace of `WignerSeitzCell`
+
+
 <a name="0.7.5"></a>
 ## [0.7.5] - 2022-25-05
 
@@ -124,6 +134,7 @@
 - add more docstrings
 - fix multiple bugs
 
+[Unreleased]: https://github.com/dylanljones/lattpy/compare/0.7.5...HEAD
 [0.7.5]: https://github.com/dylanljones/lattpy/compare/0.7.4...0.7.5
 [0.7.4]: https://github.com/dylanljones/lattpy/compare/0.7.3...0.7.4
 [0.7.3]: https://github.com/dylanljones/lattpy/compare/0.7.2...0.7.3

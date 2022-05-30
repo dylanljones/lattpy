@@ -228,16 +228,16 @@ def test_wigner_seitz_linspace():
     latt = simple_square()
     ws = latt.wigner_seitz_cell()
 
-    x, y = ws.linspace(100)
+    x, y = ws.linspace(100, endpoint=True)
     assert_allclose(x, np.linspace(-0.5, +0.5, 100))
     assert_allclose(y, np.linspace(-0.5, +0.5, 100))
 
-    x, y = ws.linspace((100, 200))
+    x, y = ws.linspace((100, 200), endpoint=True)
     assert_allclose(x, np.linspace(-0.5, +0.5, 100))
     assert_allclose(y, np.linspace(-0.5, +0.5, 200))
 
 
-def test_wigner_seitz_lmeshgrid():
+def test_wigner_seitz_meshgrid():
     latt = simple_square()
     ws = latt.wigner_seitz_cell()
 

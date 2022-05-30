@@ -176,6 +176,13 @@ class DataMap:
             array[self.hopping(dist)] = value
         return array
 
+    def zeros(self, norb=None, dtype=None):
+        if norb is None:
+            shape = self.size
+        else:
+            shape = (self.size, norb, norb)
+        return np.zeros(shape, dtype=dtype)
+
     def build_csr(self, data, shape=None, dtype=None):
         """Constructs a CSR matrix using the given data and the indices of the data map.
 

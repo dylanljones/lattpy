@@ -537,7 +537,7 @@ class LatticeData:
         i0 = len(self.distances[site, self.distances[site] != self.invalid_distidx])
         i1 = i0 + len(neighbors)
         # Translate distances to indices
-        distidx = [np.searchsorted(self.distvals, d) for d in distances]
+        distidx = np.asarray([np.searchsorted(self.distvals, d) for d in distances])
         # Add new neighbor data to unused slots
         self.neighbors[site, i0:i1] = neighbors
         self.distances[site, i0:i1] = distidx

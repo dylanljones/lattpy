@@ -7,6 +7,9 @@
 - add `np.zeros` wrapper to `DataMap`
 
 ### Improvements/Bug Fixes
+- cast `distidx` to full numpy array instead of list of arrays
+- replace deprecated `np.bool` type with the builtin `bool`
+- add endpoint argument to WignerSeitzCell meshgrid method
 - add endpoint argument to linspace of `WignerSeitzCell`
 
 

@@ -350,7 +350,7 @@ class LatticeData:
         self.distvals = distvals
         self.paxes = np.zeros((*self.neighbors.shape, self.dim), dtype=np.int8)
         self.pnvecs = np.zeros((*self.neighbors.shape, self.dim), dtype=indices.dtype)
-        self.pmask = np.zeros_like(self.neighbors, dtype=np.bool)
+        self.pmask = np.zeros_like(self.neighbors, dtype=bool)
 
         self.invalid_idx = self.num_sites
         self.invalid_distidx = np.max(self.distances)

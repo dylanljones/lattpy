@@ -131,25 +131,6 @@ def test_datamap():
     assert_array_equal(dmap.hopping(0), res)
 
 
-def test_dmap_fill():
-    # Chain
-    latt = simple_chain()
-    latt.build(5)
-
-    expected = 2 * np.eye(latt.num_sites)
-    expected += np.eye(latt.num_sites, k=+1) + np.eye(latt.num_sites, k=-1)
-
-    dmap = latt.dmap()
-    expected = np.zeros(dmap.size)
-    expected[dmap.onsite()] = 2
-    expected[dmap.hopping()] = 1
-
-    actual = np.zeros(dmap.size)
-    dmap.fill(actual, hop=[1], eps=[2])
-
-    assert_array_equal(actual, expected)
-
-
 def test_dmap_zeros():
     # Chain
     latt = simple_chain()

@@ -12,12 +12,12 @@ import math
 import numpy as np
 from pytest import mark
 from numpy.testing import assert_array_equal, assert_allclose
-from hypothesis import given, settings, assume, strategies as st
+from hypothesis import given, strategies as st
 import hypothesis.extra.numpy as hnp
 from lattpy import spatial, simple_chain, simple_square, simple_cubic
 
 
-finite_floats = st.floats(allow_nan=False, allow_infinity=False)
+finite_floats = st.floats(-1e6, +1e6, allow_nan=False, allow_infinity=False)
 
 
 @given(

@@ -142,8 +142,11 @@ class DataMap:
 
     def fill(
         self, array: np.ndarray, hop: ArrayLike, eps: ArrayLike = 0.0
-    ) -> np.ndarray:
+    ) -> np.ndarray:  # pragma: no cover
         """Fills a data-array with the given values mapped to the right indices.
+
+        .. deprecated:: 0.7.1
+          The `fill` method will be removed in lattpy 0.8.0
 
         Parameters
         ----------
@@ -160,9 +163,7 @@ class DataMap:
         Returns
         -------
         filled : np.ndarray
-
-        .. deprecated:: 0.7.1
-          The `fill` method will be removed in lattpy 0.8.0
+            The filled data array.
         """
         warnings.warn(
             "The `fill` method is deprecated and will be removed in version '0.8.0'",
@@ -410,7 +411,7 @@ class LatticeData:
         """
         return np.array([np.min(self.indices, axis=0), np.max(self.indices, axis=0)])
 
-    def get_translation_limits(self) -> np.ndarray:
+    def get_translation_limits(self) -> np.ndarray:  # pragma: no cover
         """Computes the geometric limits of the translation vectors of the stored sites.
 
         Returns
@@ -627,7 +628,7 @@ class LatticeData:
         distidx: int = None,
         periodic: bool = None,
         unique: bool = False,
-    ) -> np.ndarray:
+    ) -> np.ndarray:  # pragma: no cover
         """Returns the neighbor positions of a lattice site.
 
         See the `neighbor_mask`-method for more information on parameters
@@ -637,6 +638,11 @@ class LatticeData:
         neighbor_positions : np.ndarray
             The positions of the neighbors.
         """
+        warnings.warn(
+            "The `get_neighbor_pos` method is deprecated and will be removed "
+            "in version '0.8.0'. Use the main 'Lattice' instance instead!",
+            DeprecationWarning,
+        )
         ind = self.get_neighbors(site, distidx, periodic, unique)
         if np.all(ind == self.invalid_idx):
             return np.array([])

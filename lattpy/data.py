@@ -633,6 +633,9 @@ class LatticeData:
 
         See the `neighbor_mask`-method for more information on parameters
 
+        .. deprecated:: 0.7.6
+          The `get_neighbor_pos` method will be removed in lattpy 0.8.0
+
         Returns
         -------
         neighbor_positions : np.ndarray

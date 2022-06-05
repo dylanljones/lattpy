@@ -1,11 +1,12 @@
+# YAML 1.2
 ---
 cff-version: "1.2.0"
-message: "If you use lattpy, please cite the software using these metadata and mention the following: The lattice modeling was performed with the lattpy package, available at https://github.com/dylanljones/lattpy."
-repository-code: "https://github.com/dylanljones/lattpy"
-license: "MIT"
+title: "lattpy"
 authors:
   - family-names: Jones
     given-names: Dylan
-title: "lattpy"
+license: "MIT"
 date-released: 2022-05-25
+message: "If you use lattpy, please consider to cite the software using the metadata below."
+repository-code: "https://github.com/dylanljones/lattpy"
 ...

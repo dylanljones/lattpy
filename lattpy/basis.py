@@ -573,6 +573,66 @@ class LatticeBasis:
         rlatt = self.__class__(rvecs)
         return rlatt.wigner_seitz_cell()
 
+    def get_cell_superindex(self, index, shape):
+        """Converts a cell index to a super-index for the given shape.
+
+        The index of a unit cell is the translation vector.
+
+        Parameters
+        ----------
+        index : array_like or (N, D) np.ndarray
+            One or multiple cell indices. If a numpy array is passed the result will
+            be an array of super-indices, otherwise an integer is returned.
+        shape : (D, ) array_like
+            The shape for converting the index.
+
+        Returns
+        -------
+        super_index : int or (N, ) int np.ndarray
+            The super index. If `index` is a numpy array, `super_index` is an array
+            of super indices, otherwise it is an integer.
+        """
+        single = not isinstance(index, np.ndarray)
+        index = np.atleast_2d(index)
+
+        super_indices = np.zeros((len(index)), dtype=np.int64)
+        for i, ind in enumerate(index):
+            si = sum(ind[d] * np.prod(shape[d + 1 :]) for d in range(self.dim))
+            super_indices[i] = si
+
+        return super_indices[0] if single else super_indices
+
+    def get_cell_index(self, super_index, shape):
+        """Converts a super index to the corresponding cell index for the given shape.
+
+        The index of a unit cell is the translation vector.
+
+        Parameters
+        ----------
+        super_index : int or (N,) int np.ndarray
+            One or multiple super indices.
+        shape : (D, ) array_like
+            The shape for converting the index.
+
+        Returns
+        -------
+        index : np.ndarray
+            The cell index. Of shape (D,) if `super_index` is an integer, otherwise
+            of shape (N, D).
+        """
+        single = isinstance(super_index, int)
+        super_index = np.atleast_1d(super_index)
+
+        indices = np.zeros((len(super_index), self.dim), dtype=np.int64)
+        for i, si in enumerate(super_index):
+            rest = si
+            for d in range(self.dim - 1):
+                val, rest = divmod(rest, np.prod(shape[d + 1 :]))
+                indices[i, d] = val
+            indices[i, self.dim - 1] = rest
+
+        return indices[0] if single else indices
+
     def plot_basis(
         self,
         lw: float = None,

@@ -439,7 +439,7 @@ def test_superindex_from_position():
     latt.build((4, 4), primitive=False)
     for i in range(latt.num_sites):
         pos = latt.position(i)
-        assert latt.superindex_from_position(pos) == i
+        assert latt.superindex_from_pos(pos) == i
 
 
 def test_superindex_from_index():

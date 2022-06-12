@@ -1,5 +1,16 @@
 # What's New
 
+<a name="unreleased"></a>
+## [Unreleased]
+
+### New Features
+- reuse coordinate system argument used for building lattice in other `Lattice`-methods
+
+### Improvements/Bug Fixes
+- remove deprecated `fill` method from `DataMap`
+- remove deprecated `get_neighbor_pos` method from `LatticeData`
+
+
 <a name="0.7.6"></a>
 ## [0.7.6] - 2022-12-06
 
@@ -15,6 +26,10 @@
 - replace deprecated `np.bool` type with the builtin `bool`
 - add endpoint argument to WignerSeitzCell meshgrid method
 - add endpoint argument to linspace of `WignerSeitzCell`
+
+### BREAKING CHANGE
+
+`index_from_position` and `index_from_lattice_index` have been renamed to `superindex_from_pos` and `superindex_from_index`.
 
 
 <a name="0.7.5"></a>

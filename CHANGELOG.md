@@ -1,7 +1,7 @@
 # What's New
 
-<a name="unreleased"></a>
-## [Unreleased]
+<a name="0.7.6"></a>
+## [0.7.6] - 2022-12-06
 
 ### New Features
 - add method for getting limits of unit cells to `LatticeData` object
@@ -141,7 +141,8 @@
 - add more docstrings
 - fix multiple bugs
 
-[Unreleased]: https://github.com/dylanljones/lattpy/compare/0.7.5...HEAD
+[Unreleased]: https://github.com/dylanljones/lattpy/compare/0.7.6...HEAD
+[0.7.6]: https://github.com/dylanljones/lattpy/compare/0.7.5...0.7.6
 [0.7.5]: https://github.com/dylanljones/lattpy/compare/0.7.4...0.7.5
 [0.7.4]: https://github.com/dylanljones/lattpy/compare/0.7.3...0.7.4
 [0.7.3]: https://github.com/dylanljones/lattpy/compare/0.7.2...0.7.3

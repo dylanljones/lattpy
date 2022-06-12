@@ -4,9 +4,13 @@
 ## [Unreleased]
 
 ### New Features
+- add method for getting limits of unit cells to `LatticeData` object
+- add conversion methods between cell index and super index for regular shapes to `LatticeBasis`
+- add `hypercubic` constructor to `LatticeBasis` object.
 - add `np.zeros` wrapper to `DataMap`
 
 ### Improvements/Bug Fixes
+- rename index methods of `Lattice` object to use superindex naming convention
 - cast `distidx` to full numpy array instead of list of arrays
 - replace deprecated `np.bool` type with the builtin `bool`
 - add endpoint argument to WignerSeitzCell meshgrid method

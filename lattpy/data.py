@@ -11,12 +11,11 @@
 """This module contains objects for low-level representation of lattice systems."""
 
 import logging
-import warnings
 from copy import deepcopy
 from typing import Union, Sequence
 import numpy as np
 from scipy.sparse import csr_matrix, bsr_matrix
-from .utils import ArrayLike, create_lookup_table, min_dtype
+from .utils import create_lookup_table, min_dtype
 
 __all__ = ["DataMap", "LatticeData"]
 
@@ -139,43 +138,6 @@ class DataMap:
         if distidx is None:
             return self._map >= 0
         return self._map == distidx
-
-    def fill(
-        self, array: np.ndarray, hop: ArrayLike, eps: ArrayLike = 0.0
-    ) -> np.ndarray:  # pragma: no cover
-        """Fills a data-array with the given values mapped to the right indices.
-
-        .. deprecated:: 0.7.1
-          The `fill` method will be removed in lattpy 0.8.0
-
-        Parameters
-        ----------
-        array : np.ndarray
-            The array to add the values. The length of the array must match the
-            size of the `DataMap`-instance.
-        hop : array_like
-            The values are used for the site-pairs. The first value corresponds to
-            nearest neighbor hopping, the second to next-nearest neighbors and so on.
-        eps : array_like, optional
-            The onsite values used for the lattice sites. If there are multiple atoms
-            in the unitcell the length of the values must match. The default is 0.
-
-        Returns
-        -------
-        filled : np.ndarray
-            The filled data array.
-        """
-        warnings.warn(
-            "The `fill` method is deprecated and will be removed in version '0.8.0'",
-            DeprecationWarning,
-        )
-        eps = np.atleast_1d(eps)
-        hop = np.atleast_1d(hop)
-        for alpha, value in enumerate(eps):
-            array[self.onsite(alpha)] = value
-        for dist, value in enumerate(hop):
-            array[self.hopping(dist)] = value
-        return array
 
     def zeros(self, norb=None, dtype=None):
         """Creates an empty data-arary.

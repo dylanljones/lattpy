@@ -411,6 +411,17 @@ class LatticeData:
         """
         return np.array([np.min(self.indices, axis=0), np.max(self.indices, axis=0)])
 
+    def get_cell_limits(self) -> np.ndarray:
+        """Computes the geometric limits of the lattice cells of the stored sites.
+
+        Returns
+        -------
+        limits: np.ndarray
+            The minimum and maximum value for each axis of the translation indices.
+        """
+        indices = self.indices[:, :-1]
+        return np.array([np.min(indices, axis=0), np.max(indices, axis=0)])
+
     def get_translation_limits(self) -> np.ndarray:  # pragma: no cover
         """Computes the geometric limits of the translation vectors of the stored sites.
 

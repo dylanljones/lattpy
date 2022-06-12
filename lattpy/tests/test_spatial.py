@@ -12,12 +12,12 @@ import math
 import numpy as np
 from pytest import mark
 from numpy.testing import assert_array_equal, assert_allclose
-from hypothesis import given, settings, assume, strategies as st
+from hypothesis import given, strategies as st
 import hypothesis.extra.numpy as hnp
 from lattpy import spatial, simple_chain, simple_square, simple_cubic
 
 
-finite_floats = st.floats(allow_nan=False, allow_infinity=False)
+finite_floats = st.floats(-1e6, +1e6, allow_nan=False, allow_infinity=False)
 
 
 @given(
@@ -228,28 +228,28 @@ def test_wigner_seitz_linspace():
     latt = simple_square()
     ws = latt.wigner_seitz_cell()
 
-    x, y = ws.linspace(100)
+    x, y = ws.linspace(100, endpoint=True)
     assert_allclose(x, np.linspace(-0.5, +0.5, 100))
     assert_allclose(y, np.linspace(-0.5, +0.5, 100))
 
-    x, y = ws.linspace((100, 200))
+    x, y = ws.linspace((100, 200), endpoint=True)
     assert_allclose(x, np.linspace(-0.5, +0.5, 100))
     assert_allclose(y, np.linspace(-0.5, +0.5, 200))
 
 
-def test_wigner_seitz_lmeshgrid():
+def test_wigner_seitz_meshgrid():
     latt = simple_square()
     ws = latt.wigner_seitz_cell()
 
     num = 101
-    actual = ws.meshgrid(num)
+    actual = ws.meshgrid(num, endpoint=True)
     x = np.linspace(-0.5, +0.5, num)
     y = np.linspace(-0.5, +0.5, num)
     expected = np.array(np.meshgrid(x, y))
     assert_allclose(actual, expected)
 
     step = 0.1
-    actual = ws.meshgrid(steps=step)
+    actual = ws.meshgrid(steps=step, endpoint=True)
     x = np.arange(-0.5, +0.5, step)
     y = np.arange(-0.5, +0.5, step)
     expected = np.array(np.meshgrid(x, y))

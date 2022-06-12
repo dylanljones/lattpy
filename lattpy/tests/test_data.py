@@ -9,7 +9,6 @@
 # be included in all copies or substantial portions of the Software.
 
 import numpy as np
-from scipy.sparse import csr_matrix, bsr_matrix
 from numpy.testing import assert_array_equal
 from hypothesis import given, assume, strategies as st
 from lattpy import simple_square, simple_chain
@@ -114,65 +113,38 @@ def test_datamap():
     latt.build(5)
 
     dmap = latt.data.map()
+    # fmt: off
     res = [
-        True,
-        False,
-        True,
-        False,
-        False,
-        True,
-        False,
-        False,
-        True,
-        False,
-        False,
-        True,
-        False,
-        False,
-        True,
-        False,
+        True, False, True, False, False, True, False, False,
+        True, False, False, True, False, False, True, False,
     ]
+    # fmt: on
     assert dmap.size == len(res)
     assert_array_equal(dmap.onsite(0), res)
 
+    # fmt: off
     res = [
-        False,
-        True,
-        False,
-        True,
-        True,
-        False,
-        True,
-        True,
-        False,
-        True,
-        True,
-        False,
-        True,
-        True,
-        False,
-        True,
+        False, True, False, True, True, False, True, True,
+        False, True, True, False, True, True, False, True,
     ]
+    # fmt: on
     assert_array_equal(dmap.hopping(0), res)
 
 
-def test_dmap_fill():
+def test_dmap_zeros():
     # Chain
     latt = simple_chain()
     latt.build(5)
-
-    expected = 2 * np.eye(latt.num_sites)
-    expected += np.eye(latt.num_sites, k=+1) + np.eye(latt.num_sites, k=-1)
-
     dmap = latt.dmap()
-    expected = np.zeros(dmap.size)
-    expected[dmap.onsite()] = 2
-    expected[dmap.hopping()] = 1
 
-    actual = np.zeros(dmap.size)
-    dmap.fill(actual, hop=[1], eps=[2])
+    data = dmap.zeros()
+    assert data.shape == (16,)
 
-    assert_array_equal(actual, expected)
+    data = dmap.zeros(norb=1)
+    assert data.shape == (16, 1, 1)
+
+    data = dmap.zeros(norb=2)
+    assert data.shape == (16, 2, 2)
 
 
 def test_dmap_csr_hamiltonian():
@@ -216,63 +188,11 @@ def test_site_mask():
     latt.build((4, 4))
     data = latt.data
 
-    expected = [
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-    ]
-    assert_array_equal(data.site_mask([1, 0]), expected)
+    expect = [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    assert_array_equal(data.site_mask([1, 0]), expect)
 
-    expected = [
-        0,
-        1,
-        1,
-        1,
-        1,
-        0,
-        1,
-        1,
-        1,
-        1,
-        0,
-        1,
-        1,
-        1,
-        1,
-        0,
-        1,
-        1,
-        1,
-        1,
-        0,
-        1,
-        1,
-        1,
-        1,
-    ]
-    assert_array_equal(data.site_mask([0, 1]), expected)
+    expect = [0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1]
+    assert_array_equal(data.site_mask([0, 1]), expect)
 
 
 def test_find_sites():

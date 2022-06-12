@@ -1,0 +1,12 @@
+# YAML 1.2
+---
+cff-version: "1.2.0"
+title: "lattpy"
+authors:
+  - family-names: Jones
+    given-names: Dylan
+license: "MIT"
+date-released: 2022-05-25
+message: "If you use lattpy, please consider to cite the software using the metadata below."
+repository-code: "https://github.com/dylanljones/lattpy"
+...

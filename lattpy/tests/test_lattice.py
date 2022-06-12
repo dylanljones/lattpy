@@ -432,24 +432,24 @@ def test_position():
     assert_array_equal(latt.position(3), [0.5, 1.5])
 
 
-def test_index_from_position():
+def test_superindex_from_position():
     latt = Lattice(np.eye(2))
     latt.add_atom()
     latt.add_connections()
     latt.build((4, 4), primitive=False)
     for i in range(latt.num_sites):
         pos = latt.position(i)
-        assert latt.index_from_position(pos) == i
+        assert latt.superindex_from_pos(pos) == i
 
 
-def test_index_from_lattice_index():
+def test_superindex_from_index():
     latt = Lattice(np.eye(2))
     latt.add_atom()
     latt.add_connections()
     latt.build((4, 4), primitive=False)
     for i in range(latt.num_sites):
         ind = latt.indices[i]
-        assert latt.index_from_lattice_index(ind) == i
+        assert latt.superindex_from_index(ind) == i
 
 
 def test_get_base_atom_dict():

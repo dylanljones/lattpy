@@ -8,6 +8,7 @@
 # LICENSE file in the root directory and this permission notice shall
 # be included in all copies or substantial portions of the Software.
 
+from pytest import mark
 import numpy as np
 from numpy.testing import assert_array_equal, assert_allclose
 from lattpy.basis import LatticeBasis
@@ -145,3 +146,20 @@ def test_brillouin_zone():
 
     expected = [[0, 1], [0, 2], [1, 3], [2, 3]]
     assert_array_equal(bz.edges, expected)
+
+
+@mark.parametrize("shape", [(10,), (10, 20), (10, 20, 30)])
+def test_index_superindex_conversion(shape):
+    shape = np.array(shape)
+    latt = LatticeBasis.hypercubic(len(shape))
+
+    num_cells = np.prod(shape)
+    ind1 = np.arange(num_cells, dtype=np.int64)
+    for i in ind1:
+        index = latt.get_cell_index(i, shape)
+        i2 = latt.get_cell_superindex(index, shape)
+        assert i == i2
+
+    indices = latt.get_cell_index(ind1, shape)
+    ind2 = latt.get_cell_superindex(indices, shape)
+    assert_allclose(ind2, ind1)

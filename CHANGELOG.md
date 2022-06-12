@@ -1,5 +1,22 @@
 # What's New
 
+<a name="0.7.6"></a>
+## [0.7.6] - 2022-12-06
+
+### New Features
+- add method for getting limits of unit cells to `LatticeData` object
+- add conversion methods between cell index and super index for regular shapes to `LatticeBasis`
+- add `hypercubic` constructor to `LatticeBasis` object.
+- add `np.zeros` wrapper to `DataMap`
+
+### Improvements/Bug Fixes
+- rename index methods of `Lattice` object to use superindex naming convention
+- cast `distidx` to full numpy array instead of list of arrays
+- replace deprecated `np.bool` type with the builtin `bool`
+- add endpoint argument to WignerSeitzCell meshgrid method
+- add endpoint argument to linspace of `WignerSeitzCell`
+
+
 <a name="0.7.5"></a>
 ## [0.7.5] - 2022-25-05
 
@@ -124,6 +141,8 @@
 - add more docstrings
 - fix multiple bugs
 
+[Unreleased]: https://github.com/dylanljones/lattpy/compare/0.7.6...HEAD
+[0.7.6]: https://github.com/dylanljones/lattpy/compare/0.7.5...0.7.6
 [0.7.5]: https://github.com/dylanljones/lattpy/compare/0.7.4...0.7.5
 [0.7.4]: https://github.com/dylanljones/lattpy/compare/0.7.3...0.7.4
 [0.7.3]: https://github.com/dylanljones/lattpy/compare/0.7.2...0.7.3

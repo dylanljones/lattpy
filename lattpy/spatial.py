@@ -475,14 +475,17 @@ class WignerSeitzCell(VoronoiTree):
         steps = [steps] * self.dim if not hasattr(steps, "__len__") else steps
         return [np.arange(*lims, step=step) for lims, step in zip(limits, steps)]
 
-    def linspace(self, nums, offset=0.0):
+    def linspace(self, nums, offset=0.0, endpoint=False):
         limits = self.limits * (1 + offset)
         nums = [nums] * self.dim if not hasattr(nums, "__len__") else nums
-        return [np.linspace(*lims, num=num) for lims, num in zip(limits, nums)]
+        values = list()
+        for lims, num in zip(limits, nums):
+            values.append(np.linspace(*lims, num=num, endpoint=endpoint))
+        return values
 
-    def meshgrid(self, nums=None, steps=None, offset=0.0, check=True):
+    def meshgrid(self, nums=None, steps=None, offset=0.0, check=True, endpoint=False):
         if nums is not None:
-            grid = np.array(np.meshgrid(*self.linspace(nums, offset)))
+            grid = np.array(np.meshgrid(*self.linspace(nums, offset, endpoint)))
         elif steps is not None:
             grid = np.array(np.meshgrid(*self.arange(steps, offset)))
         else:

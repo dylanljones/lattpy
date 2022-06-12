@@ -142,8 +142,11 @@ class DataMap:
 
     def fill(
         self, array: np.ndarray, hop: ArrayLike, eps: ArrayLike = 0.0
-    ) -> np.ndarray:
+    ) -> np.ndarray:  # pragma: no cover
         """Fills a data-array with the given values mapped to the right indices.
+
+        .. deprecated:: 0.7.1
+          The `fill` method will be removed in lattpy 0.8.0
 
         Parameters
         ----------
@@ -160,9 +163,7 @@ class DataMap:
         Returns
         -------
         filled : np.ndarray
-
-        .. deprecated:: 0.7.1
-          The `fill` method will be removed in lattpy 0.8.0
+            The filled data array.
         """
         warnings.warn(
             "The `fill` method is deprecated and will be removed in version '0.8.0'",
@@ -176,6 +177,28 @@ class DataMap:
             array[self.hopping(dist)] = value
         return array
 
+    def zeros(self, norb=None, dtype=None):
+        """Creates an empty data-arary.
+
+        Parameters
+        ----------
+        norb : int, optional
+            The number of orbitals M. By default, only a single orbital is used.
+        dtype : int or str or np.dtype, optional
+            The data type of the array. By default, it is set automatically.
+
+        Returns
+        -------
+        data : np.ndarray
+            The empty data array. If a single orbital is used the array is
+            one-dimensional, otherwise the array has the shape (N, M, M).
+        """
+        if norb is None:
+            shape = self.size
+        else:
+            shape = (self.size, norb, norb)
+        return np.zeros(shape, dtype=dtype)
+
     def build_csr(self, data, shape=None, dtype=None):
         """Constructs a CSR matrix using the given data and the indices of the data map.
 
@@ -188,7 +211,7 @@ class DataMap:
             The shape of the resulting matrix. If None (default), the shape is inferred
             from the data and indices of the matrix.
         dtype : int or str or np.dtype, optional
-            The data type of hte matrix. By default, it is set automatically.
+            The data type of the matrix. By default, it is set automatically.
 
         Returns
         -------
@@ -328,7 +351,7 @@ class LatticeData:
         self.distvals = distvals
         self.paxes = np.zeros((*self.neighbors.shape, self.dim), dtype=np.int8)
         self.pnvecs = np.zeros((*self.neighbors.shape, self.dim), dtype=indices.dtype)
-        self.pmask = np.zeros_like(self.neighbors, dtype=np.bool)
+        self.pmask = np.zeros_like(self.neighbors, dtype=bool)
 
         self.invalid_idx = self.num_sites
         self.invalid_distidx = np.max(self.distances)
@@ -388,7 +411,18 @@ class LatticeData:
         """
         return np.array([np.min(self.indices, axis=0), np.max(self.indices, axis=0)])
 
-    def get_translation_limits(self) -> np.ndarray:
+    def get_cell_limits(self) -> np.ndarray:
+        """Computes the geometric limits of the lattice cells of the stored sites.
+
+        Returns
+        -------
+        limits: np.ndarray
+            The minimum and maximum value for each axis of the translation indices.
+        """
+        indices = self.indices[:, :-1]
+        return np.array([np.min(indices, axis=0), np.max(indices, axis=0)])
+
+    def get_translation_limits(self) -> np.ndarray:  # pragma: no cover
         """Computes the geometric limits of the translation vectors of the stored sites.
 
         Returns
@@ -515,7 +549,7 @@ class LatticeData:
         i0 = len(self.distances[site, self.distances[site] != self.invalid_distidx])
         i1 = i0 + len(neighbors)
         # Translate distances to indices
-        distidx = [np.searchsorted(self.distvals, d) for d in distances]
+        distidx = np.asarray([np.searchsorted(self.distvals, d) for d in distances])
         # Add new neighbor data to unused slots
         self.neighbors[site, i0:i1] = neighbors
         self.distances[site, i0:i1] = distidx
@@ -605,16 +639,24 @@ class LatticeData:
         distidx: int = None,
         periodic: bool = None,
         unique: bool = False,
-    ) -> np.ndarray:
+    ) -> np.ndarray:  # pragma: no cover
         """Returns the neighbor positions of a lattice site.
 
         See the `neighbor_mask`-method for more information on parameters
+
+        .. deprecated:: 0.7.6
+          The `get_neighbor_pos` method will be removed in lattpy 0.8.0
 
         Returns
         -------
         neighbor_positions : np.ndarray
             The positions of the neighbors.
         """
+        warnings.warn(
+            "The `get_neighbor_pos` method is deprecated and will be removed "
+            "in version '0.8.0'. Use the main 'Lattice' instance instead!",
+            DeprecationWarning,
+        )
         ind = self.get_neighbors(site, distidx, periodic, unique)
         if np.all(ind == self.invalid_idx):
             return np.array([])

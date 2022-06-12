@@ -150,6 +150,12 @@ class LatticeBasis:
         vectors = a / 2 * np.array([[1, 1, 1], [1, -1, 1], [-1, 1, 1]])
         return cls(vectors, **kwargs)
 
+    @classmethod
+    def hypercubic(cls, dim, a: float = 1.0, **kwargs):
+        """Creates a d-dimensional cubic lattice."""
+        vectors = a * np.eye(dim)
+        return cls(vectors, **kwargs)
+
     # ==================================================================================
 
     @property

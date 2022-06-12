@@ -633,35 +633,6 @@ class LatticeData:
         mask = self.neighbor_mask(site, distidx, periodic, unique)
         return self.neighbors[site, mask]
 
-    def get_neighbor_pos(
-        self,
-        site: int,
-        distidx: int = None,
-        periodic: bool = None,
-        unique: bool = False,
-    ) -> np.ndarray:  # pragma: no cover
-        """Returns the neighbor positions of a lattice site.
-
-        See the `neighbor_mask`-method for more information on parameters
-
-        .. deprecated:: 0.7.6
-          The `get_neighbor_pos` method will be removed in lattpy 0.8.0
-
-        Returns
-        -------
-        neighbor_positions : np.ndarray
-            The positions of the neighbors.
-        """
-        warnings.warn(
-            "The `get_neighbor_pos` method is deprecated and will be removed "
-            "in version '0.8.0'. Use the main 'Lattice' instance instead!",
-            DeprecationWarning,
-        )
-        ind = self.get_neighbors(site, distidx, periodic, unique)
-        if np.all(ind == self.invalid_idx):
-            return np.array([])
-        return self.positions[ind]
-
     def iter_neighbors(self, site: int, unique: bool = False) -> np.ndarray:
         """Iterates over the neighbors of all distance levels.
 

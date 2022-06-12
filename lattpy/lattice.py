@@ -209,9 +209,7 @@ class Lattice(LatticeStructure):
         """
         return self.data.positions[idx]
 
-    def superindex_from_position(
-        self, pos: ArrayLike, atol: float = 1e-4
-    ) -> Optional[int]:
+    def superindex_from_pos(self, pos: ArrayLike, atol: float = 1e-4) -> Optional[int]:
         """Returns the super-index of a given position.
 
         Parameters

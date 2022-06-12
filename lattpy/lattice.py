@@ -121,7 +121,6 @@ class Lattice(LatticeStructure):
     >>> _ = latt.build((5, 3))
     >>> _ = latt.plot()
     >>> plt.show()
-
     """
 
     def __init__(self, basis: basis_t, **kwargs):
@@ -210,8 +209,10 @@ class Lattice(LatticeStructure):
         """
         return self.data.positions[idx]
 
-    def index_from_position(self, pos: ArrayLike, atol: float = 1e-4) -> Optional[int]:
-        """Returns the index of a given position.
+    def superindex_from_position(
+        self, pos: ArrayLike, atol: float = 1e-4
+    ) -> Optional[int]:
+        """Returns the super-index of a given position.
 
         Parameters
         ----------
@@ -231,7 +232,7 @@ class Lattice(LatticeStructure):
             return None
         return indices[0]
 
-    def index_from_lattice_index(self, ind: ArrayLike) -> Optional[int]:
+    def superindex_from_index(self, ind: ArrayLike) -> Optional[int]:
         """Returns the super-index of a site defined by the lattice index.
 
         Parameters

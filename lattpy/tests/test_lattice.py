@@ -640,6 +640,12 @@ def test_periodic_small():
     assert_elements_equal1d(latt.neighbors(1), [2, 3])
 
 
+def test_periodic_notbuilt():
+    latt = lp.simple_square()
+    with pytest.raises(lp.NotBuiltError):
+        latt.set_periodic(True)
+
+
 def test_remove_periodic():
     latt = lp.simple_chain()
     latt.build(9)

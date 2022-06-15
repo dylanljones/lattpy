@@ -7,6 +7,7 @@
 - reuse coordinate system argument used for building lattice in other `Lattice`-methods
 
 ### Improvements/Bug Fixes
+- remove deprecated `set_num_neighbors` method
 - remove deprecated `fill` method from `DataMap`
 - remove deprecated `get_neighbor_pos` method from `LatticeData`
 

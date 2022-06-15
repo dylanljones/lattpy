@@ -250,3 +250,13 @@ def test_quick_setup():
 
     latt = LatticeStructure(np.eye(2), atoms={(0.0, 0.0): "A"}, cons={("A", "A"): 1})
     assert_array_equal(latt.num_neighbors, [4])
+
+
+def test_hash():
+    latt1 = LatticeStructure(np.eye(2))
+    latt1.add_atom()
+
+    latt2 = LatticeStructure(np.eye(2))
+    latt2.add_atom()
+
+    assert latt1.__hash__() != latt2.__hash__()  # Since atom indices are different

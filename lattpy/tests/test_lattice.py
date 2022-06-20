@@ -640,6 +640,12 @@ def test_periodic_small():
     assert_elements_equal1d(latt.neighbors(1), [2, 3])
 
 
+def test_periodic_notbuilt():
+    latt = lp.simple_square()
+    with pytest.raises(lp.NotBuiltError):
+        latt.set_periodic(True)
+
+
 def test_remove_periodic():
     latt = lp.simple_chain()
     latt.build(9)
@@ -800,9 +806,27 @@ def test_hash():
 @given(structures())
 def test_neighbor_pairs(latt: lp.Lattice):
     pairs, distindices = latt.neighbor_pairs()
-    for (i, j), distidx in zip(pairs, distindices):
+    for (i, j), distidx in zip(pairs, distindices):  # noqa
         neighbors = latt.neighbors(i, distidx=distidx)
         assert j in neighbors
+
+
+@given(structures())
+def test_neighbor_pairs_unique(latt: lp.Lattice):
+    pairs, distindices = latt.neighbor_pairs(unique=True)
+    for (i, j), distidx in zip(pairs, distindices):  # noqa
+        assert i < j
+        neighbors = latt.neighbors(i, distidx=distidx)
+        assert j in neighbors
+
+
+@given(structures())
+def test_adjacency_matrix(latt: lp.Lattice):
+    adjmat = latt.adjacency_matrix()
+    for i in range(latt.num_sites):
+        for distidx, neighbors in latt.iter_neighbors(i):
+            for j in neighbors:
+                assert adjmat[i, j] == distidx + 1
 
 
 # =========================================================================

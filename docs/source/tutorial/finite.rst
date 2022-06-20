@@ -92,10 +92,9 @@ or for multiple axes at once:
    >>> latt.plot()
    >>> plt.show()
 
-
-As before the axis can be assumed to be in world or lattice coordinates by the
-``primitive`` keyword. If ``primitive=False``, i.e. world coordinates, the box around
-the buildt lattice is reoeated periodically:
+The periodic boundary conditions are computed in the same coordinate system chosen for
+building the model. If ``primitive=False``, i.e. world coordinates, the box around
+the buildt lattice is repeated periodically:
 
 .. plot::
    :format: doctest
@@ -109,9 +108,8 @@ the buildt lattice is reoeated periodically:
    >>> plt.show()
 
 Here, the periodic boundary conditions again are set up along the x-axis, even though
-the basis vectors of the hexagonal lattice define a new basis. If the periodic
-boundary conditions should be set up along one of the basis vectors ``primitive=True``
-is used:
+the basis vectors of the hexagonal lattice define a new basis. In the coordinate system
+of the lattice the periodic boundary contitions are set up along the basis vectors:
 
 .. plot::
    :format: doctest
@@ -120,7 +118,7 @@ is used:
 
    >>> latt = lp.graphene()
    >>> latt.build((5.5, 4.5), primitive=True)
-   >>> latt.set_periodic(0, primitive=True)
+   >>> latt.set_periodic(0)
    >>> latt.plot()
    >>> plt.show()
 

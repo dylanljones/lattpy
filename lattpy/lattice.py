@@ -131,6 +131,7 @@ class Lattice(LatticeStructure):
         self.shape = None
         self.pos = None
         self.periodic_axes = list()
+        self.primitive = None
 
         if "shape" in kwargs:
             self.build(kwargs["shape"], periodic=kwargs.get("periodic", None))
@@ -345,7 +346,6 @@ class Lattice(LatticeStructure):
         periodic: Union[bool, int, Sequence[int]] = None,
         callback: Callable = None,
         dtype: Union[int, str, np.dtype] = None,
-        relative: bool = None,
     ):
         """Constructs the indices and neighbors of a finite size lattice.
 
@@ -376,9 +376,6 @@ class Lattice(LatticeStructure):
             Optional data-type for storing the lattice indices. Using a smaller
             bit-size may help reduce memory usage. By default, the given limits are
             checked to determine the smallest possible data-type.
-        relative : bool, optional
-            Same as ``primitive`` (backwards compatibility). Will be removed in a
-            future version.
 
         Raises
         ------
@@ -390,14 +387,6 @@ class Lattice(LatticeStructure):
         NotAnalyzedError
             Raised if the lattice distances and base-neighbors haven't been computed.
         """
-        if relative is not None:
-            warnings.warn(
-                "``relative`` is deprecated and will be removed in a "
-                "future version. Use ``primitive`` instead",
-                DeprecationWarning,
-            )
-            primitive = relative
-
         self.data.reset()
         if not isinstance(shape, AbstractShape):
             basis = self.vectors if primitive else None
@@ -411,7 +400,7 @@ class Lattice(LatticeStructure):
 
         # Build indices and positions
         indices, positions = self.build_indices(
-            shape, primitive, pos, check, callback, dtype, True
+            shape, primitive, pos, check, callback, dtype, return_pos=True
         )
 
         # Compute the neighbors and distances between the sites
@@ -424,10 +413,11 @@ class Lattice(LatticeStructure):
 
         # Set data of the lattice and update shape
         self.data.set(indices, positions, neighbors, distances_)
+        self.primitive = primitive
         self._update_shape()
 
         if periodic is not None:
-            self.set_periodic(periodic, primitive)
+            self.set_periodic(periodic)
 
         logger.debug(
             "Lattice shape: %s (%s)",
@@ -595,7 +585,7 @@ class Lattice(LatticeStructure):
         return pidx, pdists, pnvecs, paxs
 
     def set_periodic(
-        self, axis: Union[bool, int, Sequence[int]] = None, primitive: bool = False
+        self, axis: Union[bool, int, Sequence[int]] = None, primitive: bool = None
     ):
         """Sets periodic boundary conditions along the given axis.
 
@@ -608,6 +598,8 @@ class Lattice(LatticeStructure):
             Flag if the specified axes are in cartesian or lattice coordinates.
             If ``True`` the passed position will be multiplied with the lattice vectors.
             The default is ``False`` (cartesian coordinates).
+            .. deprecated:: 0.8.0
+              The `primitive` argument will be removed in lattpy 0.9.0
 
         Raises
         ------
@@ -618,12 +610,22 @@ class Lattice(LatticeStructure):
         -----
         The lattice has to be built before applying the periodic boundarie conditions.
         The lattice also has to be at least three atoms big in the specified directions.
+        Uses the same coordinate system (cartesian or primtive basis vectors)
+        as chosen for building the lattice.
         """
         if isinstance(axis, bool):
             if axis is True:
                 axis = np.arange(self.dim)
             else:
                 axis = None
+        if primitive is not None:
+            warnings.warn(
+                "The `primitive` argument is deprecated and will be removed in "
+                "lattpy 0.9.0. The value for building the lattice is reused!",
+                DeprecationWarning,
+            )
+
+        primitive = self.primitive
 
         logger.debug("Computing periodic neighbors along axis %s", axis)
         if self.shape is None:
@@ -685,7 +687,7 @@ class Lattice(LatticeStructure):
         positions2 = latt.data.positions
         return self._compute_connection_neighbors(self.data.positions, positions2)
 
-    def minimum_distances(self, site, primitive=False):
+    def minimum_distances(self, site, primitive=None):
         """Computes the minimum distances between one site and the other lattice sites.
 
         This method can be used to find the distances in a lattice with
@@ -698,18 +700,32 @@ class Lattice(LatticeStructure):
         primitive : bool, optional
             Flag if the periopdic boundarey conditions are set up along cartesian or
             primitive basis vectors. The default is ``False`` (cartesian coordinates).
+            .. deprecated:: 0.8.0
+                The `primitive` argument will be removed in lattpy 0.9.0
 
         Returns
         -------
         min_dists : (N, ) np.ndarray
             The minimum distances between the lattice site i and the other sites.
+
+        Notes
+        -----
+        Uses the same coordinate system (cartesian or primtive basis vectors)
+        as chosen for building the lattice.
         """
+        if primitive is not None:
+            warnings.warn(
+                "The `primitive` argument is deprecated and will be removed in "
+                "lattpy 0.9.0. The value for building the lattice is reused!",
+                DeprecationWarning,
+            )
+
         positions = self.positions
         # normal distances
         dists = [distances(positions[site], positions)]
         # periodic distances (to translated site)
         paxs = self.periodic_axes
-        for axs, vec in self.periodic_translation_vectors(paxs, primitive):
+        for axs, vec in self.periodic_translation_vectors(paxs, self.primitive):
             # Get position of translated lattice point and compute distances
             translated = self.translate(vec, positions[site])
             dists.append(distances(translated, positions))
@@ -766,7 +782,7 @@ class Lattice(LatticeStructure):
 
     # noinspection PyShadowingNames
     def append(
-        self, latt, ax=0, side=+1, sort_ax=None, sort_reverse=False, primitive=False
+        self, latt, ax=0, side=+1, sort_ax=None, sort_reverse=False, primitive=None
     ):
         """Append another `Lattice`-instance along an axis.
 
@@ -786,9 +802,15 @@ class Lattice(LatticeStructure):
         sort_reverse : bool, optional
             If True, the lattice indices are sorted in reverse order.
         primitive : bool, optional
-            Flag if the specified axes are in cartesian or lattice coordinates.
-            If ``True`` the passed position will be multiplied with the lattice vectors.
-            The default is ``False`` (cartesian coordinates).
+            Flag if the periopdic boundarey conditions are set up along cartesian or
+            primitive basis vectors. The default is ``False`` (cartesian coordinates).
+            .. deprecated:: 0.8.0
+                The `primitive` argument will be removed in lattpy 0.9.0
+
+        Notes
+        -----
+        Uses the same coordinate system (cartesian or primtive basis vectors)
+        as chosen for building the lattice.
 
         Examples
         --------
@@ -808,12 +830,19 @@ class Lattice(LatticeStructure):
         >>> latt.shape
         [8. 2.]
         """
+        if primitive is not None:
+            warnings.warn(
+                "The `primitive` argument is deprecated and will be removed in "
+                "lattpy 0.9.0. The value for building the lattice is reused!",
+                DeprecationWarning,
+            )
+
         ind = latt.data.indices
         pos = latt.data.positions
         neighbors = latt.data.neighbors
         dists = latt.data.distvals[latt.data.distances]
         self._append(
-            ind, pos, neighbors, dists, ax, side, sort_ax, sort_reverse, primitive
+            ind, pos, neighbors, dists, ax, side, sort_ax, sort_reverse, self.primitive
         )
 
     def extend(self, size, ax=0, side=1, num_jobs=1, sort_ax=None, sort_reverse=False):
@@ -855,11 +884,13 @@ class Lattice(LatticeStructure):
         # Build indices and positions of new section
         shape = np.copy(self.shape)
         shape[ax] = size
-        ind, pos = self.build_indices(shape, primitive=False, return_pos=True)
+        ind, pos = self.build_indices(shape, primitive=self.primitive, return_pos=True)
         # Compute the neighbors and distances between the sites of new section
         neighbors, dists = self.compute_neighbors(ind, pos, num_jobs)
         # Append new section
-        self._append(ind, pos, neighbors, dists, ax, side, sort_ax, sort_reverse)
+        self._append(
+            ind, pos, neighbors, dists, ax, side, sort_ax, sort_reverse, self.primitive
+        )
 
     def repeat(self, num=1, ax=0, side=1, sort_ax=None, sort_reverse=False):
         """Repeat the lattice along an axis.
@@ -901,8 +932,11 @@ class Lattice(LatticeStructure):
         pos = self.data.positions
         neighbors = self.data.neighbors
         dists = self.data.distvals[self.data.distances]
+        prim = self.primitive
         for _ in range(num):
-            self._append(ind, pos, neighbors, dists, ax, side, sort_ax, sort_reverse)
+            self._append(
+                ind, pos, neighbors, dists, ax, side, sort_ax, sort_reverse, prim
+            )
 
     def dmap(self) -> DataMap:
         """DataMap : Returns the data-map of the lattice model."""

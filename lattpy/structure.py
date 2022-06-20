@@ -19,7 +19,6 @@
 
 import pickle
 import logging
-import warnings
 import itertools
 import collections
 import numpy as np
@@ -179,7 +178,6 @@ class LatticeStructure(LatticeBasis):
         atom: Union[str, Dict[str, Any], Atom] = None,
         primitive: bool = False,
         neighbors: int = 0,
-        relative: bool = None,
         **kwargs,
     ) -> Atom:
         """Adds a site to the basis of the lattice unit cell.
@@ -200,9 +198,6 @@ class LatticeStructure(LatticeBasis):
             The number of neighbor distance to calculate. If the number is 0 the
             distances have to be calculated manually after configuring the
             lattice basis.
-        relative : bool, optional
-            Same as ``primitive`` (backwards compatibility). Will be removed in a
-            future version.
         **kwargs
             Keyword arguments for ´Atom´ constructor. Only used if a new ``Atom``
             instance is created.
@@ -240,14 +235,6 @@ class LatticeStructure(LatticeBasis):
         >>> latt.get_atom(1)
         Atom(B, size=15, 1)
         """
-        if relative is not None:
-            warnings.warn(
-                "``relative`` is deprecated and will be removed in a "
-                "future version. Use ``primitive`` instead",
-                DeprecationWarning,
-            )
-            primitive = relative
-
         pos = np.zeros(self.dim) if pos is None else np.atleast_1d(pos)
         if primitive:
             pos = self.translate(pos)
@@ -459,26 +446,6 @@ class LatticeStructure(LatticeBasis):
         self._connections.fill(num_distances)
         if analyze:
             self.analyze()
-
-    def set_num_neighbors(self, num_neighbors: int = 1, analyze: bool = True) -> None:
-        """Sets the maximal neighbor distance of the lattice.
-
-        Parameters
-        ----------
-        num_neighbors: int, optional
-            The number of neighbor-distance levels,
-            e.g. setting to ``1`` means only nearest neighbors.
-        analyze: bool
-            Flag if lattice base is analyzed. If ``False`` the ``analyze``-method
-            needs to be called manually. The default is True.
-        """
-        warnings.warn(
-            "Configuring neighbors with `set_num_neighbors` is deprecated "
-            "and will be removed in a future version. Use the "
-            "`add_connections` instead.",
-            DeprecationWarning,
-        )
-        self.add_connections(num_neighbors, analyze)
 
     def _compute_base_neighbors(self, max_distidx, num_jobs=1):
         logger.debug("Building indices of neighbor-cells")

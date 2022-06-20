@@ -13,9 +13,10 @@ import lattpy as lp
 
 MB = 1024 * 1024
 MAX_SITES = 10_000_000
-RUNS = 2
-MAX_POINTS = 20
+RUNS = 3
+MAX_POINTS = 30
 
+overwrite = False
 latts = {
     "chain": lp.simple_chain(),
     "square": lp.simple_square(),
@@ -153,7 +154,6 @@ def plot_benchmark_build(data):
 
 
 def main():
-    overwrite = True
     file = "benchmark_build_periodic.npz"
     if overwrite or not os.path.exists(file):
         data = dict()

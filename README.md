@@ -123,7 +123,7 @@ plt.show()
 
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/.social/example_square_periodic.png" width="400">
+<img src="https://raw.githubusercontent.com/dylanljones/lattpy/dev/docs/source/_static/example_square_periodic.png" width="400">
 </p>
 
 ### General lattice attributes
@@ -254,16 +254,16 @@ and the size of the stored lattice data of a square lattice for different number
 sites are shown in the following plots:
 
 
-|                                             Build time                                             |                                             Build memory                                             |
-|:--------------------------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------------------:|
-| <img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/.social/benchmark_time.png"> | <img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/.social/benchmark_memory.png"> |
+|                                               Build time                                                |                                               Build memory                                                |
+|:-------------------------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------------:|
+| <img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/benchmarks/bench_build_time.png"> | <img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/benchmarks/bench_build_memory.png"> |
 
 
 
 Note that the overhead of the multi-thread neighbor search results in a slight
 increase of the build time for small systems. By using `num_jobs=1` in the `build`-method
 this overhead can be eliminated for small systems. By passing `num_jobs=-1` all cores
-of the system is used.
+of the system are used.
 
 
 ## 💻 Development

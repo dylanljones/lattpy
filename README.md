@@ -123,7 +123,7 @@ plt.show()
 
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/dylanljones/lattpy/dev/docs/source/_static/example_square_periodic.png" width="400">
+<img src="https://raw.githubusercontent.com/dylanljones/lattpy/master/docs/source/_static/example_square_periodic.png" width="400">
 </p>
 
 ### General lattice attributes

@@ -9,5 +9,5 @@ repository-code: "https://github.com/dylanljones/lattpy"
 authors:
   - family-names: Jones
     given-names: Dylan
-    orcid: https://orcid.org/0000-0002-3410-4452
+    orcid: 'https://orcid.org/0000-0002-3410-4452'
 ...

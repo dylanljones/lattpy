@@ -249,9 +249,8 @@ Both construction methods will create the following Hamiltonian-matrix:
 
 Even though `lattpy` is written in pure python, it achieves high performance and
 a low memory footprint by making heavy use of numpy's vectorized operations and scipy's
-cKDTree. As an example the build-times, the maximal memory used in the build process
-and the size of the stored lattice data of a square lattice for different number of
-sites are shown in the following plots:
+cKDTree. As an example the build times and memory usage in the build process for different
+lattices are shown in the following plots:
 
 
 |                                               Build time                                                |                                               Build memory                                                |

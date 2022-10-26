@@ -37,7 +37,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.7", "3.10"]  # check oldest and latest supported version
+        python-version: ["3.7", "3.11"]  # check oldest and latest supported version
         other-os: [false]
 
     runs-on: ${{ matrix.os }}

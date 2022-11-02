@@ -1,7 +1,8 @@
 # What's New
 
-<a name="unreleased"></a>
-## [Unreleased]
+<a name="0.7.7"></a>
+## [0.7.7] - 2022-02-11
+
 
 ### New Features
 - add additional spatial methods to lattice object
@@ -158,7 +159,8 @@
 - add more docstrings
 - fix multiple bugs
 
-[Unreleased]: https://github.com/dylanljones/lattpy/compare/0.7.6...HEAD
+[Unreleased]: https://github.com/dylanljones/lattpy/compare/0.7.7...HEAD
+[0.7.7]: https://github.com/dylanljones/lattpy/compare/0.7.6...0.7.7
 [0.7.6]: https://github.com/dylanljones/lattpy/compare/0.7.5...0.7.6
 [0.7.5]: https://github.com/dylanljones/lattpy/compare/0.7.4...0.7.5
 [0.7.4]: https://github.com/dylanljones/lattpy/compare/0.7.3...0.7.4

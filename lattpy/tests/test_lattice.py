@@ -432,6 +432,30 @@ def test_position():
     assert_array_equal(latt.position(3), [0.5, 1.5])
 
 
+def test_center():
+    latt = lp.simple_square()
+    latt.build((10, 10))
+    assert_array_equal(latt.center(), [5, 5])
+
+    latt.build((3, 3))
+    assert_array_equal(latt.center(), [1.5, 1.5])
+
+    latt.build((6, 3))
+    assert_array_equal(latt.center(), [3, 1.5])
+
+
+def test_center_of_gravity():
+    latt = lp.simple_square()
+    latt.build((10, 10))
+    assert_array_equal(latt.center_of_gravity(), [5, 5])
+
+    latt.build((3, 3))
+    assert_array_equal(latt.center_of_gravity(), [1.5, 1.5])
+
+    latt.build((6, 3))
+    assert_array_equal(latt.center_of_gravity(), [3, 1.5])
+
+
 def test_superindex_from_position():
     latt = Lattice(np.eye(2))
     latt.add_atom()

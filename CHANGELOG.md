@@ -4,6 +4,7 @@
 ## [Unreleased]
 
 ### New Features
+- add additional spatial methods to lattice object
 - reuse coordinate system argument used for building lattice in other `Lattice`-methods
 
 ### Improvements/Bug Fixes

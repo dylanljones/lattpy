@@ -210,6 +210,64 @@ class Lattice(LatticeStructure):
         """
         return self.data.positions[idx]
 
+    def limits(self) -> np.ndarray:
+        """Returns the spatial limits of the lattice model.
+
+        Returns
+        -------
+        limits : (2, D) np.ndarray
+            An array of the limits of the lattice positions. The first axis contains
+            the minimum position and the second the maximum position for all dimensions.
+        """
+        pos = self.positions
+        return np.array([np.min(pos, axis=0), np.max(pos, axis=0)])
+
+    def relative_position(self, fractions) -> np.ndarray:
+        """Computes a relitve position in the lattice model.
+
+        Parameters
+        ----------
+        fractions : float or (D, ) array_like
+            The position relatice to the size of the lattice. The center of the lattice
+            is returned for the fractions `[0.5, ..., 0.5]`.
+
+        Returns
+        -------
+        relpos : (D, ) np.ndarray
+            The relative position in the lattice model.
+        """
+        limits = self.limits()
+        return limits[0] + np.asanyarray(fractions) * (limits[1] - limits[0])
+
+    def center(self) -> np.ndarray:
+        """Returns the spatial center of the lattice.
+
+        Returns
+        -------
+        center : (D, ) np.ndarray
+            The position of the spatial center of the lattice.
+        """
+        frac = np.ones(self.dim) * 0.5
+        return self.relative_position(frac)
+
+    def center_of_gravity(self) -> np.ndarray:
+        """Computes the center of gravity of the lattice model.
+
+        Returns
+        -------
+        center : (D, ) np.ndarray
+            The center of gravity of the lattice model.
+
+        Notes
+        -----
+        Requires that the `mass` attribute is set for each atom. If no mass is set
+        the default mass of `1.0` is used.
+        """
+        masses = [self.atom(i).get("mass", 1.0) for i in range(self.num_sites)]
+        masses = np.asarray(masses)
+        center = np.sum(masses[:, None] * self.positions, axis=0) / np.sum(masses)
+        return center
+
     def superindex_from_pos(self, pos: ArrayLike, atol: float = 1e-4) -> Optional[int]:
         """Returns the super-index of a given position.
 

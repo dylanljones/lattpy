@@ -5,7 +5,7 @@
 <h1 align="center">LattPy - Simple Lattice Modeling in Python</h1>
 
 <p align="center">
-    <a href="https://pypi.org/project/lattpy/"><img alt="Python Version" src="https://img.shields.io/pypi/pyversions/lattpy?logo=python&style=flat"></a>
+    <a href="https://pypi.org/project/lattpy/"><img alt="Python Version" src="https://img.shields.io/badge/python-3.7+-blue.svg"></a>
     <a href="https://pypi.org/project/lattpy/"><img alt="Version" src="https://img.shields.io/pypi/v/lattpy?logo=pypi&style=flat"></a>
     <a href="https://pypi.org/project/lattpy/"><img alt="Status" src="https://img.shields.io/pypi/status/lattpy?color=yellow&style=flat"></a>
     <a href="https://pepy.tech/project/lattpy"><img alt="Downloads" src="https://pepy.tech/badge/lattpy?style=flat"></a>

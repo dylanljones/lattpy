@@ -11,7 +11,7 @@
     <a href="https://pepy.tech/project/lattpy"><img alt="Downloads" src="https://pepy.tech/badge/lattpy?style=flat"></a>
     <a href="https://github.com/dylanljones/lattpy/blob/master/LICENSE"><img alt="MIT License" src="https://img.shields.io/github/license/dylanljones/lattpy?color=lightgray&style=flat"></a>
     <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg?style=flat"></a>
-    <a href="https://lgtm.com/projects/g/dylanljones/lattpy/context:python"><img alt="LGTM Grade" src="https://img.shields.io/lgtm/grade/python/github/dylanljones/lattpy?label=code%20quality&logo=lgtm&style=flat"></a>
+    <a href="https://github.com/dylanljones/lattpy/actions/workflows/codeql.yml"><img alt="LGTM Grade" src="https://github.com/dylanljones/lattpy/actions/workflows/codeql.yml/badge.svg"></a>
 </p>
 
 :warning: **WARNING**: This project is still in development and might change significantly in the future!
@@ -279,8 +279,8 @@ or open a pull request! A guide for contributing to `lattpy` and the commit-mess
 [docs-stable-link]: https://lattpy.readthedocs.io/en/stable/
 [docs-tutorial-link]: https://lattpy.readthedocs.io/en/stable/tutorial/index.html
 
-[tests-master]: https://img.shields.io/github/workflow/status/dylanljones/lattpy/Test/master?label=tests&logo=github&style=flat
-[tests-dev]: https://img.shields.io/github/workflow/status/dylanljones/lattpy/Test/dev?label=tests&logo=github&style=flat
+[tests-master]: https://img.shields.io/github/actions/workflow/status/dylanljones/lattpy/test.yml?branch=master&label=tests&logo=github&style=flat
+[tests-dev]: https://img.shields.io/github/actions/workflow/status/dylanljones/lattpy/test.yml?branch=dev&label=tests&logo=github&style=flat
 [link-tests]: https://github.com/dylanljones/lattpy/actions/workflows/test.yml
 [codecov-master]: https://codecov.io/gh/dylanljones/lattpy/branch/master/graph/badge.svg?
 [codecov-master-link]: https://app.codecov.io/gh/dylanljones/lattpy/branch/master
@@ -290,3 +290,6 @@ or open a pull request! A guide for contributing to `lattpy` and the commit-mess
 [docs-master-link]: https://lattpy.readthedocs.io/en/latest/
 [docs-dev]: https://img.shields.io/readthedocs/lattpy/dev?style=flat&logo=readthedocs
 [docs-dev-link]: https://lattpy.readthedocs.io/en/dev/
+
+[code-ql]: https://github.com/dylanljones/lattpy/actions/workflows/codeql.yml/badge.svg
+[code-ql-link]: https://github.com/dylanljones/lattpy/actions/workflows/codeql.yml

@@ -805,7 +805,6 @@ class Lattice(LatticeStructure):
         sort_reverse=False,
         primitive=False,
     ):
-
         indices2 = np.copy(ind)
         positions2 = np.copy(pos)
         neighbors2 = np.copy(neighbors)

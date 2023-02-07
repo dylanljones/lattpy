@@ -478,6 +478,7 @@ def text(ax, strings, positions, offset=None, **kwargs):
 # Lattice plotting
 # ======================================================================================
 
+
 # noinspection PyAbstractClass
 class CircleCollection(Collection):
     """Custom circle collection

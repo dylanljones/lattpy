@@ -301,7 +301,6 @@ class ConvexHull(AbstractShape):
         )
 
     def plot(self, ax, color="k", lw=0.0, alpha=0.2, **kwargs):  # pragma: no cover
-
         if self.dim == 2:
             segments = self.hull.points[self.hull.simplices]
             lines = draw_lines(ax, segments, color=color, lw=lw)
@@ -310,7 +309,6 @@ class ConvexHull(AbstractShape):
             surfaces = ax.fill(*segments.T, fc=color, alpha=alpha, ec=None)
 
         elif self.dim == 3:
-
             segments = np.array(
                 [self.hull.points[np.append(i, i[0])] for i in self.hull.simplices]
             )

@@ -52,7 +52,6 @@ logger.setLevel(logging.WARNING)  # Set initial logging level
 
 
 class LatticeError(Exception):
-
     pass
 
 

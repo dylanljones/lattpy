@@ -411,7 +411,6 @@ class VoronoiTree:
         draw=True,
         fill=True,
     ):  # pragma: no cover
-
         if ax is None:
             fig = plt.figure()
             ax = fig.add_subplot(111, projection="3d" if self.dim == 3 else None)

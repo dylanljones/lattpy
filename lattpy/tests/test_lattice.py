@@ -982,3 +982,160 @@ def test_simple_cubic():
     expected = [1, 3, 5, 7, 9, 11, 15, 17, 19, 21, 23, 25]
     actual = latt.neighbors(13, distidx=1)
     assert_array_equal(expected, sorted(actual))
+
+
+def test_hexagonal_nearest_neighbors():
+    # Neraest neighbors
+    latt = lp.Lattice.hexagonal()
+    latt.add_atom()
+    latt.add_connections(1)
+    latt.build((2, 2), primitive=True)
+
+    # Check correct building
+    assert latt.num_sites == 9
+
+    # Check nearest neighbors
+    actual = latt.nearest_neighbors(0)
+    assert_array_equal([1, 3], sorted(actual))
+
+    actual = latt.nearest_neighbors(1)
+    assert_array_equal([0, 2, 3, 4], sorted(actual))
+
+    actual = latt.nearest_neighbors(2)
+    assert_array_equal([1, 4, 5], sorted(actual))
+
+    actual = latt.nearest_neighbors(3)
+    assert_array_equal([0, 1, 4, 6], sorted(actual))
+
+    actual = latt.nearest_neighbors(4)
+    assert_array_equal([1, 2, 3, 5, 6, 7], sorted(actual))
+
+    actual = latt.nearest_neighbors(5)
+    assert_array_equal([2, 4, 7, 8], sorted(actual))
+
+    actual = latt.nearest_neighbors(6)
+    assert_array_equal([3, 4, 7], sorted(actual))
+
+    actual = latt.nearest_neighbors(7)
+    assert_array_equal([4, 5, 6, 8], sorted(actual))
+
+    actual = latt.nearest_neighbors(8)
+    assert_array_equal([5, 7], sorted(actual))
+
+
+def test_hexagonal_periodic_nearest_neighbors():
+    latt = lp.Lattice.hexagonal()
+    latt.add_atom()
+    latt.add_connections(1)
+    latt.build((2, 2), primitive=True)
+
+    # Check periodic boundary conditions (axis=0)
+    latt.set_periodic(axis=0)
+
+    expected = [6, 7]
+    actual = latt.data.get_neighbors(site=0, distidx=0, periodic=True)
+    assert_array_equal(expected, sorted(actual))
+
+    expected = [7, 8]
+    actual = latt.data.get_neighbors(site=1, distidx=0, periodic=True)
+    assert_array_equal(expected, sorted(actual))
+
+    expected = [8]
+    actual = latt.data.get_neighbors(site=2, distidx=0, periodic=True)
+    assert_array_equal(expected, sorted(actual))
+
+    expected = [0]
+    actual = latt.data.get_neighbors(site=6, distidx=0, periodic=True)
+    assert_array_equal(expected, sorted(actual))
+
+    expected = [0, 1]
+    actual = latt.data.get_neighbors(site=7, distidx=0, periodic=True)
+    assert_array_equal(expected, sorted(actual))
+
+    expected = [1, 2]
+    actual = latt.data.get_neighbors(site=8, distidx=0, periodic=True)
+    assert_array_equal(expected, sorted(actual))
+
+    # Check periodic boundary conditions (axis=0)
+    latt.set_periodic(axis=1)
+
+    expected = [2, 5]
+    actual = latt.data.get_neighbors(site=0, distidx=0, periodic=True)
+    assert_array_equal(expected, sorted(actual))
+
+    expected = [5, 8]
+    actual = latt.data.get_neighbors(site=3, distidx=0, periodic=True)
+    assert_array_equal(expected, sorted(actual))
+
+    expected = [8]
+    actual = latt.data.get_neighbors(site=6, distidx=0, periodic=True)
+    assert_array_equal(expected, sorted(actual))
+
+    expected = [0]
+    actual = latt.data.get_neighbors(site=2, distidx=0, periodic=True)
+    assert_array_equal(expected, sorted(actual))
+
+    expected = [0, 3]
+    actual = latt.data.get_neighbors(site=5, distidx=0, periodic=True)
+    assert_array_equal(expected, sorted(actual))
+
+    expected = [3, 6]
+    actual = latt.data.get_neighbors(site=8, distidx=0, periodic=True)
+    assert_array_equal(expected, sorted(actual))
+
+
+def test_hexagonal_next_nearest_neighbors():
+    # Neraest neighbors
+    latt = lp.Lattice.hexagonal()
+    latt.add_atom()
+    latt.add_connections(2)
+    latt.build((2, 2), primitive=True)
+
+    # Check correct building
+    assert latt.num_sites == 9
+
+    # Check next nearest neighbors
+    actual = latt.neighbors(0, distidx=0)
+    assert_array_equal([1, 3], sorted(actual))
+    actual = latt.neighbors(0, distidx=1)
+    assert_array_equal([4], sorted(actual))
+
+    actual = latt.neighbors(1, distidx=0)
+    assert_array_equal([0, 2, 3, 4], sorted(actual))
+    actual = latt.neighbors(1, distidx=1)
+    assert_array_equal([5, 6], sorted(actual))
+
+    actual = latt.neighbors(2, distidx=0)
+    assert_array_equal([1, 4, 5], sorted(actual))
+    actual = latt.neighbors(2, distidx=1)
+    assert_array_equal([3, 7], sorted(actual))
+
+    actual = latt.neighbors(3, distidx=0)
+    assert_array_equal([0, 1, 4, 6], sorted(actual))
+    actual = latt.neighbors(3, distidx=1)
+    assert_array_equal([2, 7], sorted(actual))
+
+    actual = latt.neighbors(4, distidx=0)
+    assert_array_equal([1, 2, 3, 5, 6, 7], sorted(actual))
+    actual = latt.neighbors(4, distidx=1)
+    assert_array_equal([0, 8], sorted(actual))
+
+    actual = latt.neighbors(5, distidx=0)
+    assert_array_equal([2, 4, 7, 8], sorted(actual))
+    actual = latt.neighbors(5, distidx=1)
+    assert_array_equal([1, 6], sorted(actual))
+
+    actual = latt.neighbors(6, distidx=0)
+    assert_array_equal([3, 4, 7], sorted(actual))
+    actual = latt.neighbors(6, distidx=1)
+    assert_array_equal([1, 5], sorted(actual))
+
+    actual = latt.neighbors(7, distidx=0)
+    assert_array_equal([4, 5, 6, 8], sorted(actual))
+    actual = latt.neighbors(7, distidx=1)
+    assert_array_equal([2, 3], sorted(actual))
+
+    actual = latt.neighbors(8, distidx=0)
+    assert_array_equal([5, 7], sorted(actual))
+    actual = latt.neighbors(8, distidx=1)
+    assert_array_equal([4], sorted(actual))

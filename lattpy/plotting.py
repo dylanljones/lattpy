@@ -40,9 +40,6 @@ __all__ = [
     "connection_color_array",
 ]
 
-# Golden ratio as standard ratio for plot-figures
-GOLDEN_RATIO = (np.sqrt(5) - 1.0) / 2.0
-
 # ======================================================================================
 # Formatting / Styling
 # ======================================================================================

@@ -5,13 +5,14 @@
 <h1 align="center">LattPy - Simple Lattice Modeling in Python</h1>
 
 <p align="center">
+    <a href="https://github.com/dylanljones/lattpy/actions/workflows/test.yml"><img alt="Tests" src="https://img.shields.io/github/actions/workflow/status/dylanljones/lattpy/test.yml?branch=master&label=tests&logo=github&style=flat"></a>
+    <a href="https://app.codecov.io/gh/dylanljones/lattpy/branch/master"><img alt="Python Version" src="https://codecov.io/gh/dylanljones/lattpy/branch/master/graph/badge.svg?style=flat"></a>
     <a href="https://pypi.org/project/lattpy/"><img alt="Python Version" src="https://img.shields.io/badge/python-3.7+-blue.svg"></a>
     <a href="https://pypi.org/project/lattpy/"><img alt="Version" src="https://img.shields.io/pypi/v/lattpy?logo=pypi&style=flat"></a>
     <a href="https://pypi.org/project/lattpy/"><img alt="Status" src="https://img.shields.io/pypi/status/lattpy?color=yellow&style=flat"></a>
     <a href="https://pepy.tech/project/lattpy"><img alt="Downloads" src="https://pepy.tech/badge/lattpy?style=flat"></a>
     <a href="https://github.com/dylanljones/lattpy/blob/master/LICENSE"><img alt="MIT License" src="https://img.shields.io/github/license/dylanljones/lattpy?color=lightgray&style=flat"></a>
     <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg?style=flat"></a>
-    <a href="https://github.com/dylanljones/lattpy/actions/workflows/codeql.yml"><img alt="LGTM Grade" src="https://github.com/dylanljones/lattpy/actions/workflows/codeql.yml/badge.svg"></a>
 </p>
 
 :warning: **WARNING**: This project is still in development and might change significantly in the future!
@@ -22,10 +23,6 @@ It provides an easy interface for constructing lattice structures by simplifying
 configuration of the unit cell and the neighbor connections - making it possible to
 construct complex models in just a few lines of code and without the headache of
 adding neighbor connections manually. You will save time and mental energy for more important matters.
-
-| Master | [![Test][tests-master]][link-tests] | [![Codecov][codecov-master]][codecov-master-link] | [![Read the Docs][docs-master]][docs-master-link] |
-|:-------|:------------------------------------|:--------------------------------------------------|:--------------------------------------------------|
-| Dev    | [![Test][tests-dev]][link-tests]    | [![Codecov][codecov-dev]][codecov-dev-link]       | [![Read the Docs][docs-dev]][docs-dev-link]       |
 
 
 ## 🔧 Installation

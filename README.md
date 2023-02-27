@@ -15,7 +15,7 @@
     <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg?style=flat"></a>
 </p>
 
-:warning: **WARNING**: This project is still in development and might change significantly in the future!
+:warning: **WARNING**: This project is still in development and might contain bugs or change significantly in the future!
 
 *LattPy* is a simple and efficient Python package for modeling Bravais lattices and
 constructing (finite) lattice structures in any dimension.
@@ -36,11 +36,7 @@ Alternatively, it can be installed via [GitHub](https://github.com/dylanljones/l
 ```commandline
 pip install git+https://github.com/dylanljones/lattpy.git@VERSION
 ```
-where `VERSION` is a release or tag. The project can also be
-cloned/forked and installed via
-````commandline
-python setup.py install
-````
+where `VERSION` is a branch, release or tag.
 
 ## 📖 Documentation
 

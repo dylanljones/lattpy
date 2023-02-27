@@ -441,7 +441,7 @@ def finite_hypercubic(s, a=1.0, atom=None, neighbors=1, primitive=True, periodic
     """
     import numpy as np
 
-    if isinstance(s, (float, int)):
+    if not hasattr(s, "__len__"):
         s = (s,)
 
     dim = s.dim if isinstance(s, AbstractShape) else len(s)

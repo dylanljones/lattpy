@@ -695,6 +695,17 @@ class Lattice(LatticeStructure):
             self.data.remove_periodic()
             axis = np.atleast_1d(axis)
             pidx, pdists, pnvecs, paxs = self._compute_pneighbors(axis, primitive)
+
+            # #######################################################
+            # sites = list(pidx.keys())
+            # for site1 in sites:
+            #     print(site1, pidx[site1])
+            #
+            # print(pdists)
+            # print(pnvecs)
+            # print(paxs)
+            # #######################################################
+
             if not pidx:
                 return
             self.data.set_periodic(pidx, pdists, pnvecs, paxs)
@@ -745,11 +756,15 @@ class Lattice(LatticeStructure):
         positions2 = latt.data.positions
         return self._compute_connection_neighbors(self.data.positions, positions2)
 
-    def minimum_distances(self, site, primitive=None):
+    def minimum_distances(self, site, primitive=None):  # noqa
         """Computes the minimum distances between one site and the other lattice sites.
 
         This method can be used to find the distances in a lattice with
         periodic boundary conditions.
+
+        .. deprecated:: 0.8.0
+                This method will be removed in lattpy 0.8.0, use ``Lattice.cdist``
+                instead.
 
         Parameters
         ----------
@@ -758,8 +773,6 @@ class Lattice(LatticeStructure):
         primitive : bool, optional
             Flag if the periopdic boundarey conditions are set up along cartesian or
             primitive basis vectors. The default is ``False`` (cartesian coordinates).
-            .. deprecated:: 0.8.0
-                The `primitive` argument will be removed in lattpy 0.9.0
 
         Returns
         -------
@@ -771,27 +784,93 @@ class Lattice(LatticeStructure):
         Uses the same coordinate system (cartesian or primtive basis vectors)
         as chosen for building the lattice.
         """
-        if primitive is not None:
-            warnings.warn(
-                "The `primitive` argument is deprecated and will be removed in "
-                "lattpy 0.9.0. The value for building the lattice is reused!",
-                DeprecationWarning,
-            )
+        return self.cdists(site, shortest=True)
 
+    def _update_distances_periodic(self, dists, site):
+        """Fix distances of periodic connected sites"""
         positions = self.positions
-        # normal distances
-        dists = [distances(positions[site], positions)]
+        # add normal distances (without periodic boundaries)
+        distlist = [dists]
         # periodic distances (to translated site)
         paxs = self.periodic_axes
         for axs, vec in self.periodic_translation_vectors(paxs, self.primitive):
             # Get position of translated lattice point and compute distances
             translated = self.translate(vec, positions[site])
-            dists.append(distances(translated, positions))
+            distlist.append(distances(translated, positions))
             # reverse translate direction
             translated = self.translate(-vec, positions[site])
-            dists.append(distances(translated, positions))
+            distlist.append(distances(translated, positions))
         # get minimum distances
-        return np.min(dists, axis=0)
+        return np.min(distlist, axis=0)
+
+    def cdists(self, site=None, shortest=True):
+        """Computes the distances between one or all sites and the other lattice sites.
+
+        This method can be used to find the distances in a lattice with
+        periodic boundary conditions.
+
+        Parameters
+        ----------
+        site : int, optional
+            The super-index i of a site in the cached lattice data.
+        shortest : bool, optional
+            Flag if the periopdic boundary conditions are considered.
+            The default is ``True``.
+
+        Returns
+        -------
+        dists : (..., N) np.ndarray
+            The minimum distances between the given or all lattice sites and the other
+            sites. If the distances between all sites are calculated the output array
+            is a square matrix of ther shape (N, N).
+
+        Notes
+        -----
+        Uses the same coordinate system (cartesian or primtive basis vectors)
+        as chosen for building the lattice.
+
+        Examples
+        --------
+        >>> latt = Lattice.square()
+        >>> latt.add_atom()
+        >>> latt.build(3, periodic=0)
+
+        Distances without considering periodic boundaries
+
+        >>> latt.cdists(shortest=False)
+        array([[0., 1., 2., 3.],
+               [1., 0., 1., 2.],
+               [2., 1., 0., 1.],
+               [3., 2., 1., 0.]])
+
+        Distances with considering periodic boundaries
+
+        >>> latt.cdists(shortest=True)
+        array([[0., 1., 2., 1.],
+               [1., 0., 1., 2.],
+               [2., 1., 0., 1.],
+               [1., 2., 1., 0.]])
+
+        Distances for a single site:
+
+        >>> latt.cdists(site=0)
+        array([0., 1., 2., 1.])
+        """
+        positions = self.positions
+        if site is None:
+            # Compute distance (without considering periodic neighbors)
+            dists = cdist(positions, positions)
+            # Update distance of periodic neighbors (if set)
+            if shortest and len(self.periodic_axes):
+                for i in range(len(positions)):
+                    dists[i] = self._update_distances_periodic(dists[i], i)
+        else:
+            # Compute distance (without considering periodic neighbors)
+            dists = distances(positions[site], positions)
+            # Update distance of periodic neighbors (if set)
+            if shortest and len(self.periodic_axes):
+                dists = self._update_distances_periodic(dists, site)
+        return dists
 
     def _append(
         self,

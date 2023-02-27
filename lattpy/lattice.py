@@ -696,16 +696,6 @@ class Lattice(LatticeStructure):
             axis = np.atleast_1d(axis)
             pidx, pdists, pnvecs, paxs = self._compute_pneighbors(axis, primitive)
 
-            # #######################################################
-            # sites = list(pidx.keys())
-            # for site1 in sites:
-            #     print(site1, pidx[site1])
-            #
-            # print(pdists)
-            # print(pnvecs)
-            # print(paxs)
-            # #######################################################
-
             if not pidx:
                 return
             self.data.set_periodic(pidx, pdists, pnvecs, paxs)

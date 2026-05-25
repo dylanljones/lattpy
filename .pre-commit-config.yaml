@@ -3,22 +3,22 @@
 
 repos:
     - repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v4.4.0
+      rev: v6.0.0
       types: [py]
       hooks:
           - id: end-of-file-fixer
           - id: trailing-whitespace
           - id: mixed-line-ending
 
-    - repo: https://github.com/psf/black
-      rev: 23.1.0
+    - repo: https://github.com/psf/black-pre-commit-mirror
+      rev: 26.5.1
       types: [ python ]
       hooks:
         - id: black
           args: [ --safe ]
 
     - repo: https://github.com/PyCQA/flake8
-      rev: 6.0.0
+      rev: 7.3.0
       hooks:
           - id: flake8
             args: [--config, setup.cfg]

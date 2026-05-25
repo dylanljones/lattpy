@@ -16,7 +16,6 @@ from hypothesis import given, settings, assume, strategies as st
 import hypothesis.extra.numpy as hnp
 from lattpy import shape
 
-
 dim = st.shared(st.integers(1, 3), key="d")
 
 

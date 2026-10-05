@@ -16,7 +16,6 @@ from hypothesis import given, strategies as st
 import hypothesis.extra.numpy as hnp
 from lattpy import spatial, simple_chain, simple_square, simple_cubic
 
-
 finite_floats = st.floats(-1e6, +1e6, allow_nan=False, allow_infinity=False)
 
 

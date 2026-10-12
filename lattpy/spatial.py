@@ -19,7 +19,6 @@ from typing import Iterable, Sequence, Union
 from .utils import ArrayLike, min_dtype, chain
 from .plotting import draw_points, draw_vectors, draw_lines, draw_surfaces
 
-
 __all__ = [
     "distance",
     "distances",

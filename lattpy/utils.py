@@ -262,7 +262,7 @@ def frmt_time(seconds: float, short: bool = False, width: int = 0):  # pragma: n
     else:
         if seconds < 1e-3:
             nanos = 1e6 * seconds
-            string = f"{nanos:.0f}\u03BCs"
+            string = f"{nanos:.0f}\u03bcs"
         elif seconds < 1:
             millis = 1000 * seconds
             string = f"{millis:.1f}ms"
